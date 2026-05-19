@@ -1,0 +1,111 @@
+import type { Config } from "tailwindcss";
+
+const config: Config = {
+  darkMode: ["class", '[data-theme="dark"]'],
+  content: ["./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  theme: {
+    container: { center: true, padding: "1rem", screens: { "2xl": "1440px" } },
+    extend: {
+      colors: {
+        brand: {
+          50: "var(--brand-50)",
+          100: "var(--brand-100)",
+          500: "var(--brand-500)",
+          600: "var(--brand-600)",
+          700: "var(--brand-700)",
+        },
+        gold: {
+          50: "var(--gold-50)",
+          100: "var(--gold-100)",
+          500: "var(--gold-500)",
+          600: "var(--gold-600)",
+          700: "var(--gold-700)",
+        },
+        bg: "var(--bg)",
+        surface: "var(--surface)",
+        "surface-2": "var(--surface-2)",
+        border: "var(--border)",
+        text: "var(--text)",
+        "text-muted": "var(--text-muted)",
+        "text-subtle": "var(--text-subtle)",
+        success: "var(--success)",
+        warning: "var(--warning)",
+        danger: "var(--danger)",
+        info: "var(--info)",
+        cat: {
+          beach: "var(--cat-beach)",
+          mountain: "var(--cat-mountain)",
+          heritage: "var(--cat-heritage)",
+          food: "var(--cat-food)",
+          city: "var(--cat-city)",
+          nature: "var(--cat-nature)",
+          cafe: "var(--cat-cafe)",
+          nightlife: "var(--cat-nightlife)",
+          rooftop: "var(--cat-rooftop)",
+          checkin: "var(--cat-checkin)",
+          hidden: "var(--cat-hidden)",
+          experience: "var(--cat-experience)",
+        },
+      },
+      fontFamily: {
+        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        display: ["var(--font-fraunces)", "Georgia", "serif"],
+        mono: ["var(--font-mono)", "monospace"],
+      },
+      fontSize: {
+        "display-xl": ["3.5rem", { lineHeight: "4rem", letterSpacing: "-0.02em", fontWeight: "500" }],
+        "display-lg": ["2.5rem", { lineHeight: "3rem", letterSpacing: "-0.02em", fontWeight: "500" }],
+        h1: ["2rem", { lineHeight: "2.5rem", letterSpacing: "-0.01em", fontWeight: "600" }],
+        h2: ["1.5rem", { lineHeight: "2rem", letterSpacing: "-0.01em", fontWeight: "600" }],
+        h3: ["1.25rem", { lineHeight: "1.75rem", letterSpacing: "-0.01em", fontWeight: "600" }],
+        "body-lg": ["1.0625rem", { lineHeight: "1.625rem" }],
+        body: ["0.9375rem", { lineHeight: "1.375rem" }],
+        "body-sm": ["0.8125rem", { lineHeight: "1.25rem" }],
+        caption: ["0.75rem", { lineHeight: "1rem", fontWeight: "500" }],
+        overline: ["0.6875rem", { lineHeight: "0.875rem", letterSpacing: "0.08em", fontWeight: "600" }],
+      },
+      borderRadius: {
+        xs: "4px",
+        sm: "6px",
+        md: "10px",
+        lg: "14px",
+        xl: "20px",
+        "2xl": "28px",
+      },
+      boxShadow: {
+        xs: "var(--shadow-xs)",
+        sm: "var(--shadow-sm)",
+        md: "var(--shadow-md)",
+        lg: "var(--shadow-lg)",
+        xl: "var(--shadow-xl)",
+        "glow-brand": "var(--shadow-glow-brand)",
+      },
+      transitionTimingFunction: {
+        standard: "cubic-bezier(.2,0,0,1)",
+        emphasized: "cubic-bezier(.2,0,0,1)",
+        exit: "cubic-bezier(.4,0,1,1)",
+      },
+      transitionDuration: {
+        instant: "80ms",
+        fast: "160ms",
+        base: "240ms",
+        slow: "360ms",
+        slower: "560ms",
+      },
+      keyframes: {
+        shimmer: { "0%": { backgroundPosition: "-200% 0" }, "100%": { backgroundPosition: "200% 0" } },
+        pulseRing: {
+          "0%": { transform: "scale(.8)", opacity: "0.4" },
+          "100%": { transform: "scale(2)", opacity: "0" },
+        },
+      },
+      animation: {
+        shimmer: "shimmer 1.4s linear infinite",
+        "pulse-ring": "pulseRing 2s ease-out infinite",
+      },
+    },
+  },
+  plugins: [],
+};
+
+export default config;

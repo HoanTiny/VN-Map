@@ -1,0 +1,90 @@
+:root {
+  /* Brand — Cờ Việt Nam (flag red) */
+  --brand-50: #fdebea;
+  --brand-100: #f9d0cd;
+  --brand-500: #da251d;
+  --brand-600: #b81e18;
+  --brand-700: #8e1712;
+
+  /* Gold — Sao vàng (flag yellow), for accents/badges/decor */
+  --gold-50: #fff8e0;
+  --gold-100: #ffefb0;
+  --gold-500: #ffcd00;
+  --gold-600: #e0b500;
+  --gold-700: #b89200;
+
+  --bg: #fbfaf8;
+  --surface: #ffffff;
+  --surface-2: #f4f2ee;
+  --border: #e8e4de;
+  --text: #1a1a1a;
+  --text-muted: #6b6960;
+  --text-subtle: #9a9890;
+
+  --success: #2ba672;
+  --warning: #f3a847;
+  --danger: #e5484d;
+  --info: #3a8dff;
+
+  /* Map category accents — food stays coral to differentiate from brand red */
+  --cat-beach: #23b5c7;
+  --cat-mountain: #5e8f5a;
+  --cat-heritage: #b8862f;
+  --cat-food: #ff5a3c;
+  --cat-city: #7c6cf0;
+  --cat-nature: #2e9e6b;
+  /* Lifestyle */
+  --cat-cafe: #a47551;       /* Mocha brown */
+  --cat-nightlife: #7c3aed;  /* Neon purple */
+  --cat-rooftop: #f59e0b;    /* Golden hour */
+  --cat-checkin: #ec4899;    /* Instagram pink */
+  --cat-hidden: #14b8a6;     /* Teal — discovery */
+  --cat-experience: #6366f1; /* Indigo — culture */
+
+  --shadow-xs: 0 1px 2px rgba(20, 14, 8, 0.06);
+  --shadow-sm: 0 2px 6px rgba(20, 14, 8, 0.06), 0 1px 2px rgba(20, 14, 8, 0.04);
+  --shadow-md: 0 6px 16px rgba(20, 14, 8, 0.08), 0 2px 4px rgba(20, 14, 8, 0.04);
+  --shadow-lg: 0 16px 40px rgba(20, 14, 8, 0.1), 0 4px 12px rgba(20, 14, 8, 0.06);
+  --shadow-xl: 0 32px 64px rgba(20, 14, 8, 0.14);
+  --shadow-glow-brand: 0 0 0 6px rgba(218, 37, 29, 0.22);
+
+  --glass-bg: rgba(255, 255, 255, 0.62);
+  --glass-border: rgba(255, 255, 255, 0.22);
+}
+
+[data-theme="dark"] {
+  --brand-50: #2a0e0c;
+  --brand-100: #3a1612;
+  --brand-500: #e63b33;
+  --brand-600: #da251d;
+  --brand-700: #b81e18;
+
+  --gold-50: #2c2410;
+  --gold-100: #3d3219;
+  --gold-500: #ffd83d;
+  --gold-600: #ffcd00;
+  --gold-700: #e0b500;
+
+  --bg: #0e0f11;
+  --surface: #17181b;
+  --surface-2: #1f2024;
+  --border: #2a2c31;
+  --text: #f5f4f1;
+  --text-muted: #a2a09a;
+  --text-subtle: #6e6c67;
+
+  --success: #3dd598;
+  --warning: #ffb958;
+  --danger: #ff6369;
+  --info: #5aa0ff;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 32px 64px rgba(0, 0, 0, 0.7);
+  --shadow-glow-brand: 0 0 0 6px rgba(230, 59, 51, 0.28);
+
+  --glass-bg: rgba(22, 23, 26, 0.58);
+  --glass-border: rgba(255, 255, 255, 0.08);
+}

@@ -1,0 +1,60 @@
+import type { Metadata, Viewport } from "next";
+import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
+import { AppProviders } from "@/providers/AppProviders";
+import { ThemeNoFlashScript } from "@/components/theme/ThemeToggle";
+import { siteConfig } from "@/config/site";
+import "@/styles/globals.css";
+
+const inter = Inter({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const fraunces = Fraunces({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-fraunces",
+  display: "swap",
+  weight: ["400", "500", "600"],
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  metadataBase: new URL(siteConfig.url),
+  title: { default: siteConfig.name, template: `%s · ${siteConfig.name}` },
+  description: siteConfig.description,
+  openGraph: {
+    type: "website",
+    locale: siteConfig.locale,
+    siteName: siteConfig.name,
+    images: [{ url: siteConfig.ogImage }],
+  },
+  twitter: { card: "summary_large_image" },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fbfaf8" },
+    { media: "(prefers-color-scheme: dark)", color: "#0e0f11" },
+  ],
+  width: "device-width",
+  initialScale: 1,
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="vi" suppressHydrationWarning className={`${inter.variable} ${fraunces.variable} ${mono.variable}`}>
+      <head>
+        <ThemeNoFlashScript />
+      </head>
+      <body className="min-h-dvh bg-bg text-text antialiased">
+        <AppProviders>{children}</AppProviders>
+      </body>
+    </html>
+  );
+}

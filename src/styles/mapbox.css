@@ -1,0 +1,74 @@
+/* Map control overrides — works for both maplibre-gl & mapbox-gl prefixes */
+
+.maplibregl-ctrl-attrib,
+.mapboxgl-ctrl-attrib,
+.maplibregl-ctrl-logo,
+.mapboxgl-ctrl-logo {
+  opacity: 0.6;
+}
+
+.maplibregl-popup-content,
+.mapboxgl-popup-content {
+  background-color: var(--surface);
+  color: var(--text);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  padding: 12px 16px;
+}
+
+.maplibregl-popup-tip,
+.mapboxgl-popup-tip {
+  border-top-color: var(--surface);
+}
+
+.maplibregl-ctrl-group,
+.mapboxgl-ctrl-group {
+  background-color: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border-radius: 10px;
+  box-shadow: var(--shadow-sm);
+}
+
+.maplibregl-ctrl-group button,
+.mapboxgl-ctrl-group button {
+  color: var(--text);
+}
+
+/* User location marker — Google-Maps-style blue dot with pulsing accuracy ring */
+.user-location-marker {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  pointer-events: none;
+}
+.user-location-marker__dot {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  background: var(--info);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(58, 141, 255, 0.5);
+}
+.user-location-marker__ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-left: -9px;
+  margin-top: -9px;
+  border-radius: 9999px;
+  background: var(--info);
+  opacity: 0.35;
+  animation: user-location-pulse 2.4s cubic-bezier(0.2, 0, 0, 1) infinite;
+}
+@keyframes user-location-pulse {
+  0%   { transform: scale(0.6); opacity: 0.5; }
+  80%  { opacity: 0; }
+  100% { transform: scale(4);   opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .user-location-marker__ring { animation: none; opacity: 0.25; transform: scale(2); }
+}
