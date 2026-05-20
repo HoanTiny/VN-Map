@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
@@ -7,6 +6,7 @@ import { Heart, Star, MapPin } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { spring, hoverLift, easing, duration } from "@/lib/motion";
 import { categoryByKey, type CategoryKey } from "@/config/categories";
+import { useIsSaved } from "@/features/saved/hooks/useSaved";
 
 export interface PlaceCardData {
   slug: string;
@@ -29,15 +29,14 @@ export interface PlaceCardProps {
 }
 
 export function PlaceCard({ place, priority, onToggleSave, className }: PlaceCardProps) {
-  const [saved, setSaved] = useState(!!place.saved);
+  const { saved, toggle: toggleSaved } = useIsSaved(place.slug);
   const cat = categoryByKey[place.category];
   const CatIcon = cat.icon;
 
   const toggle = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const next = !saved;
-    setSaved(next);
+    const next = toggleSaved();
     onToggleSave?.(place.slug, next);
   };
 
@@ -122,7 +121,9 @@ export function PlaceCard({ place, priority, onToggleSave, className }: PlaceCar
           {place.price && (
             <div className="mt-3 text-body text-text">
               <span className="font-semibold">{place.price}</span>
-              <span className="text-text-muted"> / người</span>
+              {hasNumericPrice(place.price) && (
+                <span className="text-text-muted"> / người</span>
+              )}
             </div>
           )}
         </div>
@@ -134,4 +135,12 @@ export function PlaceCard({ place, priority, onToggleSave, className }: PlaceCar
 function formatCount(n: number) {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
   return String(n);
+}
+
+// "/ người" only makes sense for per-person pricing. Skip suffix for
+// "Miễn phí", "Theo menu", or other free-text price tags. We assume a price
+// is per-person when it contains a digit (e.g. "65.000đ", "300.000đ") or
+// a currency tier symbol ($, $$, $$$).
+function hasNumericPrice(price: string): boolean {
+  return /\d/.test(price) || /^\$+$/.test(price.trim());
 }

@@ -401,7 +401,7 @@ export function getPlaceBySlug(slug: string): PlaceItem | undefined {
 }
 
 /** Haversine distance in km between two [lng, lat] pairs. */
-function haversineKm(a: [number, number], b: [number, number]): number {
+export function haversineKm(a: [number, number], b: [number, number]): number {
   const R = 6371;
   const [lng1, lat1] = a;
   const [lng2, lat2] = b;
@@ -412,6 +412,32 @@ function haversineKm(a: [number, number], b: [number, number]): number {
     Math.sin(dLat / 2) ** 2 +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(x));
+}
+
+export interface Bounds {
+  west: number;
+  south: number;
+  east: number;
+  north: number;
+}
+
+/** Places within the supplied geographic bounds (used by viewport-aware search). */
+export function placesInBounds(b: Bounds | null): PlaceItem[] {
+  if (!b) return [];
+  return allPlaces.filter(
+    (p) => p.lng >= b.west && p.lng <= b.east && p.lat >= b.south && p.lat <= b.north
+  );
+}
+
+/** N closest places to a coordinate, sorted by haversine distance. */
+export function placesNearCoord(
+  coord: [number, number],
+  limit = 5
+): Array<PlaceItem & { distanceKm: number }> {
+  return allPlaces
+    .map((p) => ({ ...p, distanceKm: haversineKm(coord, p.coordinates) }))
+    .sort((a, b) => a.distanceKm - b.distanceKm)
+    .slice(0, limit);
 }
 
 export function getNearbyPlaces(

@@ -9,8 +9,8 @@ const sections = [
     links: [
       { label: "Bản đồ", href: "/explore" },
       { label: "Tìm kiếm", href: "/search" },
-      { label: "Bộ sưu tập", href: "/collection" },
-      { label: "Lên chuyến đi", href: "/trip/new" },
+      { label: "Vùng miền", href: "/region" },
+      { label: "Đóng góp địa điểm", href: "/submit" },
     ],
   },
   {
@@ -39,7 +39,7 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-4">
             <Link href="/" className="flex items-center gap-2 font-display text-h3 text-text">
-              <span className="inline-block h-7 w-7 rounded-full bg-brand-500 shadow-glow-brand" />
+              <img src="/images/mapVN.png" alt="logo" width={32} height={32} />
               {siteConfig.name}
             </Link>
             <p className="mt-3 max-w-sm text-body-sm text-text-muted">

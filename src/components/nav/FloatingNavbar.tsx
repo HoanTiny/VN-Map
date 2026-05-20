@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { m, useScroll, useMotionValueEvent } from "framer-motion";
-import { Heart, Search, User, Menu } from "lucide-react";
+import { Search, User, Menu } from "lucide-react";
+import { SavedHeartButton } from "./SavedHeartButton";
 import { cn } from "@/lib/cn";
 import { spring, transition } from "@/lib/motion";
 import { IconButton } from "@/ui/icon-button";
@@ -37,8 +38,7 @@ export function FloatingNavbar() {
       <m.nav
         initial={false}
         animate={{
-          maxWidth: compact ? 880 : 1200,
-          y: 0,
+          maxWidth: compact ? 1100 : 1200,
         }}
         transition={spring.default}
         className={cn(
@@ -49,25 +49,23 @@ export function FloatingNavbar() {
       >
         <Link
           href="/"
-          className="flex items-center gap-2 rounded-full px-3 py-1.5 font-display text-h3 leading-none text-text"
+          className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-full px-2 py-1.5 font-display text-h3 leading-none text-text sm:px-3"
         >
-          <span
-            className="inline-block h-6 w-6 rounded-full bg-brand-500 shadow-[0_0_0_3px_rgba(218,37,29,0.22)]"
-            aria-hidden
-          />
+          <img src="/images/mapVN.png" alt="logo" width={42} height={42} />
+
           <span className="hidden sm:inline">{siteConfig.name}</span>
         </Link>
 
-        <ul className="ml-2 hidden items-center gap-1 md:flex">
+        <ul className="ml-2 hidden items-center gap-0.5 lg:flex">
           {topNav.map((item) => {
-            const active = pathname.startsWith(item.href);
+            const active = pathname.startsWith(item.href) && item.href !== "/";
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   className={cn(
-                    "relative rounded-full px-4 py-2 text-body transition-colors",
-                    active ? "text-text" : "text-text-muted hover:text-text"
+                    "relative whitespace-nowrap rounded-full px-3 py-2 text-body transition-colors",
+                    active ? "text-text" : "text-black hover:text-text"
                   )}
                 >
                   {active && (
@@ -84,45 +82,52 @@ export function FloatingNavbar() {
           })}
         </ul>
 
-        <div className="ml-auto flex items-center gap-1">
+        <div className="ml-auto flex shrink-0 items-center gap-1">
+          {/* Inline search pill — only on xl+ where there's room */}
           <Link
             href="/search"
             className={cn(
-              "group hidden items-center gap-2 rounded-full border border-border bg-surface/60 px-4 py-2 text-body-sm text-text-muted",
-              "transition-colors hover:bg-surface md:inline-flex"
+              "group hidden xl:inline-flex items-center gap-2 whitespace-nowrap rounded-full border border-border bg-surface/60 px-4 py-2 text-body-sm text-text-muted",
+              "transition-colors hover:bg-surface"
             )}
           >
             <Search size={16} className="text-text-muted group-hover:text-brand-500" />
-            <span>Tìm địa điểm, vùng…</span>
-            <kbd className="ml-2 rounded border border-border bg-bg px-1.5 py-0.5 font-mono text-[10px]">
+            <span>Tìm địa điểm…</span>
+            <kbd className="ml-1 rounded border border-border bg-bg px-1.5 py-0.5 font-mono text-[10px]">
               /
             </kbd>
           </Link>
 
-          <ThemeToggle />
-          <IconButton label="Đã lưu" variant="ghost" asChild>
-            <Link href="/saved">
-              <Heart size={18} />
+          {/* Search icon button on md-lg */}
+          <IconButton
+            label="Tìm kiếm"
+            variant="ghost"
+            asChild
+            className="hidden md:inline-flex xl:hidden"
+          >
+            <Link href="/search">
+              <Search size={18} />
             </Link>
           </IconButton>
+
+          <ThemeToggle />
+          <SavedHeartButton className="hidden sm:inline-flex" />
           <IconButton label="Tài khoản" variant="ghost" asChild className="hidden sm:inline-flex">
             <Link href="/me">
               <User size={18} />
             </Link>
           </IconButton>
 
-          <Button
-            size="sm"
-            className="hidden lg:inline-flex"
-            asChild
-          >
-            <Link href="/trip/new">Lên chuyến đi</Link>
+          <Button size="sm" className="hidden xl:inline-flex" asChild>
+            <Link href="/submit" className="whitespace-nowrap">
+              Đóng góp địa điểm
+            </Link>
           </Button>
 
           <IconButton
             label="Menu"
             variant="ghost"
-            className="md:hidden"
+            className="lg:hidden"
             onClick={() => setMobileOpen((v) => !v)}
           >
             <Menu size={18} />

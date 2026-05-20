@@ -7,6 +7,7 @@ import { IconButton } from "@/ui/icon-button";
 import { Badge } from "@/ui/badge";
 import { categoryByKey } from "@/config/categories";
 import { transition } from "@/lib/motion";
+import { useIsSaved } from "@/features/saved/hooks/useSaved";
 import type { PlaceItem } from "@/features/map/lib/places-data";
 
 export interface PlaceHeroProps {
@@ -18,7 +19,7 @@ export function PlaceHero({ place }: PlaceHeroProps) {
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const cat = categoryByKey[place.category];
   const CatIcon = cat.icon;
-  const [saved, setSaved] = useState(false);
+  const { saved, toggle: toggleSaved } = useIsSaved(place.slug);
 
   const main = photos[0]!;
   const thumbs = photos.slice(1, 5);
@@ -110,7 +111,7 @@ export function PlaceHero({ place }: PlaceHeroProps) {
               label={saved ? "Bỏ lưu" : "Lưu địa điểm"}
               variant="solid"
               size="md"
-              onClick={() => setSaved((v) => !v)}
+              onClick={() => toggleSaved()}
             >
               <Heart size={18} className={saved ? "fill-brand-500 text-brand-500" : ""} />
             </IconButton>

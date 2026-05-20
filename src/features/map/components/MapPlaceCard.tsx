@@ -1,9 +1,8 @@
 "use client";
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { m, AnimatePresence } from "framer-motion";
-import { Heart, Star, MapPin, Share2, X, Navigation, Briefcase } from "lucide-react";
+import { Heart, Star, MapPin, Share2, X, Navigation } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { floatingCard } from "@/lib/motion";
 import { IconButton } from "@/ui/icon-button";
@@ -11,6 +10,10 @@ import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
 import { categoryByKey } from "@/config/categories";
 import { useMapStore } from "@/stores/map-store";
+import { useUIStore } from "@/stores/ui-store";
+import { useIsSaved } from "@/features/saved/hooks/useSaved";
+import { AddToTripButton } from "@/features/trip/components/AddToTripButton";
+import { TripPickAddButton } from "@/features/trip/components/TripPickAddButton";
 import { placesById } from "../lib/places-data";
 
 export function MapPlaceCard() {
@@ -18,7 +21,8 @@ export function MapPlaceCard() {
   const close = useMapStore((s) => s.select);
   const place = selectedId ? placesById[selectedId] : null;
 
-  const [saved, setSaved] = useState(false);
+  const { saved, toggle: toggleSaved } = useIsSaved(place?.slug ?? "");
+  const tripPickContext = useUIStore((s) => s.tripPickContext);
 
   return (
     <AnimatePresence mode="wait">
@@ -87,22 +91,30 @@ export function MapPlaceCard() {
           )}
 
           <div className="flex items-center gap-2 px-4 py-3">
-            <Button
-              size="sm"
-              variant={saved ? "tonal" : "primary"}
-              onClick={() => setSaved((v) => !v)}
-              className="flex-1"
-            >
-              <Heart
-                size={14}
-                className={cn("transition-all", saved && "fill-brand-700")}
+            {tripPickContext ? (
+              <TripPickAddButton
+                slug={place.slug}
+                tripId={tripPickContext.tripId}
+                dayIndex={tripPickContext.dayIndex}
+                className="flex-1"
               />
-              {saved ? "Đã lưu" : "Lưu"}
-            </Button>
-            <Button size="sm" variant="secondary">
-              <Briefcase size={14} />
-              Thêm vào trip
-            </Button>
+            ) : (
+              <>
+                <Button
+                  size="sm"
+                  variant={saved ? "tonal" : "primary"}
+                  onClick={() => toggleSaved()}
+                  className="flex-1"
+                >
+                  <Heart
+                    size={14}
+                    className={cn("transition-all", saved && "fill-brand-700")}
+                  />
+                  {saved ? "Đã lưu" : "Lưu"}
+                </Button>
+                <AddToTripButton slug={place.slug} variant="secondary" size="sm" />
+              </>
+            )}
             <IconButton label="Chia sẻ" variant="ghost" size="sm">
               <Share2 size={14} />
             </IconButton>

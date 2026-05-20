@@ -32,7 +32,7 @@ export default function LandingPage() {
 
 function HeroSection() {
   return (
-    <section className="relative isolate overflow-hidden pt-28 md:pt-32">
+    <section className="relative isolate overflow-hidden pt-36 md:pt-44">
       {/* Background */}
       <div className="absolute inset-0 -z-10">
         <Image
@@ -58,15 +58,15 @@ function HeroSection() {
 
           <Reveal delay={0.05}>
             <h1 className="mt-5 font-display text-display-lg leading-[1.05] text-white md:text-display-xl">
-              Khám phá Việt Nam,{" "}
-              <span className="text-brand-500">từng địa điểm một.</span>
+              Ăn chơi Việt Nam,{" "}
+              <span className="text-brand-500">theo cách của bạn.</span>
             </h1>
           </Reveal>
 
           <Reveal delay={0.1}>
             <p className="mx-auto mt-6 max-w-2xl text-body-lg text-white/85">
-              Bản đồ trải nghiệm cho người yêu Việt Nam — biển, núi, di sản, ẩm thực, đô thị, thiên nhiên.
-              Lưu địa điểm, dựng chuyến đi, chia sẻ cung đường.
+              Bản đồ cộng đồng cho quán ăn, cafe, bar, rooftop, hidden gem và trải nghiệm
+              local. Lưu địa điểm, dựng chuyến đi, đóng góp nơi bạn yêu thích.
             </p>
           </Reveal>
 

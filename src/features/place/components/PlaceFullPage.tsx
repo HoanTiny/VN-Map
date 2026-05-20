@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, Briefcase, Flag, MapPin, Navigation } from "lucide-react";
+import { ArrowRight, Flag, MapPin, Navigation } from "lucide-react";
 import { Button } from "@/ui/button";
-import { Badge } from "@/ui/badge";
 import { Reveal } from "@/components/motion";
+import { AddToTripButton } from "@/features/trip/components/AddToTripButton";
 import { PlaceHero } from "./PlaceHero";
 import { PlaceMeta } from "./PlaceMeta";
 import { NearbyPlaces } from "./NearbyPlaces";
+import { ReviewList } from "@/features/review/components/ReviewList";
 import { categoryByKey } from "@/config/categories";
 import type { PlaceItem } from "@/features/map/lib/places-data";
 
@@ -30,9 +31,7 @@ export function PlaceFullPage({ place }: PlaceFullPageProps) {
               <Button size="md">
                 <Navigation size={16} /> Chỉ đường
               </Button>
-              <Button variant="secondary" size="md">
-                <Briefcase size={16} /> Thêm vào trip
-              </Button>
+              <AddToTripButton slug={place.slug} variant="secondary" size="md" />
               <Link
                 href={`/explore?place=${place.slug}`}
                 className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-surface px-5 text-body text-text hover:bg-surface-2"
@@ -72,16 +71,13 @@ export function PlaceFullPage({ place }: PlaceFullPageProps) {
             <PlaceMeta place={place} />
           </Reveal>
 
-          {/* Reviews placeholder — full implementation in §3.6 */}
+          {/* Reviews — localStorage-backed Phase 1 */}
           <Reveal>
-            <section className="rounded-2xl border border-dashed border-border bg-surface p-6 text-center">
-              <Badge variant="brand" className="mb-3">Sắp ra mắt</Badge>
-              <h3 className="font-display text-h3 text-text">Review từ cộng đồng</h3>
-              <p className="mx-auto mt-2 max-w-md text-body-sm text-text-muted">
-                Khu vực review thực tế và hình ảnh do cộng đồng đóng góp sẽ được mở
-                trong bản cập nhật tới.
-              </p>
-            </section>
+            <ReviewList
+              placeSlug={place.slug}
+              placeName={place.name}
+              baseline={{ rating: place.rating, count: place.reviewCount }}
+            />
           </Reveal>
         </div>
 

@@ -8,6 +8,7 @@ import type {
   ExpressionSpecification,
 } from "maplibre-gl";
 import { useMapStore } from "@/stores/map-store";
+import { useUIStore } from "@/stores/ui-store";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
 import { placesData, placesById } from "../lib/places-data";
@@ -96,6 +97,18 @@ export function MapCanvas() {
               duration: reduceMotion ? 0 : 1200,
               essential: true,
             }),
+          fitBounds: (b) =>
+            map.fitBounds(
+              [
+                [b.west, b.south],
+                [b.east, b.north],
+              ],
+              {
+                padding: { top: 140, right: 100, bottom: 100, left: 100 },
+                duration: reduceMotion ? 0 : 1400,
+                maxZoom: 12,
+              }
+            ),
         };
       });
 
@@ -133,6 +146,7 @@ export function MapCanvas() {
       });
 
       map.on("click", LAYER_CLUSTERS, async (e: MapLayerMouseEvent) => {
+        if (useUIStore.getState().pickMode) return;
         const f = e.features?.[0];
         if (!f) return;
         const clusterId = (f.properties as { cluster_id?: number })?.cluster_id;
@@ -153,6 +167,7 @@ export function MapCanvas() {
       });
 
       map.on("click", LAYER_POINTS, (e: MapLayerMouseEvent) => {
+        if (useUIStore.getState().pickMode) return;
         const f = e.features?.[0];
         if (!f) return;
         const id = (f.properties as { id?: string })?.id ?? null;
@@ -162,6 +177,14 @@ export function MapCanvas() {
       });
 
       map.on("click", (e: MapLayerMouseEvent) => {
+        // Pick mode: capture coords + exit pick mode. Handled here so even
+        // clicks on marker layers (which return early above) still trigger picks.
+        const ui = useUIStore.getState();
+        if (ui.pickMode) {
+          ui.setPickedCoords({ lng: e.lngLat.lng, lat: e.lngLat.lat });
+          ui.setPickMode(false);
+          return;
+        }
         const features = map.queryRenderedFeatures(e.point, {
           layers: [LAYER_POINTS, LAYER_CLUSTERS],
         });
@@ -221,6 +244,28 @@ export function MapCanvas() {
     );
     return unsub;
   }, [resolved]);
+
+  /* ------------------------------- Pick mode cursor ------------------------------- */
+  useEffect(() => {
+    const unsub = useUIStore.subscribe(
+      (s) => s.pickMode,
+      (pickMode) => {
+        const map = mapRef.current;
+        if (!map) return;
+        map.getCanvas().style.cursor = pickMode ? "crosshair" : "";
+      }
+    );
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && useUIStore.getState().pickMode) {
+        useUIStore.getState().setPickMode(false);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => {
+      unsub();
+      document.removeEventListener("keydown", onKey);
+    };
+  }, []);
 
   /* ----------------------- Filter change (subscription) ----------------------- */
   useEffect(() => {

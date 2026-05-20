@@ -3,6 +3,7 @@ import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { LazyMotion, domMax } from "framer-motion";
 import { ThemeProvider } from "@/components/theme/ThemeProvider";
+import { ToastProvider } from "@/ui/toast";
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -23,7 +24,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <LazyMotion features={domMax} strict>
-          {children}
+          <ToastProvider>{children}</ToastProvider>
         </LazyMotion>
       </QueryClientProvider>
     </ThemeProvider>

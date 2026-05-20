@@ -11,6 +11,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${base}/explore`, changeFrequency: "daily", priority: 0.9 },
     { url: `${base}/search`, changeFrequency: "weekly", priority: 0.5 },
     { url: `${base}/region`, changeFrequency: "weekly", priority: 0.7 },
+    { url: `${base}/submit`, changeFrequency: "monthly", priority: 0.4 },
     ...regions.map((r) => ({
       url: `${base}/region/${r.key}`,
       changeFrequency: "weekly" as const,

@@ -184,3 +184,23 @@ export const provinceByName = Object.fromEntries(provinces.map((p) => [p.name, p
 export const provincesByRegion = Object.fromEntries(
   regions.map((r) => [r.key, provinces.filter((p) => p.region === r.key)])
 ) as Record<RegionKey, Province[]>;
+
+/**
+ * Return the province whose center is closest (haversine) to the given coord.
+ * Used by the map's "pick a location" flow to auto-fill the submission form.
+ */
+export function closestProvince(coord: [number, number]): Province {
+  const [lng, lat] = coord;
+  let best = provinces[0]!;
+  let bestDist = Infinity;
+  for (const p of provinces) {
+    const dLng = p.center[0] - lng;
+    const dLat = p.center[1] - lat;
+    const d = dLng * dLng + dLat * dLat; // squared euclidean — fine for ranking
+    if (d < bestDist) {
+      bestDist = d;
+      best = p;
+    }
+  }
+  return best;
+}
