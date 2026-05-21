@@ -11,7 +11,11 @@ import { useMapStore } from "@/stores/map-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useTheme } from "@/components/theme/ThemeProvider";
 import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
-import { placesData, placesById } from "../lib/places-data";
+import {
+  placesData as mockPlacesData,
+  type PlacesFC,
+} from "../lib/places-data";
+import { useMapData } from "../context/MapDataContext";
 import { resolveStyleUrl, categoryColorExpression } from "../lib/style-helpers";
 
 const SRC = "places";
@@ -21,7 +25,14 @@ const LAYER_POINTS = "places-points";
 const LAYER_POINT_HALO = "places-points-halo";
 const LAYER_LABELS = "places-labels";
 
-export function MapCanvas() {
+export interface MapCanvasProps {
+  /** Place data for the map source. Falls back to mock if not provided. */
+  data?: PlacesFC;
+}
+
+export function MapCanvas({ data }: MapCanvasProps = {}) {
+  const placesData = data ?? mockPlacesData;
+  const { placesById } = useMapData();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const hoverIdRef = useRef<string | null>(null);
@@ -65,7 +76,7 @@ export function MapCanvas() {
       // re-install from the style-swap effects below (using `idle` as a
       // belt-and-suspenders trigger).
       const installAndRestore = () => {
-        installPlacesLayers(map);
+        installPlacesLayers(map, placesData);
         const { filter, selectedPlaceId } = useMapStore.getState();
         if (filter.size > 0) {
           const src = map.getSource(SRC) as GeoJSONSource | undefined;
@@ -368,7 +379,7 @@ export function MapCanvas() {
 /*                         Layer installation helpers                          */
 /* --------------------------------------------------------------------------- */
 
-function installPlacesLayers(map: MapLibreMap) {
+function installPlacesLayers(map: MapLibreMap, placesData: PlacesFC) {
   if (map.getSource(SRC)) return;
 
   map.addSource(SRC, {

@@ -20,14 +20,14 @@ import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useMapStore } from "@/stores/map-store";
 import { categories, type CategoryKey } from "@/config/categories";
 import { provinces, type Province } from "@/config/regions";
+import { type PlaceItem } from "@/features/map/lib/places-data";
 import {
-  allPlaces,
-  placesInBounds,
+  useMapData,
+  filterPlacesInBounds,
   placesNearCoord,
   haversineKm,
-  type PlaceItem,
-} from "@/features/map/lib/places-data";
-import { normalize, searchPlaces } from "@/features/search/lib/search";
+} from "../context/MapDataContext";
+import { searchPlacesFromList, normalize } from "@/features/search/lib/search";
 
 const TRENDING_SLUGS = [
   "cafe-giang",
@@ -55,8 +55,11 @@ export function MapSearchBar() {
 
   /* ---------- Viewport / location awareness ---------- */
 
+  // Pull current dataset from MapDataProvider (server-fetched, mock fallback).
+  const { places: allPlaces } = useMapData();
+
   // Top places inside the current map viewport, sorted by rating.
-  const inViewport = placesInBounds(bounds)
+  const inViewport = filterPlacesInBounds(allPlaces, bounds)
     .slice()
     .sort((a, b) => b.rating - a.rating);
 
@@ -70,7 +73,7 @@ export function MapSearchBar() {
 
   // Places closest to user GPS location (only if user has used "Locate me").
   const nearMe = userLocation
-    ? placesNearCoord([userLocation.lng, userLocation.lat], 5)
+    ? placesNearCoord(allPlaces, [userLocation.lng, userLocation.lat], 5)
     : [];
 
   // Sync local `open` to UI store so siblings (e.g. filter chip bar) can react.
@@ -116,7 +119,7 @@ export function MapSearchBar() {
   // surface first, then by ascending distance to viewport centre.
   // Each result carries its distance so the row can render it.
   const places: Array<PlaceItem & { distanceKm: number }> = q
-    ? searchPlaces({ q })
+    ? searchPlacesFromList(allPlaces, { q })
         .items.slice(0, 16)
         .map((p) => ({ ...p, distanceKm: haversineKm(viewCenter, p.coordinates) }))
         .sort((a, b) => {
@@ -316,9 +319,8 @@ function EmptyState({
   dominantProvince: string | null;
   nearMe: Array<PlaceItem & { distanceKm: number }>;
 }) {
-  const trending = TRENDING_SLUGS.map((s) => allPlaces.find((p) => p.slug === s)).filter(
-    Boolean
-  ) as PlaceItem[];
+  const { placesBySlug } = useMapData();
+  const trending = TRENDING_SLUGS.map((s) => placesBySlug[s]).filter(Boolean) as PlaceItem[];
 
   // Resolve the dominant province object (for the contextual fly-to action).
   const dominantProvinceObj = dominantProvince

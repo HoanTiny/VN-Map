@@ -16,7 +16,7 @@
   --bg: #fbfaf8;
   --surface: #ffffff;
   --surface-2: #f4f2ee;
-  --border: #e8e4de;
+  --border: #ffffff;
   --text: #1a1a1a;
   --text-muted: #6b6960;
   --text-subtle: #9a9890;
@@ -56,20 +56,31 @@
 
   --glass-bg: rgba(255, 255, 255, 0.62);
   --glass-border: rgba(255, 255, 255, 0.22);
+
+  /* Category cards background and borders (Apple Liquid Glass in Light Mode) */
+  --cat-card-bg: linear-gradient(135deg, color-mix(in srgb, var(--surface) 75%, transparent) 0%, color-mix(in srgb, var(--surface) 40%, transparent) 100%);
+  --cat-card-border: color-mix(in srgb, var(--cat-color) 15%, var(--border));
 }
 
 [data-theme="dark"] {
+  /* Brand scale inverted for dark mode:
+   * - 50/100: dark wine tints (used as bg-brand-50 for callouts)
+   * - 500: vibrant red for CTAs (brighter than light mode for visibility)
+   * - 600: slightly deeper for pressed/hover
+   * - 700: LIGHT salmon for text-on-tint — WCAG AA on dark wine bg
+   */
   --brand-50: #2a0e0c;
   --brand-100: #3a1612;
   --brand-500: #e63b33;
   --brand-600: #da251d;
   --brand-700: #b81e18;
 
+  /* Same philosophy: gold-700 bright on dark gold-50 */
   --gold-50: #2c2410;
   --gold-100: #3d3219;
   --gold-500: #ffd83d;
   --gold-600: #ffcd00;
-  --gold-700: #e0b500;
+  --gold-700: #ffe680;
 
   --bg: #0e0f11;
   --surface: #17181b;
@@ -89,8 +100,149 @@
   --shadow-md: 0 8px 20px rgba(0, 0, 0, 0.55);
   --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
   --shadow-xl: 0 32px 64px rgba(0, 0, 0, 0.7);
-  --shadow-glow-brand: 0 0 0 6px rgba(230, 59, 51, 0.28);
+  --shadow-glow-brand: 0 0 0 6px rgba(255, 107, 90, 0.32);
 
   --glass-bg: rgba(22, 23, 26, 0.92);
   --glass-border: rgba(255, 255, 255, 0.08);
+
+  /* Category cards background and borders (Restore previous elegant original card in Dark Mode) */
+  --cat-card-bg: linear-gradient(135deg, color-mix(in srgb, var(--cat-color) 5.5%, var(--surface)) 0%, color-mix(in srgb, var(--cat-color) 2%, var(--surface)) 100%);
+  --cat-card-border: color-mix(in srgb, var(--cat-color) 12%, var(--border));
+}
+
+/* Utility to hide scrollbars for clean horizontal snap scrolling */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
+}
+
+/* Volumetric Liquid Glass Card (Apple iOS Control Center style in Light Mode) */
+.liquid-glass-card {
+  background: rgba(255, 255, 255, 0.25) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.52) !important;
+  box-shadow:
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.75),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.02),
+    0 10px 25px -10px color-mix(in srgb, var(--cat-color) 12%, transparent) !important;
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+[data-theme="dark"] .liquid-glass-card {
+  background: rgba(22, 23, 26, 0.45) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow:
+    inset 0 1px 1.5px rgba(255, 255, 255, 0.12),
+    inset 0 -1px 1.5px rgba(0, 0, 0, 0.4),
+    0 10px 25px -10px rgba(0, 0, 0, 0.5) !important;
+}
+
+.liquid-glass-card:hover {
+  background: rgba(255, 255, 255, 0.35) !important;
+  border-color: rgba(255, 255, 255, 0.78) !important;
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.9),
+    inset 0 -2px 3px rgba(0, 0, 0, 0.03),
+    0 22px 45px -12px color-mix(in srgb, var(--cat-color) 35%, transparent) !important;
+}
+
+[data-theme="dark"] .liquid-glass-card:hover {
+  background: rgba(22, 23, 26, 0.55) !important;
+  border-color: rgba(255, 255, 255, 0.18) !important;
+  box-shadow:
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.22),
+    inset 0 -1.5px 2px rgba(0, 0, 0, 0.5),
+    0 22px 45px -12px color-mix(in srgb, var(--cat-color) 20%, transparent) !important;
+}
+
+/* Hiệu ứng màng chất lỏng (Liquid SVG Filter Container) */
+.liquid-container {
+  filter: url('#liquid-goo');
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.65;
+  mix-blend-mode: normal;
+}
+
+/* Khối chất lỏng chuyển động */
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.4;
+  filter: blur(6px);
+  animation: moveAround var(--speed, 8s) infinite alternate ease-in-out;
+}
+
+.blob-1 {
+  width: 140px;
+  height: 140px;
+  background: radial-gradient(circle, var(--cat-color) 0%, rgba(255, 255, 255, 0) 70%);
+  top: -10%;
+  left: -10%;
+  animation-delay: 0s;
+  --speed: 15s;
+}
+
+.blob-2 {
+  width: 120px;
+  height: 120px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cat-color) 60%, #00f2fe) 0%, rgba(0, 242, 254, 0) 75%);
+  bottom: -15%;
+  right: -10%;
+  animation-delay: -3s;
+  --speed: 20s;
+}
+
+.blob-3 {
+  width: 130px;
+  height: 130px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cat-color) 60%, #9b51e0) 0%, rgba(155, 81, 224, 0) 75%);
+  top: 30%;
+  left: 30%;
+  animation-delay: -6s;
+  --speed: 12s;
+}
+
+.blob-4 {
+  width: 110px;
+  height: 110px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--cat-color) 70%, #f39c12) 0%, rgba(243, 156, 18, 0) 75%);
+  bottom: 20%;
+  left: -5%;
+  animation-delay: -9s;
+  --speed: 16s;
+}
+
+@keyframes moveAround {
+  0% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+
+  33% {
+    transform: translate(35px, -25px) scale(1.1) rotate(120deg);
+  }
+
+  66% {
+    transform: translate(-25px, 35px) scale(0.9) rotate(240deg);
+  }
+
+  100% {
+    transform: translate(0, 0) scale(1) rotate(360deg);
+  }
 }

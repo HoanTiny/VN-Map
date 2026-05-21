@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Map, Search as SearchIcon } from "lucide-react";
 import { Reveal } from "@/components/motion";
 import { Button } from "@/ui/button";
-import { searchPlaces, type SearchFilters as Filters } from "@/features/search/lib/search";
+import { searchPlacesAsync, type SearchFilters as Filters } from "@/features/search/lib/search";
 import { SearchFilters } from "@/features/search/components/SearchFilters";
 import { PlaceGrid } from "@/features/place/components/PlaceGrid";
 import type { CategoryKey } from "@/config/categories";
@@ -24,7 +24,7 @@ export default async function SearchPage({
     sort: (sp.sort as Filters["sort"]) ?? "rating",
   };
 
-  const { items, total } = searchPlaces(filters);
+  const { items, total } = await searchPlacesAsync(filters);
 
   return (
     <article className="pb-24 pt-24 md:pt-28">

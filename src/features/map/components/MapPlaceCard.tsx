@@ -14,11 +14,12 @@ import { useUIStore } from "@/stores/ui-store";
 import { useIsSaved } from "@/features/saved/hooks/useSaved";
 import { AddToTripButton } from "@/features/trip/components/AddToTripButton";
 import { TripPickAddButton } from "@/features/trip/components/TripPickAddButton";
-import { placesById } from "../lib/places-data";
+import { useMapData } from "../context/MapDataContext";
 
 export function MapPlaceCard() {
   const selectedId = useMapStore((s) => s.selectedPlaceId);
   const close = useMapStore((s) => s.select);
+  const { placesById } = useMapData();
   const place = selectedId ? placesById[selectedId] : null;
 
   const { saved, toggle: toggleSaved } = useIsSaved(place?.slug ?? "");

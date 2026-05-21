@@ -8,7 +8,7 @@ import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { categoryByKey } from "@/config/categories";
 import { useMapStore } from "@/stores/map-store";
-import { allPlaces } from "../lib/places-data";
+import { useMapData } from "../context/MapDataContext";
 
 export function MapSidePanel() {
   const bounds = useMapStore((s) => s.bounds);
@@ -17,6 +17,7 @@ export function MapSidePanel() {
   const select = useMapStore((s) => s.select);
   const hoverId = useMapStore((s) => s.hoverId);
   const setHover = useMapStore((s) => s.setHover);
+  const { places: allPlaces } = useMapData();
   const [collapsed, setCollapsed] = useState(false);
 
   const visible = useMemo(() => {
@@ -32,7 +33,7 @@ export function MapSidePanel() {
       );
     }
     return arr;
-  }, [bounds, filter]);
+  }, [bounds, filter, allPlaces]);
 
   if (collapsed) {
     return (

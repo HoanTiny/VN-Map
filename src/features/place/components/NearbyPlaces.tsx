@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { PlaceCard, type PlaceCardData } from "./PlaceCard";
-import { getNearbyPlaces, type PlaceItem } from "@/features/map/lib/places-data";
+import { type PlaceItem } from "@/features/map/lib/places-data";
 
 export interface NearbyPlacesProps {
-  slug: string;
-  radiusKm?: number;
-  limit?: number;
+  places: PlaceItem[];
 }
 
 function toCard(p: PlaceItem): PlaceCardData {
@@ -23,9 +21,8 @@ function toCard(p: PlaceItem): PlaceCardData {
   };
 }
 
-export function NearbyPlaces({ slug, radiusKm = 50, limit = 6 }: NearbyPlacesProps) {
-  const nearby = getNearbyPlaces(slug, { radiusKm, limit });
-  if (nearby.length === 0) return null;
+export function NearbyPlaces({ places }: NearbyPlacesProps) {
+  if (places.length === 0) return null;
 
   return (
     <section>
@@ -42,7 +39,7 @@ export function NearbyPlaces({ slug, radiusKm = 50, limit = 6 }: NearbyPlacesPro
         </Link>
       </header>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {nearby.map((p) => (
+        {places.map((p) => (
           <PlaceCard key={p.slug} place={toCard(p)} />
         ))}
       </div>

@@ -11,7 +11,7 @@ import {
   provincesByRegion,
   type RegionKey,
 } from "@/config/regions";
-import { allPlaces } from "@/features/map/lib/places-data";
+import { listAllPlaces } from "@/features/place/lib/queries";
 
 interface Params {
   region: string;
@@ -37,6 +37,7 @@ export default async function RegionPage({ params }: { params: Promise<Params> }
   if (!r) notFound();
 
   const provs = provincesByRegion[r.key];
+  const allPlaces = await listAllPlaces();
   const placeCounts = new Map<string, number>();
   allPlaces.forEach((p) => {
     placeCounts.set(p.province, (placeCounts.get(p.province) ?? 0) + 1);

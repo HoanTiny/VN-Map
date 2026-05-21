@@ -5,7 +5,6 @@ import { m, AnimatePresence } from "framer-motion";
 import { Plus, X, Briefcase, Check } from "lucide-react";
 import { MapCanvas } from "./MapCanvas";
 import { MapSearchBar } from "./MapSearchBar";
-import { getPlaceBySlug } from "../lib/places-data";
 import type { CategoryKey } from "@/config/categories";
 import { provinceBySlug } from "@/config/regions";
 import { getTrip } from "@/features/trip/lib/storage";
@@ -42,7 +41,17 @@ declare global {
 }
 
 
-export function MapExperience() {
+import { placesData as mockPlacesData, type PlacesFC } from "../lib/places-data";
+import { MapDataProvider } from "../context/MapDataContext";
+
+export interface MapExperienceProps {
+  data?: PlacesFC;
+}
+
+export function MapExperience({ data }: MapExperienceProps = {}) {
+  // Resolve dataset once at top — used by URL state effects + map source +
+  // passed to MapDataProvider for chrome consumers.
+  const effectiveData = data ?? mockPlacesData;
   const ready = useMapStore((s) => s.ready);
   const reduceMotion = usePrefersReducedMotion();
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -71,9 +80,11 @@ export function MapExperience() {
 
     const placeSlug = searchParams.get("place");
     if (placeSlug) {
-      const place = getPlaceBySlug(placeSlug);
-      if (place && store.selectedPlaceId !== place.id) {
-        store.select(place.id);
+      const feature = effectiveData.features.find(
+        (f) => f.properties.slug === placeSlug
+      );
+      if (feature && store.selectedPlaceId !== feature.properties.id) {
+        store.select(feature.properties.id);
       }
     }
 
@@ -170,6 +181,7 @@ export function MapExperience() {
   }, [zoomIn, zoomOut]);
 
   return (
+    <MapDataProvider data={effectiveData}>
     <div ref={containerRef} className="relative h-full w-full overflow-hidden bg-bg">
       {/* Loading shimmer underlay until ready */}
       {!ready && (
@@ -181,7 +193,7 @@ export function MapExperience() {
         />
       )}
 
-      <MapCanvas />
+      <MapCanvas data={effectiveData} />
 
       {/* Chrome */}
       <div className="pointer-events-none absolute inset-0">
@@ -289,6 +301,7 @@ export function MapExperience() {
         initialCoords={pickedCoords ?? undefined}
       />
     </div>
+    </MapDataProvider>
   );
 }
 

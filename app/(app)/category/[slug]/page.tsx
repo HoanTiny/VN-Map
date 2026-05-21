@@ -5,7 +5,7 @@ import { Reveal } from "@/components/motion";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { categoryByKey, categories, type CategoryKey } from "@/config/categories";
-import { allPlaces } from "@/features/map/lib/places-data";
+import { listPlacesByCategory } from "@/features/place/lib/queries";
 import { PlaceGrid } from "@/features/place/components/PlaceGrid";
 import { ProvinceFilterChips } from "@/features/place/components/ProvinceFilterChips";
 
@@ -39,7 +39,7 @@ export default async function CategoryPage({
   const cat = categoryByKey[slug as CategoryKey];
   if (!cat) notFound();
 
-  const all = allPlaces.filter((p) => p.category === cat.key);
+  const all = await listPlacesByCategory(cat.key);
   const provinceFilter = sp.province ?? null;
   const visible = provinceFilter ? all.filter((p) => slugify(p.province) === provinceFilter) : all;
 

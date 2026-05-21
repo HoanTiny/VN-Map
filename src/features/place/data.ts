@@ -1,91 +1,43 @@
 import type { PlaceCardData } from "./components/PlaceCard";
+import { listAllPlaces } from "./lib/queries";
+import type { PlaceItem } from "@/features/map/lib/places-data";
 
-// Mix lifestyle + travel for landing showcase — represents the platform's vision.
-export const featuredPlaces: PlaceCardData[] = [
-  {
-    slug: "cafe-giang",
-    name: "Cafe Giảng — Cafe trứng",
-    province: "Hà Nội",
-    category: "cafe",
-    cover: "https://images.unsplash.com/photo-1559496417-e7f25cb247cd?w=1200&q=80",
-    rating: 4.7,
-    reviewCount: 4820,
-    price: "$",
-    highlight: "Cafe trứng nguyên bản từ 1946",
-  },
-  {
-    slug: "twilight-sky-bar",
-    name: "Twilight Sky Bar",
-    province: "Hà Nội",
-    category: "rooftop",
-    cover: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=1200&q=80",
-    rating: 4.6,
-    reviewCount: 2410,
-    price: "$$$$",
-    highlight: "View Hà Nội tầng 65",
-  },
-  {
-    slug: "snuffbox-saigon",
-    name: "Snuffbox",
-    province: "TP. HCM",
-    category: "hidden",
-    cover: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=1200&q=80",
-    rating: 4.8,
-    reviewCount: 680,
-    price: "$$$",
-    highlight: "Speakeasy bar ẩn — DM để biết",
-  },
-  {
-    slug: "hoi-an",
-    name: "Phố cổ Hội An",
-    province: "Quảng Nam",
-    category: "heritage",
-    cover: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200&q=80",
-    rating: 4.9,
-    reviewCount: 2420,
-    price: "Miễn phí",
-    highlight: "Đèn lồng rực rỡ về đêm",
-  },
-  {
-    slug: "ne-cocktail-bar",
-    name: "Nê Cocktail Bar",
-    province: "Hà Nội",
-    category: "nightlife",
-    cover: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=1200&q=80",
-    rating: 4.8,
-    reviewCount: 1320,
-    price: "$$$",
-    highlight: "Pho cocktail — sáng tạo địa phương",
-  },
-  {
-    slug: "hoi-an-lantern-alley",
-    name: "Hẻm đèn lồng Hội An",
-    province: "Quảng Nam",
-    category: "checkin",
-    cover: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200&q=80",
-    rating: 4.7,
-    reviewCount: 1980,
-    price: "Miễn phí",
-  },
-  {
-    slug: "ha-long-bay",
-    name: "Vịnh Hạ Long",
-    province: "Quảng Ninh",
-    category: "nature",
-    cover: "https://images.unsplash.com/photo-1573270689103-d7a4e42b609a?w=1200&q=80",
-    rating: 4.8,
-    reviewCount: 5180,
-    price: "300.000đ",
-  },
-  {
-    slug: "pho-bat-dan",
-    name: "Phở Bát Đàn",
-    province: "Hà Nội",
-    category: "food",
-    cover: "https://images.unsplash.com/photo-1583224944844-5b268c057b72?w=1200&q=80",
-    rating: 4.6,
-    reviewCount: 980,
-    price: "65.000đ",
-    highlight: "Phở bò gia truyền 4 thế hệ",
-  },
+/**
+ * Editorial list of place slugs to feature on the landing rail.
+ * Order = display order. Update to curate the homepage.
+ *
+ * Mix lifestyle + travel — represents the platform's vision.
+ */
+const FEATURED_SLUGS = [
+  "cafe-giang",
+  "twilight-sky-bar",
+  "snuffbox-saigon",
+  "hoi-an",
+  "ne-cocktail-bar",
+  "hoi-an-lantern-alley",
+  "ha-long-bay",
+  "pho-bat-dan",
 ];
+
+function toCard(p: PlaceItem): PlaceCardData {
+  return {
+    slug: p.slug,
+    name: p.name,
+    province: p.province,
+    category: p.category,
+    cover: p.cover,
+    rating: p.rating,
+    reviewCount: p.reviewCount,
+    price: p.priceRange,
+    highlight: p.highlight,
+  };
+}
+
+/** Fetch the 8 editorially-curated featured places for the landing rail. */
+export async function getFeaturedPlaces(): Promise<PlaceCardData[]> {
+  const all = await listAllPlaces();
+  // Preserve the FEATURED_SLUGS order, drop any not found.
+  return FEATURED_SLUGS.map((slug) => all.find((p) => p.slug === slug))
+    .filter(Boolean)
+    .map((p) => toCard(p as PlaceItem));
+}

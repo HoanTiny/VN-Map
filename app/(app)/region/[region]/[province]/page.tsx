@@ -12,7 +12,7 @@ import {
   provinceBySlug,
   type RegionKey,
 } from "@/config/regions";
-import { allPlaces } from "@/features/map/lib/places-data";
+import { listPlacesByProvince } from "@/features/place/lib/queries";
 import { PlaceGrid } from "@/features/place/components/PlaceGrid";
 import { categories, type CategoryKey } from "@/config/categories";
 
@@ -53,7 +53,7 @@ export default async function ProvincePage({
   const prov = provinceBySlug[province];
   if (!r || !prov || prov.region !== r.key) notFound();
 
-  const all = allPlaces.filter((p) => p.province === prov.name);
+  const all = await listPlacesByProvince(prov.name);
   const catFilter = sp.cat ?? null;
   const visible = catFilter ? all.filter((p) => p.category === catFilter) : all;
 

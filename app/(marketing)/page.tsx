@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Compass, Map, Sparkles, Star, Users } from "lucide-react";
 import { Reveal } from "@/components/Reveal";
+import { DynamicHeroBackground, DynamicHeroText } from "@/components/motion";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
 import { Glass } from "@/ui/glass";
@@ -11,16 +12,18 @@ import { PlaceCard } from "@/features/place/components/PlaceCard";
 import { CityCard } from "@/features/region/components/CityCard";
 import { categoriesByGroup } from "@/config/categories";
 import { siteConfig } from "@/config/site";
-import { featuredPlaces } from "@/features/place/data";
+import { getFeaturedPlaces } from "@/features/place/data";
+import type { PlaceCardData } from "@/features/place/components/PlaceCard";
 import { featuredCities, collections } from "@/features/region/data";
 
-export default function LandingPage() {
+export default async function LandingPage() {
+  const featuredPlaces = await getFeaturedPlaces();
   return (
     <>
       <HeroSection />
       <CategoriesStrip />
       <CitiesSection />
-      <PlacesSection />
+      <PlacesSection places={featuredPlaces} />
       <CollectionsSection />
       <MapCtaSection />
       <StatsSection />
@@ -32,20 +35,9 @@ export default function LandingPage() {
 
 function HeroSection() {
   return (
-    <section className="relative isolate overflow-hidden pt-36 md:pt-44">
-      {/* Background */}
-      <div className="absolute inset-0 -z-10">
-        <Image
-          src="https://images.unsplash.com/photo-1528127269322-539801943592?w=2400&q=85"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/55 to-bg" />
-        <div className="absolute inset-0 bg-gradient-to-tr from-brand-500/10 via-transparent to-transparent" />
-      </div>
+    <section className="relative isolate pt-36 md:pt-[19rem]">
+      {/* Dynamic Adaptive Background */}
+      <DynamicHeroBackground />
 
       <div className="container relative pb-24 md:pb-32">
         <div className="mx-auto max-w-3xl text-center">
@@ -58,8 +50,7 @@ function HeroSection() {
 
           <Reveal delay={0.05}>
             <h1 className="mt-5 font-display text-display-lg leading-[1.05] text-white md:text-display-xl">
-              Ăn chơi Việt Nam,{" "}
-              <span className="text-brand-500">theo cách của bạn.</span>
+              Ăn chơi Việt Nam, <DynamicHeroText />
             </h1>
           </Reveal>
 
@@ -92,70 +83,161 @@ function HeroSection() {
           </Reveal>
 
           <Reveal delay={0.25}>
-            <div className="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-body-sm text-white/70">
-              <span className="flex items-center gap-1.5">
+            <div className="mt-10 inline-flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 rounded-full bg-black/30 backdrop-blur-md px-6 py-2.5 border border-white/10 shadow-lg text-body-sm text-white/95 select-none transition-all hover:bg-black/35 hover:border-white/15">
+              <span className="flex items-center gap-1.5 font-medium">
                 <Star size={14} className="fill-warning text-warning" /> 4.8 từ 12k người dùng
               </span>
-              <span className="hidden h-3 w-px bg-white/20 md:inline" />
-              <span className="flex items-center gap-1.5">
-                <Users size={14} /> 580+ địa điểm được duyệt
+              <span className="hidden h-3 w-px bg-white/15 md:inline" />
+              <span className="flex items-center gap-1.5 font-medium">
+                <Users size={14} className="text-white/80" /> 580+ địa điểm được duyệt
               </span>
-              <span className="hidden h-3 w-px bg-white/20 md:inline" />
-              <span>63 tỉnh thành</span>
+              <span className="hidden h-3 w-px bg-white/15 md:inline" />
+              <span className="font-medium">63 tỉnh thành</span>
             </div>
           </Reveal>
         </div>
       </div>
 
-      {/* fade to body */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-b from-transparent to-bg" />
+      {/* Premium easing transition fade to page body */}
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-32"
+        style={{
+          background: `linear-gradient(
+            to bottom,
+            transparent 0%,
+            color-mix(in srgb, var(--bg) 8%, transparent) 20%,
+            color-mix(in srgb, var(--bg) 24%, transparent) 65%,
+            color-mix(in srgb, var(--bg) 54%, transparent) 82%,
+            color-mix(in srgb, var(--bg) 80%, transparent) 92%,
+            var(--bg) 100%
+          )`,
+        }}
+      />
     </section>
   );
 }
 
 /* ------------------------------- Categories ------------------------------- */
 
+const categoryMetadata: Record<
+  string,
+  { count: string; tagline: string; isHot?: boolean }
+> = {
+  cafe: { count: "85+ quán", tagline: "Không gian kết nối & khơi nguồn cảm hứng" },
+  nightlife: { count: "42+ pub", tagline: "Giai điệu lôi cuốn & năng lượng đêm muộn", isHot: true },
+  rooftop: { count: "30+ view", tagline: "Thu trọn hoàng hôn & toàn cảnh thành phố", isHot: true },
+  checkin: { count: "110+ điểm", tagline: "Lưu giữ khoảnh khắc & góc máy nghệ thuật" },
+  hidden: { count: "25+ góc", tagline: "Tìm về chốn bình yên sâu trong ngõ hẻm", isHot: true },
+  experience: { count: "50+ tour", tagline: "Trải nghiệm bản địa chân thực cùng chuyên gia" },
+  beach: { count: "95+ bãi", tagline: "Sóng vỗ cát vàng & ánh nắng vàng rực rỡ" },
+  mountain: { count: "60+ đỉnh", tagline: "Chạm đỉnh sương mờ & săn mây đại ngàn" },
+  heritage: { count: "40+ di tích", tagline: "Dấu ấn thời gian & câu chuyện di sản xưa", isHot: true },
+  food: { count: "150+ quán", tagline: "Hương vị đậm đà tinh hoa ẩm thực ba miền" },
+  city: { count: "85+ điểm", tagline: "Khám phá góc phố nhộn nhịp & kiến trúc hiện đại" },
+  nature: { count: "35+ điểm", tagline: "Trốn phố về rừng & lắng nghe âm thanh tự nhiên" },
+};
+
 function CategoriesStrip() {
   const groups: Array<{ key: "lifestyle" | "travel"; label: string; sub: string }> = [
-    { key: "lifestyle", label: "Ăn chơi", sub: "Cafe · bar · rooftop · check-in · hidden gems" },
-    { key: "travel", label: "Khám phá", sub: "Biển · núi · di sản · thiên nhiên · đô thị" },
+    { key: "lifestyle", label: "Ăn chơi", sub: "Phong cách sống & Trải nghiệm đô thị" },
+    { key: "travel", label: "Khám phá", sub: "Hành trình viễn du & Vẻ đẹp thiên nhiên Việt Nam" },
   ];
 
   return (
-    <section className="container py-10 space-y-10">
+    <section className="container py-16 space-y-16">
       {groups.map(({ key, label, sub }) => (
         <Reveal key={key}>
-          <div className="mb-4 flex items-end justify-between">
+          <div className="mb-8 flex flex-col md:flex-row md:items-end md:justify-between gap-2">
             <div>
-              <p className="text-overline text-brand-600">{label.toUpperCase()}</p>
-              <h3 className="font-display text-h3 text-text">{sub}</h3>
+              <p className="text-xs font-bold tracking-widest text-brand-600 uppercase mb-1">{label}</p>
+              <h3 className="font-display text-2xl md:text-3xl font-bold tracking-tight text-text">{sub}</h3>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3 md:grid-cols-6">
+          {/* Grid layout with horizontal scroll snap on mobile (with extra vertical padding and negative margins to prevent shadow/border clipping on hover/scroll snaps) */}
+          <div className="flex gap-5 overflow-x-auto pt-6 pb-12 px-4 -mx-4 snap-x snap-mandatory scrollbar-none md:grid md:grid-cols-3 lg:grid-cols-6 lg:gap-6 md:pt-6 md:pb-12 md:px-0 md:mx-0">
             {categoriesByGroup[key].map((c) => {
               const Icon = c.icon;
+              const meta = categoryMetadata[c.key] || { count: "50+ điểm", tagline: "Khám phá ngay" };
               return (
                 <Link
                   key={c.key}
                   href={`/category/${c.key}`}
-                  className="group flex flex-col items-center justify-center gap-2 rounded-2xl border border-border bg-surface px-4 py-5 text-center transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  className="group liquid-glass-card relative flex flex-col justify-between items-start overflow-hidden rounded-[28px] p-6 text-left hover:-translate-y-2 min-h-[195px] snap-start shrink-0 w-[260px] sm:w-[280px] md:w-auto"
+                  style={{
+                    "--cat-color": c.color,
+                  } as React.CSSProperties}
                 >
-                  <span
-                    className="flex h-11 w-11 items-center justify-center rounded-full transition-transform group-hover:scale-110"
-                    style={{
-                      backgroundColor: `color-mix(in srgb, ${c.color} 14%, transparent)`,
-                      color: c.color,
-                    }}
-                  >
-                    <Icon size={20} />
+                  {/* Liquid background blobs (Light & Dark Mode) */}
+                  <div className="liquid-container absolute inset-0 -z-10 overflow-hidden pointer-events-none rounded-[28px]">
+                    <div className="blob blob-1" />
+                    <div className="blob blob-2" />
+                    <div className="blob blob-3" />
+                    <div className="blob blob-4" />
+                  </div>
+
+                  {/* Glass glow highlights (Light & Dark Mode) */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-white/35 via-transparent to-transparent opacity-90 pointer-events-none z-10" />
+
+                  {/* Specular Sheen sweep animation (Light & Dark Mode) */}
+                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none z-20" />
+
+                  {/* Top Row: Icon Wrapper & Badges */}
+                  <div className="relative z-10 flex w-full items-start justify-between gap-2">
+                    <span
+                      className="flex h-12 w-12 items-center justify-center rounded-[20px] transition-all duration-500 ease-out group-hover:scale-110 group-hover:-translate-y-1 group-hover:rotate-3 group-hover:shadow-[0_8px_20px_color-mix(in_srgb,var(--cat-color)_30%,transparent)]"
+                      style={{
+                        background: `linear-gradient(135deg, color-mix(in srgb, ${c.color} 20%, transparent) 0%, color-mix(in srgb, ${c.color} 8%, transparent) 100%)`,
+                        color: c.color,
+                        border: `1px solid color-mix(in srgb, ${c.color} 30%, transparent)`,
+                        boxShadow: `inset 0 2px 4px rgba(255, 255, 255, 0.1), 0 4px 12px color-mix(in srgb, ${c.color} 10%, transparent)`,
+                      }}
+                    >
+                      <Icon size={22} className="transition-transform duration-300 group-hover:scale-105" />
+                    </span>
+
+                    <div className="flex flex-col items-end gap-1.5">
+                      {meta.isHot && (
+                        <span className="flex items-center gap-0.5 rounded-full bg-red-500/10 px-2 py-0.5 text-[9px] font-bold text-red-500 ring-1 ring-red-500/20 animate-pulse">
+                          🔥 HOT
+                        </span>
+                      )}
+                      <span className="rounded-full bg-text/5 px-2.5 py-1 text-[11px] font-bold text-text-muted transition-colors duration-300 group-hover:bg-text/10 group-hover:text-text">
+                        {meta.count}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Bottom Info Section */}
+                  <div className="relative z-10 mt-6 w-full pr-4">
+                    <span className="font-display text-lg font-bold text-text transition-colors duration-300 group-hover:text-[var(--cat-color)]">
+                      {c.labelVi}
+                    </span>
+                    <p className="mt-2 line-clamp-2 text-xs text-text-muted leading-relaxed transition-colors duration-300 group-hover:text-text-muted/80">
+                      {meta.tagline}
+                    </p>
+                  </div>
+
+                  {/* Interactive Small Slide-in Arrow */}
+                  <span className="absolute bottom-6 right-6 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white/80 dark:bg-black/40 text-[var(--cat-color)] shadow-sm border border-border/40 translate-x-3 opacity-0 transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) group-hover:translate-x-0 group-hover:opacity-100 group-hover:scale-105">
+                    <ArrowRight size={14} className="stroke-[2.5]" />
                   </span>
-                  <span className="text-body-sm font-medium text-text">{c.labelVi}</span>
                 </Link>
               );
             })}
           </div>
         </Reveal>
       ))}
+
+      {/* SVG Gooey Filter for Apple Liquid Glass */}
+      <svg xmlns="http://www.w3.org/2000/svg" className="hidden">
+        <defs>
+          <filter id="liquid-goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 25 -8" result="goo" />
+            <feBlend in="SourceGraphic" in2="goo" />
+          </filter>
+        </defs>
+      </svg>
     </section>
   );
 }
@@ -164,7 +246,7 @@ function CategoriesStrip() {
 
 function CitiesSection() {
   return (
-    <section className="container py-20 md:py-28">
+    <section className="container pb-20 md:py-28">
       <div className="mb-10 flex items-end justify-between gap-6">
         <Reveal>
           <div>
@@ -198,7 +280,7 @@ function CitiesSection() {
 
 /* --------------------------------- Places --------------------------------- */
 
-function PlacesSection() {
+function PlacesSection({ places }: { places: PlaceCardData[] }) {
   return (
     <section className="border-t border-border bg-surface-2/40">
       <div className="container py-20 md:py-28">
@@ -223,7 +305,7 @@ function PlacesSection() {
         </div>
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredPlaces.slice(0, 8).map((p, i) => (
+          {places.slice(0, 8).map((p, i) => (
             <Reveal key={p.slug} delay={(i % 4) * 0.06}>
               <PlaceCard place={p} priority={i < 2} />
             </Reveal>

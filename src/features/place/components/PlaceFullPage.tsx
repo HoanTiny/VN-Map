@@ -13,9 +13,10 @@ import type { PlaceItem } from "@/features/map/lib/places-data";
 
 export interface PlaceFullPageProps {
   place: PlaceItem;
+  nearby: PlaceItem[];
 }
 
-export function PlaceFullPage({ place }: PlaceFullPageProps) {
+export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
   const cat = categoryByKey[place.category];
 
   return (
@@ -133,7 +134,7 @@ export function PlaceFullPage({ place }: PlaceFullPageProps) {
       {/* Nearby */}
       <div className="container mt-16">
         <Reveal>
-          <NearbyPlaces slug={place.slug} />
+          <NearbyPlaces places={nearby} />
         </Reveal>
       </div>
     </article>
