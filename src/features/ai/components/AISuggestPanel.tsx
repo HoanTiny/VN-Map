@@ -7,6 +7,7 @@ import { spring } from "@/lib/motion";
 import { categoryByKey } from "@/config/categories";
 import { provinceBySlug } from "@/config/regions";
 import { useUIStore } from "@/stores/ui-store";
+import { useMapStore } from "@/stores/map-store";
 
 
 const provinceByName = Object.fromEntries(
@@ -50,6 +51,8 @@ export function AISuggestPanel() {
   const [loading, setLoading] = useState(false);
   const [turns, setTurns] = useState<ConversationTurn[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const bounds = useMapStore((s) => s.bounds);
+  const userLocation = useMapStore((s) => s.userLocation);
 
   const submit = async () => {
     const q = query.trim();
@@ -62,7 +65,13 @@ export function AISuggestPanel() {
       const res = await fetch("/api/ai/suggest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: q }),
+        body: JSON.stringify({
+          query: q,
+          context: {
+            bounds: bounds ?? undefined,
+            userLocation: userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : undefined,
+          },
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Lỗi không xác định");

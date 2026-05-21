@@ -1,9 +1,9 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
-interface NewPlacePayload {
+export interface NewPlacePayload {
   id: string;
   slug: string;
   name: string;
@@ -14,6 +14,9 @@ interface NewPlacePayload {
 }
 
 export function useRealtimePlaces(onNew: (place: NewPlacePayload) => void) {
+  const onNewRef = useRef(onNew);
+  onNewRef.current = onNew;
+
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
@@ -23,10 +26,11 @@ export function useRealtimePlaces(onNew: (place: NewPlacePayload) => void) {
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "places" },
-        (payload) => onNew(payload.new as NewPlacePayload)
+        (payload) => onNewRef.current(payload.new as NewPlacePayload)
       )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [onNew]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 }

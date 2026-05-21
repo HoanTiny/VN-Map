@@ -10,13 +10,18 @@
 - ✅ **Phase 2.1 + 2.2 hoàn tất** — Supabase foundation + read paths swap + MapDataContext (DB → tất cả map chrome).
 - ✅ **Phase 2.3 Auth foundation hoàn tất** — Magic link + Google OAuth + useSession + AuthGuard + SignOut + Navbar avatar.
 - ✅ **Phase 2.3 Write paths hoàn tất** — Saved/Reviews/Trips/Submissions swap sang Supabase. AuthGuard wired vào /saved + /trip.
-- ⏳ **Phase 3 chưa đụng** — 3D map, i18n, realtime, AI.
+- ✅ **Phase 2.4 Admin moderation hoàn tất** — `/admin` role gate, approve/reject submissions + reviews.
+- ✅ **Phase 2.5 Storage hoàn tất** — `photos` bucket, upload helpers, ReviewForm + SuggestPlaceForm dùng Storage khi signed-in.
+- ✅ **PWA hoàn tất** — manifest, service worker, offline page, install banner.
+- ✅ **SEO & Favicon hoàn tất** — Dynamic OG images `/api/og`, favicon từ logo MapVN, apple-icon.
+- ✅ **Production live** — Deployed Vercel, env vars set, Supabase migrations 0001–0003 chạy.
+- ⏳ **Phase 3 chưa đụng** — 3D map, i18n, realtime, curated trips.
 
-Khi resume: chạy `pnpm dev`, kiểm tra sign-in (magic link + Google) hoạt động, test toggle heart + tạo trip vẫn lưu (vẫn localStorage). Nếu lỗi → đọc section [Known issues](#known-issues).
+Khi resume: chạy `pnpm dev` và smoke test các route chính. Nếu lỗi → đọc section [Known issues](#known-issues).
 
 ---
 
-## ✅ Đã làm
+## ✅ Đã làm (cập nhật 2026-05-22)
 
 ### Foundation & Design (Phase 0)
 - [PRODUCT_AND_DESIGN_SYSTEM.md](PRODUCT_AND_DESIGN_SYSTEM.md) — tokens, type, spacing, dark mode, button variants, card tiers, glassmorphism, map marker style, animation guide
@@ -181,6 +186,33 @@ URL deep-link `?place=slug` cũng lookup qua effectiveData (không còn sync moc
 - `/admin/reviews` — list reviews, approve / reject
 - Server Actions via `src/features/admin/actions.ts` + `createServiceClient` bypass RLS
 
+### ✅ SEO & Favicon (Session 2026-05-22) — DONE
+- **Dynamic OG images** — `/api/og` route (`next/og` ImageResponse, gradient + logo + text) wired vào:
+  - `app/layout.tsx` (root metadata)
+  - `app/(app)/category/[slug]/page.tsx`
+  - `app/(app)/place/[slug]/page.tsx`
+  - `app/(app)/region/[region]/[province]/page.tsx`
+- **Favicon từ logo MapVN** — `app/favicon.ico` + `app/icon.png` + `app/apple-icon.png` (Next.js app-dir convention, auto-injects `<link>` tags)
+- **ESLint/TypeScript Vercel build** — toàn bộ lỗi đã fix: `@eslint/eslintrc` dep, `import/no-restricted-paths` rule xóa, `any` types typed, unescaped entities, `@ts-ignore` removed, `displayName` hoisting fix
+
+### ✅ Homepage UX overhaul (Session 2026-05-22) — DONE
+- **Categories marquee** — hai static grid gộp thành marquee animation với CSS `@keyframes`
+  - Desktop: `DraggableMarqueeRow` drag-to-scroll, 2 hàng chạy ngược chiều nhau, edge fade mask
+  - Mobile: static 2-column grid (không có auto-scroll, dễ tap)
+  - `src/components/DraggableMarqueeRow.tsx` — "use client", `DOMMatrix` resume animation sau drag
+- **"Xem tất cả" link** — fix `/category/cafe` → `/explore`
+- **Mobile overflow fix** — `overflow-hidden` trên `<section>` ngăn marquee gây horizontal scroll
+
+### ✅ Map UX fixes (Session 2026-05-22) — DONE
+- **AI suggest panel** — dời từ `bottom-20 left-4` → `top-32 left-4` (tránh bị MapPlaceCard che khi chọn địa điểm)
+- **Panel animation** — đổi slide từ dưới lên → từ trên xuống (hợp với vị trí mới)
+- **Dev background switcher xóa** — bỏ HN/ĐN/SG/DF buttons khỏi `DynamicHeroBackground.tsx`
+
+### ✅ Production deployment (Session 2026-05-22) — DONE
+- Vercel build sạch (không còn ESLint / TypeScript errors)
+- Env vars set: `NEXT_PUBLIC_APP_URL`, `GEMINI_API_KEY`, Supabase keys
+- Supabase migrations 0001–0003 chạy xong
+
 ---
 
 ## ⏳ Phase 3 — Polish & Differentiation (chưa đụng)
@@ -189,17 +221,24 @@ Theo plan §5:
 
 - [ ] **3D map** — MapLibre building extrusion từ OpenMapTiles + pitch/bearing controls + tilt auto-enable zoom > 15
 - [ ] **i18n** — VI/EN dictionaries, locale prefix `/en/...`, place names song ngữ (`name_vi` + `name_en` columns)
-- [ ] **Realtime** — Supabase channel cho new submissions + reviews, "X người đang xem" indicator, activity feed landing
-- [ ] **AI** — Anthropic API integration, smart "Nearby me" suggestions theo viewport + history
+- [x] **Realtime** (partial):
+  - ✅ `usePresence` — "X người đang xem" trên place detail (hiện khi ≥2 viewer cùng lúc)
+  - ✅ `useRealtimeReviews` — review mới tự append vào list không cần reload
+  - ✅ `useRealtimePlaces` — place mới được approve tự hiện marker trên map (wired 2026-05-22)
+  - [ ] Activity feed landing — chưa có UI hiển thị submissions/reviews mới nhất
+- [x] **AI** (partial):
+  - ✅ Gemini API wired với rate-limit + cache
+  - ✅ Viewport-aware: truyền bounds + GPS lên API, Gemini gợi ý địa điểm trong vùng đang xem (2026-05-22)
+  - [ ] History-aware: chưa truyền lịch sử conversation vào prompt
 - [ ] **Curated trips** — pre-built trip templates seasonal (Tết, mùa hè…)
-- [ ] **PWA** — install prompt, offline shell, service worker precache
+- [x] **PWA** — ✅ manifest, service worker, offline page, install banner (done)
 
 ---
 
 ## 🐛 Known issues
 
 ### Dark mode contrast (chưa fix triệt để)
-User đã revert phần `brand-500/600/700` về giá trị light-mode-like, kết quả là **brand-700 dark vẫn dim trên brand-50 dark wine**. Khi resume, cân nhắc:
+`brand-500/600/700` dùng giá trị light-mode-like, **brand-700 dark vẫn dim trên brand-50 dark wine**. Khi resume, cân nhắc:
 - Đổi brand-700 dark sang light salmon `#FFAFA4` (text-on-tint readable)
 - Hoặc refactor sao cho `text-brand-700` trong dark dùng token khác
 
@@ -214,6 +253,12 @@ Plan target 80. Đủ demo nhưng `/category/checkin`, `/category/experience` ch
 ### Search bar trong navbar (xl+) vs MapSearchBar
 Hai search bars khác mục đích nhưng UX có thể confuse — navbar search → `/search` page; map search → action-on-map. Đã giải quyết tốt với MapSearchBar floating dropdown nhưng có thể polish copy/icon thêm.
 
+### PWA screenshots placeholder
+`public/screenshots/` vẫn còn ảnh placeholder. Chưa ảnh hưởng chức năng, chỉ cần thay khi có thời gian chụp màn hình thật.
+
+### Hero stats hardcoded
+Landing page hiện thị `4.8 ⭐ · 12k users · 580+ places · 63 tỉnh` — không fetch từ DB. Khi có đủ real data nên wire thành dynamic query.
+
 ---
 
 ## 🔧 Resume checklist (phiên sau)
@@ -223,34 +268,34 @@ Hai search bars khác mục đích nhưng UX có thể confuse — navbar search
    pnpm dev
    ```
    Mở:
-   - http://localhost:3000/ — landing render?
-   - http://localhost:3000/explore — map markers hiện?
+   - http://localhost:3000/ — landing, categories marquee chạy? drag được?
+   - http://localhost:3000/explore — map markers hiện? AI suggest panel ở trên trái?
    - http://localhost:3000/place/cafe-giang — detail hiện?
    - http://localhost:3000/sign-in — form Google + magic link hiện?
-   - http://localhost:3000/me — chế độ khách hay đăng nhập đúng state?
+   - http://localhost:3000/me — session-aware?
 
 2. **Auth test**:
-   - Click "Đăng nhập với Google" → consent screen → redirect về `/` với navbar avatar có chữ cái đầu email
-   - `/me` hiện "Xin chào, ..." + nút Đăng xuất → click → toast + redirect → quay về khách
+   - Click "Đăng nhập với Google" → consent → redirect với navbar avatar
+   - `/me` hiện "Xin chào, ..." + nút Đăng xuất
    - Magic link: nhập email → check inbox → click link → đăng nhập
 
 3. **Verify Supabase wired**:
-   - DevTools Network → fetch `*.supabase.co/rest/v1/places` (read path), `auth/v1/token` (sign-in)
-   - DB: `profiles` row tự tạo khi user mới signup (xem Table Editor)
+   - DevTools Network → fetch `*.supabase.co/rest/v1/places` (read path)
+   - DB: `profiles` row tự tạo khi user mới signup
 
-4. **Quyết định hướng tiếp**:
-   - **Write paths migration** (recommend) — bắt đầu với Saved (đơn giản nhất). Mỗi domain ~1-2 giờ
-   - **Wrap AuthGuard** quanh /saved /trip /submit trước (nhỏ, ~30 phút)
-   - **Photos upload to Storage** (Milestone 2.5) — sau write paths
-
-5. **Mở [PENDING.md](PENDING.md)** lại để track progress.
+4. **Hướng tiếp theo (Phase 3)**:
+   - **3D buildings** — MapLibre extrusion, pitch/bearing controls
+   - **Hero stats dynamic** — query count từ Supabase thay hardcode
+   - **Mở rộng mock data** — thêm ~40 places (target 80)
+   - **Curated trips** — trip templates theo mùa
+   - **PWA screenshots** — chụp màn hình thật thay placeholder
 
 ---
 
 ## 📁 File map quan trọng
 
 ```
-F:\VTVLive\Map-VN\
+d:\Work\VN-Map\
 ├── PENDING.md                    ← bạn đang xem
 ├── PRODUCT_AND_DESIGN_SYSTEM.md  ← design tokens
 ├── INFORMATION_ARCHITECTURE.md   ← sitemap + flows

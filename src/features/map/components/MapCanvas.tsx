@@ -17,6 +17,8 @@ import {
 } from "../lib/places-data";
 import { useMapData } from "../context/MapDataContext";
 import { resolveStyleUrl, categoryColorExpression } from "../lib/style-helpers";
+import { useRealtimePlaces, type NewPlacePayload } from "@/features/realtime/hooks/useRealtimePlaces";
+import type { CategoryKey } from "@/config/categories";
 
 const SRC = "places";
 const LAYER_CLUSTERS = "clusters";
@@ -30,6 +32,13 @@ export interface MapCanvasProps {
   data?: PlacesFC;
 }
 
+type RealtimeFeature = {
+  type: "Feature";
+  id: string;
+  geometry: { type: "Point"; coordinates: [number, number] };
+  properties: { id: string; slug: string; name: string; category: CategoryKey; province: string };
+};
+
 export function MapCanvas({ data }: MapCanvasProps = {}) {
   const placesData = data ?? mockPlacesData;
   const { placesById } = useMapData();
@@ -40,6 +49,10 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
   const userMarkerRef = useRef<MapLibreMarker | null>(null);
   type MaplibreModule = typeof import("maplibre-gl");
   const maplibreRef = useRef<MaplibreModule | null>(null);
+  // Always-current refs for use inside stable closures
+  const placesDataRef = useRef(placesData);
+  placesDataRef.current = placesData;
+  const realtimeFeaturesRef = useRef<RealtimeFeature[]>([]);
 
   const setReady = useMapStore((s) => s.setReady);
   const setViewport = useMapStore((s) => s.setViewport);
@@ -287,20 +300,44 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
         if (!map) return;
         const src = map.getSource(SRC) as GeoJSONSource | undefined;
         if (!src) return;
+        const all = [...placesDataRef.current.features, ...realtimeFeaturesRef.current];
         const data =
           filter.size === 0
-            ? placesData
+            ? { type: "FeatureCollection" as const, features: all }
             : {
                 type: "FeatureCollection" as const,
-                features: placesData.features.filter((f) =>
-                  filter.has(f.properties.category)
-                ),
+                features: all.filter((f) => filter.has(f.properties.category)),
               };
         src.setData(data);
       }
     );
     return unsub;
   }, []);
+
+  /* ----------------------- Realtime: new approved places ----------------------- */
+  useRealtimePlaces((place: NewPlacePayload) => {
+    const map = mapRef.current;
+    if (!map) return;
+    const src = map.getSource(SRC) as GeoJSONSource | undefined;
+    if (!src) return;
+
+    realtimeFeaturesRef.current = [
+      ...realtimeFeaturesRef.current,
+      {
+        type: "Feature",
+        id: place.id,
+        geometry: { type: "Point", coordinates: [place.lng, place.lat] },
+        properties: { id: place.id, slug: place.slug, name: place.name, category: place.category as CategoryKey, province: place.province },
+      },
+    ];
+
+    const { filter } = useMapStore.getState();
+    const all = [...placesDataRef.current.features, ...realtimeFeaturesRef.current];
+    src.setData({
+      type: "FeatureCollection",
+      features: filter.size === 0 ? all : all.filter((f) => filter.has(f.properties.category)),
+    });
+  });
 
   /* ------------------------------ User location ------------------------------ */
   useEffect(() => {

@@ -35,20 +35,51 @@ function checkRate(key: string): { allowed: boolean; remaining: number; retryAft
 const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
 const queryCache = new Map<string, { data: unknown; expiresAt: number }>();
 
+interface RequestContext {
+  bounds?: { west: number; south: number; east: number; north: number };
+  userLocation?: { lat: number; lng: number };
+}
+
 function normalizeQuery(q: string) {
   return q.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-function getCached(q: string): unknown | null {
-  const entry = queryCache.get(normalizeQuery(q));
+// Round to 1 decimal to avoid cache fragmentation from minor pan
+function boundsKey(ctx: RequestContext): string {
+  if (ctx.userLocation) {
+    return `@${ctx.userLocation.lat.toFixed(1)},${ctx.userLocation.lng.toFixed(1)}`;
+  }
+  if (ctx.bounds) {
+    const { west, south, east, north } = ctx.bounds;
+    return `[${west.toFixed(1)},${south.toFixed(1)},${east.toFixed(1)},${north.toFixed(1)}]`;
+  }
+  return "";
+}
+
+function getCached(q: string, ctx: RequestContext): unknown | null {
+  const key = normalizeQuery(q) + boundsKey(ctx);
+  const entry = queryCache.get(key);
   if (!entry || Date.now() > entry.expiresAt) return null;
   return entry.data;
 }
 
-function setCached(q: string, data: unknown) {
-  // Prune expired entries
+function setCached(q: string, ctx: RequestContext, data: unknown) {
   for (const [k, v] of queryCache) if (Date.now() > v.expiresAt) queryCache.delete(k);
-  queryCache.set(normalizeQuery(q), { data, expiresAt: Date.now() + CACHE_TTL_MS });
+  const key = normalizeQuery(q) + boundsKey(ctx);
+  queryCache.set(key, { data, expiresAt: Date.now() + CACHE_TTL_MS });
+}
+
+function buildLocationContext(ctx: RequestContext): string {
+  if (ctx.userLocation) {
+    return `\n[Vị trí GPS của người dùng: lat=${ctx.userLocation.lat.toFixed(4)}, lng=${ctx.userLocation.lng.toFixed(4)}. Ưu tiên gợi ý địa điểm gần vị trí này.]`;
+  }
+  if (ctx.bounds) {
+    const { west, south, east, north } = ctx.bounds;
+    const centerLat = ((south + north) / 2).toFixed(3);
+    const centerLng = ((west + east) / 2).toFixed(3);
+    return `\n[Người dùng đang xem vùng bản đồ: trung tâm lat=${centerLat}, lng=${centerLng}. Ưu tiên gợi ý địa điểm trong hoặc gần vùng này.]`;
+  }
+  return "";
 }
 
 const SYSTEM_PROMPT = `Bạn là trợ lý gợi ý địa điểm du lịch & ẩm thực Việt Nam.
@@ -108,7 +139,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { query } = await req.json() as { query: string };
+  const { query, context = {} } = await req.json() as { query: string; context?: RequestContext };
 
   if (!query?.trim()) {
     return Response.json({ error: "Thiếu query" }, { status: 400 });
@@ -118,7 +149,7 @@ export async function POST(req: Request) {
   }
 
   // Return cached result if available (saves quota + latency)
-  const cached = getCached(query);
+  const cached = getCached(query, context);
   if (cached) return Response.json(cached);
 
   const genAI = new GoogleGenerativeAI(apiKey);
@@ -132,12 +163,14 @@ export async function POST(req: Request) {
     },
   });
 
+  const prompt = query.trim() + buildLocationContext(context);
+
   try {
-    const result = await model.generateContent(query.trim());
+    const result = await model.generateContent(prompt);
     const raw = result.response.text();
     const text = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
     const parsed = JSON.parse(text);
-    setCached(query, parsed);
+    setCached(query, context, parsed);
     return Response.json(parsed);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
