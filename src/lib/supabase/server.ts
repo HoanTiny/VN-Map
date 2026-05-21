@@ -21,13 +21,20 @@ export async function createClient() {
       "Missing Supabase env vars — see PHASE_2_SETUP.md to configure."
     );
   }
-  const cookieStore = await cookies();
+  let cookieStore: any;
+  try {
+    cookieStore = await cookies();
+  } catch {
+    // Outside request scope (e.g. build time static generation)
+  }
+
   return createServerClient<Database>(url, anonKey, {
     cookies: {
       getAll() {
-        return cookieStore.getAll();
+        return cookieStore ? cookieStore.getAll() : [];
       },
-      setAll(cookiesToSet) {
+      setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
+        if (!cookieStore) return;
         try {
           cookiesToSet.forEach(({ name, value, options }) =>
             cookieStore.set(name, value, options)

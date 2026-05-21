@@ -20,6 +20,7 @@ export interface PlaceFeatureProps {
   tags?: string[];
   source: PlaceSource;
   submittedBy?: string;
+  photos?: string[];
 }
 
 export interface PlaceFeature {

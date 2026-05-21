@@ -1,5 +1,4 @@
 import { allPlaces, type PlaceItem } from "@/features/map/lib/places-data";
-import { listAllPlaces } from "@/features/place/lib/queries";
 import type { CategoryKey } from "@/config/categories";
 
 /** Strip Vietnamese diacritics for case/accent-insensitive matching. */
@@ -73,16 +72,6 @@ export function searchPlaces(filters: SearchFilters): SearchResult {
   return { items, total: items.length };
 }
 
-/**
- * Async version — fetches the full place list from Supabase (or mock fallback)
- * then applies the same filters. Use this in server components / pages.
- * The sync `searchPlaces` above stays for client-side uses (MapSearchBar etc.)
- * where data is already in memory.
- */
-export async function searchPlacesAsync(filters: SearchFilters): Promise<SearchResult> {
-  const all = await listAllPlaces();
-  return searchPlacesFromList(all, filters);
-}
 
 /** Shared filter logic — works on any PlaceItem list. */
 export function searchPlacesFromList(
