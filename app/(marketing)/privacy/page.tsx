@@ -32,7 +32,7 @@ export default function PrivacyPage() {
             <section>
               <h2 className="font-display text-h2 text-text">Vị trí địa lý</h2>
               <p className="mt-2">
-                Khi bạn bấm nút "Vị trí của tôi" hoặc "GPS" trong form đóng góp, trình
+                Khi bạn bấm nút &ldquo;Vị trí của tôi&rdquo; hoặc &ldquo;GPS&rdquo; trong form đóng góp, trình
                 duyệt sẽ hỏi quyền truy cập vị trí. Toạ độ được dùng tức thời cho map
                 fly-to và không lưu lại đâu cả.
               </p>

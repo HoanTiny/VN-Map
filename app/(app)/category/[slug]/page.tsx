@@ -8,6 +8,7 @@ import { categoryByKey, categories, type CategoryKey } from "@/config/categories
 import { listPlacesByCategory } from "@/features/place/lib/queries";
 import { PlaceGrid } from "@/features/place/components/PlaceGrid";
 import { ProvinceFilterChips } from "@/features/place/components/ProvinceFilterChips";
+import { siteConfig } from "@/config/site";
 
 interface Params {
   slug: string;
@@ -21,9 +22,16 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
   const { slug } = await params;
   const cat = categoryByKey[slug as CategoryKey];
   if (!cat) return { title: "Không tìm thấy" };
+  const ogUrl = `${siteConfig.url}/api/og?title=${encodeURIComponent(cat.labelVi)}&subtitle=${encodeURIComponent(cat.description)}&tag=${encodeURIComponent("Map-VN · " + cat.labelVi)}`;
   return {
     title: `${cat.labelVi} · Map-VN`,
     description: cat.description,
+    openGraph: {
+      title: cat.labelVi,
+      description: cat.description,
+      images: [{ url: ogUrl, width: 1200, height: 630 }],
+    },
+    twitter: { card: "summary_large_image", title: cat.labelVi, description: cat.description },
   };
 }
 

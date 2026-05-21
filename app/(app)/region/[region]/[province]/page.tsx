@@ -13,6 +13,7 @@ import {
   type RegionKey,
 } from "@/config/regions";
 import { listPlacesByProvince } from "@/features/place/lib/queries";
+import { siteConfig } from "@/config/site";
 import { PlaceGrid } from "@/features/place/components/PlaceGrid";
 import { categories, type CategoryKey } from "@/config/categories";
 
@@ -29,14 +30,16 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
   const { province } = await params;
   const prov = provinceBySlug[province];
   if (!prov) return { title: "Không tìm thấy" };
+  const ogUrl = `${siteConfig.url}/api/og?title=${encodeURIComponent(prov.name)}&subtitle=${encodeURIComponent(prov.tagline)}&cover=${encodeURIComponent(prov.cover)}`;
   return {
     title: `${prov.name} · Map-VN`,
     description: prov.tagline,
     openGraph: {
       title: prov.name,
       description: prov.tagline,
-      images: [prov.cover],
+      images: [{ url: ogUrl, width: 1200, height: 630 }],
     },
+    twitter: { card: "summary_large_image", title: prov.name, description: prov.tagline },
   };
 }
 

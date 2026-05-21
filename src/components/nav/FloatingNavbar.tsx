@@ -46,7 +46,7 @@ export function FloatingNavbar() {
           "pointer-events-auto mx-auto flex items-center gap-2.5 rounded-full transition-all duration-300",
           "bg-white/90 dark:bg-zinc-950/80 backdrop-blur-xl border border-white/50 dark:border-white/5",
           "shadow-[0_12px_40px_rgba(0,0,0,0.06),inset_0_1px_0_rgba(255,255,255,0.85)] dark:shadow-[0_16px_48px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)]",
-          "ring-1 ring-black/[0.03] dark:ring-white/[0.02] liquid-glass-card",
+          "ring-1 ring-black/[0.03] dark:ring-white/[0.02] navbar-glass-card",
           compact ? "h-12 px-2 shadow-md" : "h-16 px-4"
         )}
       >
@@ -56,7 +56,7 @@ export function FloatingNavbar() {
         >
           <img src="/images/mapVN.png" alt="logo" width={40} height={40} className="object-contain" />
 
-          <span className="hidden sm:inline font-extrabold bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-800 dark:from-white dark:via-zinc-100 dark:to-zinc-200 bg-clip-text text-transparent">{siteConfig.name}</span>
+          <span className="font-extrabold bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-800 dark:from-white dark:via-zinc-100 dark:to-zinc-200 bg-clip-text text-transparent">{siteConfig.name}</span>
         </Link>
 
         <ul className="ml-4 hidden items-center gap-1 lg:flex">
@@ -94,7 +94,7 @@ export function FloatingNavbar() {
             className={cn(
               "group hidden xl:inline-flex items-center gap-2.5 whitespace-nowrap rounded-full border px-4 py-1.5 text-body-sm transition-all duration-300 ease-out",
               "bg-zinc-50/90 dark:bg-zinc-900/40 border-zinc-200/50 dark:border-zinc-800/45 text-zinc-500 dark:text-zinc-400 shadow-[inset_0_1.5px_1px_rgba(0,0,0,0.02)]",
-              "hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-300/80 dark:hover:border-zinc-700 hover:text-zinc-900 dark:hover:text-white liquid-glass-card",
+              "hover:bg-white dark:hover:bg-zinc-900 hover:border-zinc-300/80 dark:hover:border-zinc-700 hover:text-zinc-900 dark:hover:text-white apple-glass-card",
               "hover:shadow-[0_6px_16px_-4px_rgba(0,0,0,0.05),0_2px_4px_-1px_rgba(0,0,0,0.02),inset_0_1.5px_1px_rgba(255,255,255,0.85)] hover:scale-[1.01]"
             )}
           >

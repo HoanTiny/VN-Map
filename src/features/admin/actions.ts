@@ -29,24 +29,31 @@ export async function approveSubmission(id: string) {
 
   if (fetchErr || !sub) throw new Error("Không tìm thấy đề xuất");
 
-  const slug = slugify((sub as { name: string }).name);
+  type Sub = {
+    name: string; province: string; province_slug: string; district?: string;
+    address?: string; category: string; photos?: string[]; description?: string;
+    price_range?: string; opening_hours?: string; tags?: string[];
+    submitted_by?: string; lng: number; lat: number;
+  };
+  const s = sub as Sub;
+  const slug = slugify(s.name);
 
   const { error: insertErr } = await supabase.from("places").insert({
     slug,
-    name: (sub as any).name,
-    province: (sub as any).province,
-    province_slug: (sub as any).province_slug,
-    district: (sub as any).district,
-    address: (sub as any).address,
-    category: (sub as any).category,
-    cover: ((sub as any).photos?.[0]) ?? "/covers/placeholder.jpg",
-    highlight: (sub as any).description,
-    price_range: (sub as any).price_range,
-    opening_hours: (sub as any).opening_hours,
-    tags: (sub as any).tags,
+    name: s.name,
+    province: s.province,
+    province_slug: s.province_slug,
+    district: s.district,
+    address: s.address,
+    category: s.category,
+    cover: s.photos?.[0] ?? "/covers/placeholder.jpg",
+    highlight: s.description,
+    price_range: s.price_range,
+    opening_hours: s.opening_hours,
+    tags: s.tags,
     source: "community",
-    submitted_by: (sub as any).submitted_by,
-    location: `POINT(${(sub as any).lng} ${(sub as any).lat})`,
+    submitted_by: s.submitted_by,
+    location: `POINT(${s.lng} ${s.lat})`,
   } as never);
 
   if (insertErr) throw new Error("Lỗi tạo place: " + insertErr.message);

@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     type: "website",
     locale: siteConfig.locale,
     siteName: siteConfig.name,
-    images: [{ url: siteConfig.ogImage }],
+    images: [{ url: `/api/og?title=${encodeURIComponent(siteConfig.name)}&subtitle=${encodeURIComponent(siteConfig.tagline)}`, width: 1200, height: 630 }],
   },
   twitter: { card: "summary_large_image" },
   appleWebApp: {
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     title: "Map-VN",
   },
   icons: {
-    apple: "/icons/icon-192.png",
+    shortcut: "/favicon.ico",
   },
 };
 

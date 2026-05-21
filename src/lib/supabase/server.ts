@@ -21,7 +21,7 @@ export async function createClient() {
       "Missing Supabase env vars — see PHASE_2_SETUP.md to configure."
     );
   }
-  let cookieStore: any;
+  let cookieStore: Awaited<ReturnType<typeof cookies>> | undefined;
   try {
     cookieStore = await cookies();
   } catch {
@@ -33,7 +33,7 @@ export async function createClient() {
       getAll() {
         return cookieStore ? cookieStore.getAll() : [];
       },
-      setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
+      setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
         if (!cookieStore) return;
         try {
           cookiesToSet.forEach(({ name, value, options }) =>

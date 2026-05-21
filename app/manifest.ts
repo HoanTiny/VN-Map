@@ -26,7 +26,6 @@ export default function manifest(): MetadataRoute.Manifest {
         src: "/screenshots/mobile.png",
         sizes: "390x844",
         type: "image/png",
-        // @ts-ignore
         form_factor: "narrow",
         label: "Khám phá bản đồ địa điểm Việt Nam",
       },
@@ -34,7 +33,6 @@ export default function manifest(): MetadataRoute.Manifest {
         src: "/screenshots/desktop.png",
         sizes: "1280x800",
         type: "image/png",
-        // @ts-ignore
         form_factor: "wide",
         label: "Map-VN trên desktop",
       },

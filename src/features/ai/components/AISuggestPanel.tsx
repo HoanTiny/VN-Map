@@ -8,11 +8,6 @@ import { categoryByKey } from "@/config/categories";
 import { provinceBySlug } from "@/config/regions";
 import { useUIStore } from "@/stores/ui-store";
 
-declare global {
-  interface Window {
-    __mapVN?: { flyTo: (lng: number, lat: number, zoom?: number) => void };
-  }
-}
 
 const provinceByName = Object.fromEntries(
   Object.values(provinceBySlug).map((p) => [p.name.toLowerCase(), p])
@@ -116,9 +111,9 @@ export function AISuggestPanel() {
         {open && (
           <m.div
             key="ai-panel"
-            initial={{ opacity: 0, y: 24, scale: 0.97 }}
+            initial={{ opacity: 0, y: -8, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.97 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={spring.default}
             className={cn(
               "flex w-[min(92vw,360px)] flex-col overflow-hidden",

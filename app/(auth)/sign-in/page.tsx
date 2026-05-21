@@ -131,7 +131,7 @@ export default function SignInPage() {
             transition={{ delay: 0.6, duration: 0.8, ease: "easeOut" }}
             className="text-body-sm text-white/80 leading-relaxed drop-shadow-sm font-light"
           >
-            Khám phá những quán quen ẩn mình sâu trong ngõ hẻm, lập lịch trình du lịch độc bản cùng đồng bọn, và chia sẻ các "hidden gem" độc đáo của bạn đến toàn thế giới.
+            Khám phá những quán quen ẩn mình sâu trong ngõ hẻm, lập lịch trình du lịch độc bản cùng đồng bọn, và chia sẻ các &ldquo;hidden gem&rdquo; độc đáo của bạn đến toàn thế giới.
           </m.p>
         </div>
       </m.section>

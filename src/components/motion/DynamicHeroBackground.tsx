@@ -346,58 +346,6 @@ export function DynamicHeroBackground() {
         </div>
       )}
 
-      {/* Interactive Micro Theme Switcher - Placed OUTSIDE the -z-10 container for perfect clickability */}
-      {isMounted && process.env.NODE_ENV === "development" && (
-        <div className="absolute bottom-24 right-4 z-30 flex flex-col items-end gap-2 pointer-events-auto">
-          <div className="flex items-center gap-1.5 rounded-full bg-black/75 backdrop-blur-md px-3.5 py-1.5 text-[11px] font-medium text-white/90 ring-1 ring-white/15 select-none shadow-xl transition-transform hover:scale-[1.02]">
-            <span className="text-[10px] uppercase tracking-wider text-white/40">Thử nền:</span>
-            <button
-              onClick={() => {
-                setRegion("hanoi");
-                setTimeOfDay("day");
-              }}
-              className={`px-1.5 py-0.5 rounded hover:bg-white/10 transition ${region === "hanoi" ? "text-brand-500 font-bold" : ""}`}
-              title="Hà Nội"
-            >
-              HN
-            </button>
-            <button
-              onClick={() => {
-                setRegion("danang");
-                setTimeOfDay("sunset");
-              }}
-              className={`px-1.5 py-0.5 rounded hover:bg-white/10 transition ${region === "danang" ? "text-brand-500 font-bold" : ""}`}
-              title="Đà Nẵng"
-            >
-              ĐN
-            </button>
-            <button
-              onClick={() => {
-                setRegion("saigon");
-                setTimeOfDay("night");
-              }}
-              className={`px-1.5 py-0.5 rounded hover:bg-white/10 transition ${region === "saigon" ? "text-brand-500 font-bold" : ""}`}
-              title="Sài Gòn"
-            >
-              SG
-            </button>
-            <button
-              onClick={() => {
-                setRegion("default");
-                setTimeOfDay("day");
-              }}
-              className={`px-1.5 py-0.5 rounded hover:bg-white/10 transition ${region === "default" ? "text-brand-500 font-bold" : ""}`}
-              title="Mặc định"
-            >
-              DF
-            </button>
-            <span className="w-px h-3 bg-white/20" />
-            <span className="text-[10px] text-white/60 capitalize font-mono">
-              {region} / {timeOfDay} ({imageIndex + 1}/{currentPreset.images.length})
-            </span>
-          </div>
-        </div>
-      )}
     </>
   );
 }

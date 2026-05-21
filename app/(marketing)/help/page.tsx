@@ -21,8 +21,8 @@ const QAS: Array<{ q: string; a: React.ReactNode }> = [
     a: (
       <>
         Vào <Link href="/trip" className="text-brand-600 hover:underline">Chuyến đi</Link>{" "}
-        → bấm "Tạo chuyến đi". Đặt tên, chọn số ngày, chọn điểm đến (1 hoặc nhiều tỉnh).
-        Sau đó thêm địa điểm vào từng ngày — qua search hoặc click "Thêm từ bản đồ" để pick
+        → bấm &ldquo;Tạo chuyến đi&rdquo;. Đặt tên, chọn số ngày, chọn điểm đến (1 hoặc nhiều tỉnh).
+        Sau đó thêm địa điểm vào từng ngày — qua search hoặc click &ldquo;Thêm từ bản đồ&rdquo; để pick
         trực tiếp trên map.
       </>
     ),
@@ -34,7 +34,7 @@ const QAS: Array<{ q: string; a: React.ReactNode }> = [
         Có 2 cách: (1) Vào{" "}
         <Link href="/submit" className="text-brand-600 hover:underline">/submit</Link>{" "}
         và điền form, hoặc (2) Trên <Link href="/explore" className="text-brand-600 hover:underline">bản đồ</Link>,
-        bấm nút "Đóng góp ở đây" rồi click vào vị trí trên map — toạ độ + tỉnh sẽ tự
+        bấm nút &ldquo;Đóng góp ở đây&rdquo; rồi click vào vị trí trên map — toạ độ + tỉnh sẽ tự
         điền.
       </>
     ),

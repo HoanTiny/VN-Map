@@ -30,17 +30,6 @@ import { AISuggestPanel } from "@/features/ai/components/AISuggestPanel";
  * its actions through a tiny ref-bridge stored on `window.__mapVN`.
  */
 
-declare global {
-  interface Window {
-    __mapVN?: {
-      zoomIn: () => void;
-      zoomOut: () => void;
-      flyTo: (lng: number, lat: number, zoom?: number) => void;
-      fitBounds: (bounds: { west: number; south: number; east: number; north: number }) => void;
-    };
-  }
-}
-
 
 import { placesData as mockPlacesData, type PlacesFC } from "../lib/places-data";
 import { MapDataProvider } from "../context/MapDataContext";
@@ -238,8 +227,8 @@ export function MapExperience({ data }: MapExperienceProps = {}) {
           <MapPlaceCard />
         </div>
 
-        {/* Bottom left: AI suggest */}
-        <div className="pointer-events-auto absolute bottom-20 left-4">
+        {/* Left: AI suggest — below filter chips, never overlaps place card */}
+        <div className="pointer-events-auto absolute top-32 left-4">
           <AISuggestPanel />
         </div>
 
