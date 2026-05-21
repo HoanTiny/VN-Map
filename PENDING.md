@@ -9,7 +9,7 @@
 - ✅ **Phase 1 hoàn tất** — Mock data + localStorage demo full vision.
 - ✅ **Phase 2.1 + 2.2 hoàn tất** — Supabase foundation + read paths swap + MapDataContext (DB → tất cả map chrome).
 - ✅ **Phase 2.3 Auth foundation hoàn tất** — Magic link + Google OAuth + useSession + AuthGuard + SignOut + Navbar avatar.
-- 🚧 **Phase 2.3 Write paths chưa làm** — Reviews/Saved/Trips/Submissions vẫn localStorage. Đây là chunk tiếp theo.
+- ✅ **Phase 2.3 Write paths hoàn tất** — Saved/Reviews/Trips/Submissions swap sang Supabase. AuthGuard wired vào /saved + /trip.
 - ⏳ **Phase 3 chưa đụng** — 3D map, i18n, realtime, AI.
 
 Khi resume: chạy `pnpm dev`, kiểm tra sign-in (magic link + Google) hoạt động, test toggle heart + tạo trip vẫn lưu (vẫn localStorage). Nếu lỗi → đọc section [Known issues](#known-issues).
@@ -143,48 +143,43 @@ URL deep-link `?place=slug` cũng lookup qua effectiveData (không còn sync moc
 
 ---
 
-## 🚧 Chưa làm — Milestone 2.3 Write paths (next chunk)
+## ✅ Milestone 2.3 Write paths — DONE
 
-Sau Auth foundation, swap localStorage hooks → Supabase queries. **Recommend thứ tự**: Saved (đơn giản nhất) → Reviews → Trips → Submissions.
+**AuthGuard** wired: `/saved` + `/trip` (mode=prompt). `/me` và `/submit` tự xử lý state.
 
-### AuthGuard wiring (chưa nối)
-- [ ] Wrap `/saved`, `/trip`, `/me`, `/submit` bằng `<AuthGuard>` (component đã sẵn sàng, chỉ chưa nối)
-- Nên dùng mode `prompt` (UX gentle) thay vì `redirect`
+**Write paths** đã swap localStorage → Supabase với pattern đồng nhất:
+- Signed-out / disabled → localStorage fallback (Phase 1 flow vẫn hoạt động)
+- Signed-in → Supabase path với optimistic updates (Saved, Trips) hoặc async (Reviews, Submissions)
 
-### Write paths — swap localStorage → Supabase
+| Domain | Hook | Chiến lược |
+|---|---|---|
+| Saved | [useSaved.ts](src/features/saved/hooks/useSaved.ts) | Optimistic toggle, rollback on error |
+| Reviews | [useReviews.ts](src/features/review/hooks/useReviews.ts) | Async add/remove, refetch after add |
+| Trips | [useTrips.ts](src/features/trip/hooks/useTrips.ts) | Optimistic days mutation, jsonb update |
+| Submissions | [useSubmissions.ts](src/features/submit/hooks/useSubmissions.ts) | Async insert, submitter_id from session |
 
-Mỗi domain có hook hiện tại đọc/ghi localStorage. Cần swap implementation, UI giữ nguyên.
+**AddToTripButton** + **TripPickAddButton** — refactored để dùng hook thay vì storage trực tiếp.
 
-- [ ] **Reviews** — [src/features/review/hooks/useReviews.ts](src/features/review/hooks/useReviews.ts)
-  - Replace `addReview`, `listReviewsBySlug`, `deleteReview` storage funcs → Supabase queries
-  - TanStack Query: `useQuery(["reviews", slug])` + `useMutation` cho add/delete
-  - Server Action `submitReview` cho mutation (bypass RLS check via author_id = auth.uid())
-  - Photos: vẫn data URL → Phase 2.5 sẽ upload Supabase Storage
+### ✅ Storage / Photos (Milestone 2.5) — DONE
+- `supabase/migrations/0002_storage.sql` — bucket `photos`, public read, auth upload/delete policies
+- `src/lib/upload.ts` — `uploadPhoto`, `uploadDataUrl`, `uploadPhotos` helpers
+- ReviewForm + SuggestPlaceForm upload ảnh lên Storage khi signed-in; fallback data URL khi guest
 
-- [ ] **Saved** — [src/features/saved/hooks/useSaved.ts](src/features/saved/hooks/useSaved.ts)
-  - Replace `listSaved`, `toggleSaved` → Supabase `saved_places` table
-  - Auth required — guest user fallback về localStorage hay disable heart?
+### ✅ PWA — DONE
+- `app/manifest.ts` — web manifest (name, icons, shortcuts, theme)
+- `public/sw.js` — service worker: navigate network-first + offline fallback, image cache-first
+- `app/offline/page.tsx` — offline fallback page
+- `src/components/pwa/PWAProvider.tsx` — register SW + install banner (once per session)
+- Wire vào root `app/layout.tsx` + `apple-touch-icon` meta
 
-- [ ] **Trips** — [src/features/trip/hooks/useTrips.ts](src/features/trip/hooks/useTrips.ts)
-  - Bigger swap vì có nhiều mutations (createTrip, addPlaceToTrip, removePlace, addDay, removeDay, updateTrip)
-  - Trip days là jsonb column — đơn giản update toàn bộ days array
-  - Auth required
+> **Icons cần thêm:** Tạo `public/icons/icon-192.png` + `icon-512.png` (192×192 và 512×512 px)
+> dùng tool như [favicon.io](https://favicon.io) hoặc Figma export từ `public/icons/icon.svg`.
 
-- [ ] **Submissions** — [src/features/submit/hooks/useSubmissions.ts](src/features/submit/hooks/useSubmissions.ts)
-  - Replace với Supabase `place_submissions` table
-  - Coords từ form → PostGIS `POINT(lng lat)` literal
-  - Auth required nhưng có thể accept anonymous submission (submitter_id null)
-
-### Storage / Photos (Milestone 2.5 — có thể defer)
-- [ ] Supabase Storage bucket `photos` (public read)
-- [ ] Upload helper trong ReviewForm + SuggestPlaceForm — replace data URL với public URL
-- [ ] Migrate existing data URL → upload + replace (one-off script)
-
-### Admin moderation (Milestone 2.4)
-- [ ] `/admin` layout với role gate (đọc `profiles.role`)
-- [ ] `/admin/places` — list pending submissions, approve → insert vào `places`
-- [ ] `/admin/reviews` — list pending, approve/reject
-- [ ] `/admin/categories` — nếu cho phép user đề xuất category mới sau này
+### ✅ Admin moderation (Milestone 2.4) — DONE
+- `/admin` layout với role gate (mod/admin/editor)
+- `/admin/places` — list submissions, approve (insert → places) / reject
+- `/admin/reviews` — list reviews, approve / reject
+- Server Actions via `src/features/admin/actions.ts` + `createServiceClient` bypass RLS
 
 ---
 

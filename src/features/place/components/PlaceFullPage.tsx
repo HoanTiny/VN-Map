@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { ArrowRight, Flag, MapPin, Navigation } from "lucide-react";
+import { ArrowRight, Flag, MapPin, Navigation, Eye } from "lucide-react";
 import { Button } from "@/ui/button";
 import { Reveal } from "@/components/motion";
 import { AddToTripButton } from "@/features/trip/components/AddToTripButton";
@@ -9,6 +9,7 @@ import { PlaceMeta } from "./PlaceMeta";
 import { NearbyPlaces } from "./NearbyPlaces";
 import { ReviewList } from "@/features/review/components/ReviewList";
 import { categoryByKey } from "@/config/categories";
+import { usePresence } from "@/features/realtime/hooks/usePresence";
 import type { PlaceItem } from "@/features/map/lib/places-data";
 
 export interface PlaceFullPageProps {
@@ -18,6 +19,7 @@ export interface PlaceFullPageProps {
 
 export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
   const cat = categoryByKey[place.category];
+  const viewers = usePresence(`place:${place.slug}`);
 
   return (
     <article className="pb-24">
@@ -45,6 +47,16 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
               >
                 <Flag size={14} /> Báo cáo
               </button>
+
+              {viewers > 1 && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-caption text-text-muted">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-500 opacity-60" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500" />
+                  </span>
+                  {viewers} người đang xem
+                </span>
+              )}
             </div>
           </Reveal>
 

@@ -13,8 +13,15 @@ interface UIState {
   // Map "pick a location" mode for community contribution
   pickMode: boolean;
   setPickMode: (v: boolean) => void;
-  pickedCoords: { lng: number; lat: number } | null;
-  setPickedCoords: (c: { lng: number; lat: number } | null) => void;
+  pickedCoords: {
+    lng: number;
+    lat: number;
+    name?: string;
+    category?: string;
+    address?: string;
+    description?: string;
+  } | null;
+  setPickedCoords: (c: UIState["pickedCoords"]) => void;
   /**
    * Trip-pick mode — when navigating /explore from TripPlanner to add existing
    * places to a specific day. Cleared on "Xong" or back-nav.

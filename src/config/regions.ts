@@ -100,6 +100,24 @@ export const provinces: Province[] = [
     cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1400&q=80",
     tagline: "Hồ Ba Bể — homestay người Tày.",
   },
+  {
+    slug: "hoa-binh", name: "Hòa Bình", region: "bac",
+    center: [105.3380, 20.8135],
+    cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1400&q=80",
+    tagline: "Mai Châu, thung lũng xanh, homestay người Thái.",
+  },
+  {
+    slug: "son-la", name: "Sơn La", region: "bac",
+    center: [104.6766, 20.8380],
+    cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1400&q=80",
+    tagline: "Mộc Châu — cao nguyên hoa cải, đồi chè xanh mướt.",
+  },
+  {
+    slug: "dien-bien", name: "Điện Biên", region: "bac",
+    center: [103.0166, 21.3861],
+    cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1400&q=80",
+    tagline: "Điện Biên Phủ — chiến trường lịch sử hào hùng.",
+  },
 
   // ── Miền Trung ───────────────────────────────────────────
   {
@@ -107,6 +125,30 @@ export const provinces: Province[] = [
     center: [106.2825, 17.5879],
     cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1400&q=80",
     tagline: "Phong Nha — Kẻ Bàng, hang động lớn nhất thế giới.",
+  },
+  {
+    slug: "thanh-hoa", name: "Thanh Hóa", region: "trung",
+    center: [105.7769, 19.8073],
+    cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1400&q=80",
+    tagline: "Sầm Sơn, Suối cá Cẩm Lương, Thành Nhà Hồ.",
+  },
+  {
+    slug: "nghe-an", name: "Nghệ An", region: "trung",
+    center: [105.6870, 18.6796],
+    cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1400&q=80",
+    tagline: "Cửa Lò, quê Bác Hồ, ẩm thực xứ Nghệ.",
+  },
+  {
+    slug: "ha-tinh", name: "Hà Tĩnh", region: "trung",
+    center: [105.9057, 18.3607],
+    cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1400&q=80",
+    tagline: "Biển Thiên Cầm, chùa Hương Tích, miền non nước.",
+  },
+  {
+    slug: "quang-tri", name: "Quảng Trị", region: "trung",
+    center: [107.1872, 16.7376],
+    cover: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1400&q=80",
+    tagline: "Địa đạo Vịnh Mốc, Cửa Tùng, di tích chiến tranh.",
   },
   {
     slug: "thua-thien-hue", name: "Thừa Thiên Huế", region: "trung",
@@ -133,10 +175,34 @@ export const provinces: Province[] = [
     tagline: "Quy Nhơn — Eo Gió, biển hoang sơ.",
   },
   {
+    slug: "quang-ngai", name: "Quảng Ngãi", region: "trung",
+    center: [108.7928, 15.1138],
+    cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1400&q=80",
+    tagline: "Đảo Lý Sơn — tỏi tươi, biển hoang sơ ít người biết.",
+  },
+  {
+    slug: "phu-yen", name: "Phú Yên", region: "trung",
+    center: [109.0920, 13.0965],
+    cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1400&q=80",
+    tagline: "Gành Đá Đĩa, Mũi Điện — cực đông Tổ quốc.",
+  },
+  {
     slug: "khanh-hoa", name: "Khánh Hoà", region: "trung",
     center: [109.1968, 12.2388],
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1400&q=80",
     tagline: "Vịnh Nha Trang — lặn biển, tour đảo.",
+  },
+  {
+    slug: "dak-lak", name: "Đắk Lắk", region: "trung",
+    center: [108.0503, 12.6682],
+    cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1400&q=80",
+    tagline: "Buôn Ma Thuột — cà phê nguyên bản, hồ Lak, thác Dray Nur.",
+  },
+  {
+    slug: "gia-lai", name: "Gia Lai", region: "trung",
+    center: [108.0000, 13.9833],
+    cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1400&q=80",
+    tagline: "Biển Hồ T'nưng, cao nguyên xanh, văn hóa Jrai.",
   },
 
   // ── Miền Nam ─────────────────────────────────────────────
@@ -151,6 +217,24 @@ export const provinces: Province[] = [
     center: [108.2902, 10.9418],
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1400&q=80",
     tagline: "Mũi Né — đồi cát, kite-surf.",
+  },
+  {
+    slug: "tay-ninh", name: "Tây Ninh", region: "nam",
+    center: [106.0991, 11.3351],
+    cover: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=1400&q=80",
+    tagline: "Núi Bà Đen, Toà Thánh Cao Đài — tâm linh miền Nam.",
+  },
+  {
+    slug: "an-giang", name: "An Giang", region: "nam",
+    center: [105.1258, 10.7078],
+    cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1400&q=80",
+    tagline: "Châu Đốc, Núi Sam, mùa nước nổi đồng bằng.",
+  },
+  {
+    slug: "ca-mau", name: "Cà Mau", region: "nam",
+    center: [105.1500, 9.1769],
+    cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1400&q=80",
+    tagline: "Mũi Cà Mau — cực Nam Tổ quốc, rừng đước U Minh.",
   },
   {
     slug: "tp-hcm", name: "TP. HCM", region: "nam",

@@ -1,3 +1,4 @@
+import { AuthGuard } from "@/features/auth/components/AuthGuard";
 import { TripList } from "@/features/trip/components/TripList";
 
 export const metadata = {
@@ -5,5 +6,9 @@ export const metadata = {
 };
 
 export default function TripIndexPage() {
-  return <TripList />;
+  return (
+    <AuthGuard mode="redirect">
+      <TripList />
+    </AuthGuard>
+  );
 }

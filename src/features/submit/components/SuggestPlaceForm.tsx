@@ -11,6 +11,8 @@ import { useToast } from "@/ui/toast";
 import { categories, type CategoryKey } from "@/config/categories";
 import { provinces, provinceBySlug, closestProvince } from "@/config/regions";
 import { useSubmissions } from "../hooks/useSubmissions";
+import { useSession } from "@/features/auth/hooks/useSession";
+import { uploadPhotos } from "@/lib/upload";
 
 const MAX_PHOTOS = 3;
 const MAX_PHOTO_BYTES = 1_500_000;
@@ -29,8 +31,15 @@ export interface SuggestPlaceFormProps {
   initialProvinceSlug?: string;
   /** Optional preset — when triggered from a category page. */
   initialCategory?: CategoryKey;
-  /** Optional preset — when triggered by "pick on map" flow. Auto-detects province. */
-  initialCoords?: { lng: number; lat: number };
+  /** Optional preset — when triggered by "pick on map" / AI flow. */
+  initialCoords?: {
+    lng: number;
+    lat: number;
+    name?: string;
+    category?: string;
+    address?: string;
+    description?: string;
+  };
   onSubmitted?: () => void;
 }
 
@@ -45,6 +54,7 @@ export function SuggestPlaceForm({
   const titleId = useId();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { add } = useSubmissions();
+  const { user } = useSession();
   const { show: showToast } = useToast();
 
   const [name, setName] = useState("");
@@ -73,14 +83,28 @@ export function SuggestPlaceForm({
     }
   }, [provinceSlug, lng, lat]);
 
-  // Apply initialCoords from "pick on map" flow — runs each time the dialog
-  // opens with new coords. Auto-detects closest province by haversine.
+  // Apply initialCoords from "pick on map" / AI suggest flow
   useEffect(() => {
     if (!open || !initialCoords) return;
     setLng(initialCoords.lng.toFixed(6));
     setLat(initialCoords.lat.toFixed(6));
     const closest = closestProvince([initialCoords.lng, initialCoords.lat]);
     setProvinceSlug(closest.slug);
+    if (initialCoords.name) setName(initialCoords.name);
+    if (initialCoords.address) setAddress(initialCoords.address);
+    if (initialCoords.description) setDescription(initialCoords.description);
+    if (initialCoords.category) {
+      const map: Record<string, CategoryKey> = {
+        cafe: "cafe", restaurant: "food", food: "food",
+        bar: "nightlife", nightlife: "nightlife", rooftop: "rooftop",
+        beach: "beach", mountain: "mountain", park: "nature", nature: "nature",
+        museum: "heritage", heritage: "heritage", attraction: "checkin",
+        market: "food", hotel: "experience", experience: "experience",
+        hidden: "hidden", checkin: "checkin",
+      };
+      const mapped = map[initialCoords.category.toLowerCase()];
+      if (mapped) setCategory(mapped);
+    }
   }, [open, initialCoords]);
 
   // Persist author across submissions
@@ -167,7 +191,10 @@ export function SuggestPlaceForm({
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean);
-      add({
+      const uploadedPhotos = user && photos.length > 0
+        ? await uploadPhotos(photos, user.id)
+        : photos;
+      await add({
         name: name.trim(),
         category: category as CategoryKey,
         province: prov.name,
@@ -180,7 +207,7 @@ export function SuggestPlaceForm({
         priceRange: priceRange || undefined,
         openingHours: openingHours.trim() || undefined,
         tags: tags.length > 0 ? tags : undefined,
-        photos: photos.length > 0 ? photos : undefined,
+        photos: uploadedPhotos.length > 0 ? uploadedPhotos : undefined,
         submittedBy: submittedBy.trim(),
       });
       showToast("Cảm ơn — đề xuất đã được ghi nhận, sẽ duyệt sớm.", {

@@ -48,7 +48,7 @@ export function NewTripDialog({
     if (numDays < 1 || numDays > 30) return setError("Số ngày 1–30");
     setSubmitting(true);
     try {
-      const trip = create({
+      const trip = await create({
         name: name.trim(),
         description: description.trim() || undefined,
         numDays,

@@ -6,7 +6,6 @@ import { cn } from "@/lib/cn";
 import { Button, type ButtonProps } from "@/ui/button";
 import { useToast } from "@/ui/toast";
 import { useTrips } from "../hooks/useTrips";
-import { addPlaceToTrip, getTrip } from "../lib/storage";
 import { NewTripDialog } from "./NewTripDialog";
 
 export interface AddToTripButtonProps {
@@ -28,17 +27,17 @@ export function AddToTripButton({
   label = "Thêm vào trip",
   className,
 }: AddToTripButtonProps) {
-  const { trips } = useTrips();
+  const { trips, addPlaceToDay, getTripById } = useTrips();
   const { show: showToast } = useToast();
   const [newOpen, setNewOpen] = useState(false);
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [justAdded, setJustAdded] = useState<string | null>(null); // tripId-dayIndex
 
   const handleAdd = (tripId: string, dayIndex: number) => {
-    addPlaceToTrip(tripId, dayIndex, slug);
+    addPlaceToDay(tripId, dayIndex, slug);
     const key = `${tripId}-${dayIndex}`;
     setJustAdded(key);
-    const trip = getTrip(tripId);
+    const trip = getTripById(tripId);
     showToast(
       `Đã thêm vào "${trip?.name ?? "chuyến đi"}" — Ngày ${dayIndex + 1}`,
       { variant: "success" }

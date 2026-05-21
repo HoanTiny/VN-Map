@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
 import { AppProviders } from "@/providers/AppProviders";
 import { ThemeNoFlashScript } from "@/components/theme/ThemeToggle";
+import { PWAProvider } from "@/components/pwa/PWAProvider";
 import { siteConfig } from "@/config/site";
 import "@/styles/globals.css";
 
@@ -35,6 +36,14 @@ export const metadata: Metadata = {
     images: [{ url: siteConfig.ogImage }],
   },
   twitter: { card: "summary_large_image" },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Map-VN",
+  },
+  icons: {
+    apple: "/icons/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -54,6 +63,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-dvh bg-bg text-text antialiased">
         <AppProviders>{children}</AppProviders>
+        <PWAProvider />
       </body>
     </html>
   );

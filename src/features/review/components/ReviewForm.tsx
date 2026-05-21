@@ -11,6 +11,8 @@ import { useToast } from "@/ui/toast";
 import { RatingStars } from "./RatingStars";
 import { companionLabels, type Companion } from "../lib/types";
 import { useReviews } from "../hooks/useReviews";
+import { useSession } from "@/features/auth/hooks/useSession";
+import { uploadPhotos } from "@/lib/upload";
 
 const MAX_PHOTOS = 3;
 const MAX_PHOTO_BYTES = 1_500_000; // ~1.5MB each — fits in localStorage budget
@@ -33,6 +35,7 @@ export function ReviewForm({
   const titleId = useId();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { add } = useReviews(placeSlug);
+  const { user } = useSession();
   const { show: showToast } = useToast();
 
   const [rating, setRating] = useState<0 | 1 | 2 | 3 | 4 | 5>(0);
@@ -97,12 +100,15 @@ export function ReviewForm({
     setSubmitting(true);
     try {
       localStorage.setItem("mapvn:reviewer-name", authorName.trim());
-      add({
+      const uploadedPhotos = user && photos.length > 0
+        ? await uploadPhotos(photos, user.id)
+        : photos;
+      await add({
         placeSlug,
         rating: rating as 1 | 2 | 3 | 4 | 5,
         title: title.trim() || undefined,
         body: body.trim(),
-        photos: photos.length > 0 ? photos : undefined,
+        photos: uploadedPhotos.length > 0 ? uploadedPhotos : undefined,
         companion: companion || undefined,
         visitedAt: visitedAt || undefined,
         authorName: authorName.trim(),

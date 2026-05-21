@@ -19,8 +19,12 @@ export function SignInForm() {
   const [oauthLoading, setOauthLoading] = useState(false);
   const [error, setError] = useState<string | null>(errorParam);
 
-  const redirectUrl = () =>
-    `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+  const redirectUrl = () => {
+    const base =
+      process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") ||
+      window.location.origin;
+    return `${base}/auth/callback?next=${encodeURIComponent(next)}`;
+  };
 
   const signInWithGoogle = async () => {
     if (!isSupabaseConfigured()) {

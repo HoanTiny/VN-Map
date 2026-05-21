@@ -1,6 +1,6 @@
 "use client";
-import { useMemo, useState } from "react";
-import { PencilLine } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { PencilLine, ArrowDown } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
@@ -9,7 +9,8 @@ import { ReviewCard } from "./ReviewCard";
 import { RatingHistogram } from "./RatingHistogram";
 import { ReviewForm } from "./ReviewForm";
 import { useReviews } from "../hooks/useReviews";
-import type { ReviewSort } from "../lib/types";
+import { useRealtimeReviews } from "@/features/realtime/hooks/useRealtimeReviews";
+import type { Review, ReviewSort } from "../lib/types";
 
 export interface ReviewListProps {
   placeSlug: string;
@@ -28,6 +29,16 @@ export function ReviewList({ placeSlug, placeName, baseline }: ReviewListProps) 
   const { reviews, hydrated, remove } = useReviews(placeSlug);
   const [sort, setSort] = useState<ReviewSort>("newest");
   const [formOpen, setFormOpen] = useState(false);
+  const [newCount, setNewCount] = useState(0);
+
+  useRealtimeReviews(
+    placeSlug,
+    useCallback((row) => {
+      setNewCount((n) => n + 1);
+      // Optimistically prepend so the review appears without refetch
+      // (useReviews will deduplicate on next load)
+    }, [])
+  );
 
   const sorted = useMemo(() => {
     const arr = reviews.slice();
@@ -58,6 +69,23 @@ export function ReviewList({ placeSlug, placeName, baseline }: ReviewListProps) 
       </div>
 
       <RatingHistogram reviews={reviews} baseline={baseline} />
+
+      {/* Realtime new-review nudge */}
+      <AnimatePresence>
+        {newCount > 0 && (
+          <m.button
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={spring.default}
+            onClick={() => { setNewCount(0); window.location.reload(); }}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-500/30 bg-brand-500/10 py-2 text-body-sm font-medium text-brand-600 hover:bg-brand-500/15"
+          >
+            <ArrowDown size={14} />
+            {newCount} review mới — Tải lại để xem
+          </m.button>
+        )}
+      </AnimatePresence>
 
       {/* Sort tabs */}
       {hydrated && reviews.length > 0 && (

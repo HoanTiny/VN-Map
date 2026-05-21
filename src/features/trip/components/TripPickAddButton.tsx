@@ -1,11 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Check, Plus } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/cn";
 import { transition } from "@/lib/motion";
 import { Button } from "@/ui/button";
-import { addPlaceToTrip, getTrip } from "../lib/storage";
+import { useTrip } from "../hooks/useTrips";
 
 export interface TripPickAddButtonProps {
   slug: string;
@@ -25,21 +25,15 @@ export function TripPickAddButton({
   dayIndex,
   className,
 }: TripPickAddButtonProps) {
+  const { trip, addPlace } = useTrip(tripId);
   const [justAdded, setJustAdded] = useState(false);
-  const [alreadyIn, setAlreadyIn] = useState(false);
 
-  // Check on mount + when slug changes whether this place is already in that day.
-  useEffect(() => {
-    const trip = getTrip(tripId);
-    const day = trip?.days[dayIndex];
-    setAlreadyIn(!!day?.placeSlugs.includes(slug));
-  }, [slug, tripId, dayIndex]);
+  const alreadyIn = trip?.days[dayIndex]?.placeSlugs.includes(slug) ?? false;
 
   const add = () => {
     if (alreadyIn) return;
-    addPlaceToTrip(tripId, dayIndex, slug);
+    addPlace(dayIndex, slug);
     setJustAdded(true);
-    setAlreadyIn(true);
     setTimeout(() => setJustAdded(false), 1400);
   };
 

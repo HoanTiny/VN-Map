@@ -19,6 +19,7 @@ import { VN_CENTER } from "@/lib/constants";
 import { transition, spring } from "@/lib/motion";
 import { Button } from "@/ui/button";
 import { SuggestPlaceForm } from "@/features/submit/components/SuggestPlaceForm";
+import { AISuggestPanel } from "@/features/ai/components/AISuggestPanel";
 
 /**
  * MapExperience is the full /explore composition. It owns DOM refs and
@@ -235,6 +236,11 @@ export function MapExperience({ data }: MapExperienceProps = {}) {
         {/* Bottom left/center: selected place card */}
         <div className="pointer-events-none absolute inset-x-4 bottom-6 flex justify-center md:left-6 md:right-auto md:justify-start">
           <MapPlaceCard />
+        </div>
+
+        {/* Bottom left: AI suggest */}
+        <div className="pointer-events-auto absolute bottom-20 left-4">
+          <AISuggestPanel />
         </div>
 
 

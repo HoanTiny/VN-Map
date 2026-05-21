@@ -1,3 +1,4 @@
+import { AuthGuard } from "@/features/auth/components/AuthGuard";
 import { SavedPlaces } from "@/features/saved/components/SavedPlaces";
 
 export const metadata = {
@@ -5,5 +6,9 @@ export const metadata = {
 };
 
 export default function SavedPage() {
-  return <SavedPlaces />;
+  return (
+    <AuthGuard mode="redirect">
+      <SavedPlaces />
+    </AuthGuard>
+  );
 }
