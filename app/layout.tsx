@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { AppProviders } from "@/providers/AppProviders";
 import { ThemeNoFlashScript } from "@/components/theme/ThemeToggle";
 import { PWAProvider } from "@/components/pwa/PWAProvider";
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AppProviders>{children}</AppProviders>
         <FloatingWavingFlags />
         <PWAProvider />
+        <Analytics />
       </body>
     </html>
   );
