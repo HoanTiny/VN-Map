@@ -225,6 +225,8 @@ export function DynamicHeroBackground({
           const timeoutId = setTimeout(() => controller.abort(), 1500);
           console.log(`[hero-bg] fetching client IP geo from ${provider.name}...`);
           const res = await fetch(provider.url, { signal: controller.signal });
+
+          console.log('provider res', { res })
           clearTimeout(timeoutId);
 
           if (!res.ok) {
@@ -232,10 +234,12 @@ export function DynamicHeroBackground({
             continue;
           }
           const data = (await res.json()) as Record<string, unknown>;
+
+          console.log('provider data', { data })
           const { city: rawCity, region: rawRegion } = provider.parse(data);
           const city = normalizeForMatch(rawCity);
           const regionName = normalizeForMatch(rawRegion);
-          
+
           if (!city && !regionName) {
             console.warn(`[hero-bg] ${provider.name} returned empty city/region`);
             continue;
