@@ -527,14 +527,10 @@ export function DynamicHeroBackground({
     };
 
     const applyGeo = (city: string, regionName: string) => {
-      if (process.env.NODE_ENV !== "production") {
-        console.log("[hero-bg] geo:", { city, region: regionName });
-      }
+      console.log("[hero-bg] geo:", { city, region: regionName });
       const matched = matchAgainst(city, regionName);
       if (matched) {
-        if (process.env.NODE_ENV !== "production") {
-          console.log("[hero-bg] matched region:", matched);
-        }
+        console.log("[hero-bg] matched region:", matched);
         setRegion(matched);
       }
     };
@@ -561,28 +557,28 @@ export function DynamicHeroBackground({
         url: string;
         parse: (j: Record<string, unknown>) => { city: string; region: string };
       }> = [
-        {
-          name: "ipwho.is",
-          url: "https://ipwho.is/",
-          parse: (j) => ({ city: String(j.city ?? ""), region: String(j.region ?? "") }),
-        },
-        {
-          name: "freeipapi",
-          url: "https://freeipapi.com/api/json",
-          parse: (j) => ({
-            city: String(j.cityName ?? ""),
-            region: String(j.regionName ?? ""),
-          }),
-        },
-        {
-          name: "geojs",
-          url: "https://get.geojs.io/v1/ip/geo.json",
-          parse: (j) => ({
-            city: String(j.city ?? ""),
-            region: String(j.region ?? ""),
-          }),
-        },
-      ];
+          {
+            name: "ipwho.is",
+            url: "https://ipwho.is/",
+            parse: (j) => ({ city: String(j.city ?? ""), region: String(j.region ?? "") }),
+          },
+          {
+            name: "freeipapi",
+            url: "https://freeipapi.com/api/json",
+            parse: (j) => ({
+              city: String(j.cityName ?? ""),
+              region: String(j.regionName ?? ""),
+            }),
+          },
+          {
+            name: "geojs",
+            url: "https://get.geojs.io/v1/ip/geo.json",
+            parse: (j) => ({
+              city: String(j.city ?? ""),
+              region: String(j.region ?? ""),
+            }),
+          },
+        ];
 
       for (const provider of providers) {
         try {
