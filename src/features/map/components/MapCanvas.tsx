@@ -22,15 +22,18 @@ import type { CategoryKey } from "@/config/categories";
 import { provinces } from "@/config/regions";
 
 const SRC = "places";
-const SRC_PROVINCES = "provinces";
+const SRC_PROVINCES = "provinces";        // point centers — labels
+const SRC_PROVINCES_POLY = "provinces-poly"; // VN34.geojson — polygons
 const LAYER_CLUSTERS = "clusters";
 const LAYER_CLUSTER_COUNT = "cluster-count";
 const LAYER_POINTS = "places-points";
 const LAYER_POINT_HALO = "places-points-halo";
 const LAYER_LABELS = "places-labels";
 const LAYER_PROVINCE_LABELS = "province-labels";
-const LAYER_PROVINCE_HIGHLIGHT = "province-highlight";
+const LAYER_PROVINCE_FILL = "province-fill";
+const LAYER_PROVINCE_LINE = "province-line";
 const LAYER_BUILDINGS_3D = "buildings-3d";
+const VN34_URL = "/json/VN34.geojson";
 // OpenMapTiles schema source layer name for buildings (used by OpenFreeMap).
 const OMT_SOURCE = "openmaptiles";
 const OMT_BUILDING_LAYER = "building";
@@ -150,14 +153,17 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
             if (!prov) return;
             map.flyTo({
               center: prov.center,
-              zoom: 8.5,
+              zoom: 8.2,
               duration: reduceMotion ? 0 : 1100,
               essential: true,
             });
-            map.setFeatureState({ source: SRC_PROVINCES, id: slug }, { active: true });
-            window.setTimeout(() => {
-              map.setFeatureState({ source: SRC_PROVINCES, id: slug }, { active: false });
-            }, 2500);
+            // Polygon fill (if VN34 loaded) + center pulse (always works)
+            if (map.getSource(SRC_PROVINCES_POLY)) {
+              map.setFeatureState({ source: SRC_PROVINCES_POLY, id: slug }, { active: true });
+              window.setTimeout(() => {
+                map.setFeatureState({ source: SRC_PROVINCES_POLY, id: slug }, { active: false });
+              }, 5500);
+            }
           },
         };
       });
@@ -351,9 +357,9 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
           filter.size === 0
             ? { type: "FeatureCollection" as const, features: all }
             : {
-                type: "FeatureCollection" as const,
-                features: all.filter((f) => filter.has(f.properties.category)),
-              };
+              type: "FeatureCollection" as const,
+              features: all.filter((f) => filter.has(f.properties.category)),
+            };
         src.setData(data);
       }
     );
@@ -585,6 +591,7 @@ function installPlacesLayers(map: MapLibreMap, placesData: PlacesFC) {
 function installProvinceLayers(map: MapLibreMap) {
   if (map.getSource(SRC_PROVINCES)) return;
 
+  // Point source for labels (uses center coords from regions.ts — always available)
   map.addSource(SRC_PROVINCES, {
     type: "geojson",
     promoteId: "slug",
@@ -603,33 +610,60 @@ function installProvinceLayers(map: MapLibreMap) {
     },
   });
 
-  // Pulsing highlight ring — invisible unless feature-state.active is true.
-  map.addLayer({
-    id: LAYER_PROVINCE_HIGHLIGHT,
-    type: "circle",
-    source: SRC_PROVINCES,
-    paint: {
-      "circle-radius": [
-        "case",
-        ["boolean", ["feature-state", "active"], false], 42,
-        0,
-      ],
-      "circle-color": "#DA251D",
-      "circle-opacity": [
-        "case",
-        ["boolean", ["feature-state", "active"], false], 0.18,
-        0,
-      ],
-      "circle-stroke-color": "#DA251D",
-      "circle-stroke-width": [
-        "case",
-        ["boolean", ["feature-state", "active"], false], 2,
-        0,
-      ],
-      "circle-stroke-opacity": 0.7,
-      "circle-blur": 0.25,
-    },
+  // Polygon source from public/json/VN34.geojson — boundaries + highlight fill
+  map.addSource(SRC_PROVINCES_POLY, {
+    type: "geojson",
+    promoteId: "slug",
+    data: VN34_URL,
   });
+
+  // Subtle fill — invisible by default, brand color when active
+  map.addLayer(
+    {
+      id: LAYER_PROVINCE_FILL,
+      type: "fill",
+      source: SRC_PROVINCES_POLY,
+      paint: {
+        "fill-color": "#DA251D",
+        "fill-opacity": [
+          "case",
+          ["boolean", ["feature-state", "active"], false], 0.18,
+          0,
+        ],
+      },
+    },
+    // Insert below cluster/point layers so markers stay on top
+    map.getLayer(LAYER_POINT_HALO) ? LAYER_POINT_HALO : undefined
+  );
+
+  // Province boundary lines — always faintly visible, thicker when active
+  map.addLayer(
+    {
+      id: LAYER_PROVINCE_LINE,
+      type: "line",
+      source: SRC_PROVINCES_POLY,
+      paint: {
+        "line-color": [
+          "case",
+          ["boolean", ["feature-state", "active"], false], "#DA251D",
+          "#94a3b8",
+        ],
+        "line-width": [
+          "interpolate", ["linear"], ["zoom"],
+          4, ["case", ["boolean", ["feature-state", "active"], false], 2, 0.4],
+          8, ["case", ["boolean", ["feature-state", "active"], false], 3, 0.8],
+          12, ["case", ["boolean", ["feature-state", "active"], false], 4, 1.2],
+        ],
+        "line-opacity": [
+          "interpolate", ["linear"], ["zoom"],
+          4, 0.35,
+          7, 0.55,
+          10, 0.7,
+        ],
+      },
+    },
+    map.getLayer(LAYER_POINT_HALO) ? LAYER_POINT_HALO : undefined
+  );
 
   // Province name labels — visible at low/medium zoom, hidden when zoomed in.
   map.addLayer({
@@ -686,21 +720,21 @@ function install3DBuildings(map: MapLibreMap, isDark = false) {
 
   const colorRamp = isDark
     ? ([
-        "interpolate",
-        ["linear"],
-        ["get", "render_height"],
-        0, "#3a3d44",
-        50, "#4a4e57",
-        200, "#5c616c",
-      ] as const)
+      "interpolate",
+      ["linear"],
+      ["get", "render_height"],
+      0, "#3a3d44",
+      50, "#4a4e57",
+      200, "#5c616c",
+    ] as const)
     : ([
-        "interpolate",
-        ["linear"],
-        ["get", "render_height"],
-        0, "#d6d6d6",
-        50, "#c0c0c0",
-        200, "#a0a0a0",
-      ] as const);
+      "interpolate",
+      ["linear"],
+      ["get", "render_height"],
+      0, "#d6d6d6",
+      50, "#c0c0c0",
+      200, "#a0a0a0",
+    ] as const);
 
   map.addLayer(
     {

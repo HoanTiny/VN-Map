@@ -11,7 +11,8 @@
     "format": "prettier --write .",
     "seed:places": "tsx --env-file=.env.local scripts/seed-places.ts",
     "seed:hero": "tsx --env-file=.env.local scripts/seed-hero-presets.ts",
-    "seed:trips": "tsx --env-file=.env.local scripts/seed-trip-templates.ts"
+    "seed:trips": "tsx --env-file=.env.local scripts/seed-trip-templates.ts",
+    "build:vn34": "tsx scripts/build-vn34-geojson.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -39,6 +40,10 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.5",
+    "@turf/helpers": "^7.3.5",
+    "@turf/simplify": "^7.3.5",
+    "@turf/union": "^7.3.5",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^22.8.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",

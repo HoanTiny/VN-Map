@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { searchPlacesAsync } from "@/features/search/lib/search-server";
 import { normalize } from "@/features/search/lib/search";
-import { provinces, regionByKey } from "@/config/regions";
+import { provinces, provinceBySlug, regionByKey, legacyProvinceMap } from "@/config/regions";
 import { categories } from "@/config/categories";
 
 export const runtime = "nodejs";
@@ -37,6 +37,7 @@ export async function GET(req: Request) {
     });
   }
 
+  const seenProvinces = new Set<string>();
   for (const prov of provinces) {
     if (normalize(prov.name).includes(nq)) {
       const region = regionByKey[prov.region];
@@ -47,7 +48,28 @@ export async function GET(req: Request) {
         sub: region?.label ?? "Vùng miền",
         href: `/region/${prov.region}/${prov.slug}`,
       });
-      if (items.filter((i) => i.type === "region").length >= 4) break;
+      seenProvinces.add(prov.slug);
+      if (seenProvinces.size >= 4) break;
+    }
+  }
+
+  // Also match legacy (pre-merger) province names — Bắc Giang → Bắc Ninh, …
+  if (seenProvinces.size < 4) {
+    for (const [oldName, newSlug] of Object.entries(legacyProvinceMap)) {
+      if (seenProvinces.has(newSlug)) continue;
+      const prov = provinceBySlug[newSlug];
+      if (!prov || prov.name === oldName) continue;
+      if (normalize(oldName).includes(nq)) {
+        items.push({
+          type: "region",
+          id: `${prov.slug}-from-${newSlug}`,
+          label: `${oldName} → ${prov.name}`,
+          sub: `Đã sáp nhập vào ${prov.name}`,
+          href: `/region/${prov.region}/${prov.slug}`,
+        });
+        seenProvinces.add(newSlug);
+        if (seenProvinces.size >= 4) break;
+      }
     }
   }
 

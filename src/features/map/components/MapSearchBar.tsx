@@ -19,7 +19,7 @@ import { transition } from "@/lib/motion";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useMapStore } from "@/stores/map-store";
 import { categories, type CategoryKey } from "@/config/categories";
-import { provinces, type Province } from "@/config/regions";
+import { provinces, provinceBySlug, legacyProvinceMap, type Province } from "@/config/regions";
 import { type PlaceItem } from "@/features/map/lib/places-data";
 import {
   useMapData,
@@ -130,8 +130,37 @@ export function MapSearchBar() {
         })
         .slice(0, 6)
     : [];
-  const provs: Province[] = q
-    ? provinces.filter((p) => normalize(p.name).includes(normalize(q))).slice(0, 3)
+  // Province suggestions: match current 34 admin units AND legacy names
+  // (Bắc Giang, Hòa Bình, …). Legacy matches resolve to the new merged
+  // province but carry the old name as context so the user understands the
+  // redirect.
+  interface ProvinceSuggestion { prov: Province; legacyName?: string }
+  const provs: ProvinceSuggestion[] = q
+    ? (() => {
+        const nq = normalize(q);
+        const seen = new Set<string>();
+        const out: ProvinceSuggestion[] = [];
+        for (const p of provinces) {
+          if (normalize(p.name).includes(nq)) {
+            out.push({ prov: p });
+            seen.add(p.slug);
+            if (out.length >= 4) break;
+          }
+        }
+        if (out.length < 4) {
+          for (const [oldName, newSlug] of Object.entries(legacyProvinceMap)) {
+            if (seen.has(newSlug)) continue;
+            const prov = provinceBySlug[newSlug];
+            if (!prov || prov.name === oldName) continue;
+            if (normalize(oldName).includes(nq)) {
+              out.push({ prov, legacyName: oldName });
+              seen.add(newSlug);
+              if (out.length >= 4) break;
+            }
+          }
+        }
+        return out;
+      })()
     : [];
   const cats = q
     ? categories.filter((c) => normalize(c.labelVi).includes(normalize(q))).slice(0, 3)
@@ -238,13 +267,19 @@ export function MapSearchBar() {
                 {/* Provinces */}
                 {provs.length > 0 && (
                   <Group title="Tỉnh thành" icon={<Compass size={12} />}>
-                    {provs.map((p) => (
+                    {provs.map(({ prov, legacyName }) => (
                       <ActionRow
-                        key={p.slug}
-                        title={p.name}
-                        subtitle={p.tagline}
+                        key={`${prov.slug}-${legacyName ?? ""}`}
+                        title={
+                          legacyName ? `${legacyName} → ${prov.name}` : prov.name
+                        }
+                        subtitle={
+                          legacyName
+                            ? `Đã sáp nhập vào ${prov.name} (01/07/2025)`
+                            : prov.tagline
+                        }
                         icon={<MapPin size={16} className="text-text-muted" />}
-                        onClick={() => onSelectProvince(p)}
+                        onClick={() => onSelectProvince(prov)}
                       />
                     ))}
                   </Group>
