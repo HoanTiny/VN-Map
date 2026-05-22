@@ -127,16 +127,7 @@ export function DynamicHeroBackground({
       setTimeOfDay("night");
     }
 
-    // 2. If the server already resolved a region from request headers / IP, skip
-    //    client-side fetch entirely (this is the common path on Vercel/Cloudflare
-    //    and avoids 429 / CORS hits on free-tier IP APIs).
-    console.log("[hero-bg] initialRegion from server:", initialRegion, "exists in DB:", initialRegion ? index.byRegion.has(initialRegion) : false);
-    if (initialRegion && index.byRegion.has(initialRegion)) {
-      console.log("[hero-bg] using server-resolved region:", initialRegion);
-      return;
-    }
-
-    // 3. Geolocation — Fetch and match region to load corresponding presets.
+    // 2. Geolocation — Fetch and match region to load corresponding presets.
     const matchAgainst = (city: string, regionName: string): string | null => {
       const c = normalizeForMatch(city).replace(/-/g, " ");
       const r = normalizeForMatch(regionName).replace(/-/g, " ");
@@ -186,11 +177,11 @@ export function DynamicHeroBackground({
           applyGeo(province.slug, province.name);
           return; // Geolocation succeeded, exit.
         } catch (err) {
-          console.warn("[hero-bg] GPS failed or timed out, falling back to IP Geolocation:", err);
+          console.warn("[hero-bg] GPS failed or timed out, checking fallback:", err);
         }
       }
 
-      // 2. Chain of free IP geolocation providers fallback
+      // 2. Chain of free IP geolocation providers fallback (Second priority)
       const providers: Array<{
         name: string;
         url: string;
@@ -245,15 +236,27 @@ export function DynamicHeroBackground({
             continue;
           }
 
-          console.log(`[hero-bg] successfully resolved via ${provider.name}`);
-          applyGeo(city, regionName);
-          return;
+          const matched = matchAgainst(city, regionName);
+          if (matched) {
+            console.log(`[hero-bg] successfully resolved and matched via ${provider.name}:`, matched);
+            setRegion(matched);
+            return; // Matched, exit detectRegion.
+          } else {
+            console.warn(`[hero-bg] ${provider.name} resolved to ${city}/${regionName} but did not match any preset.`);
+          }
         } catch (err) {
           console.error(`[hero-bg] ${provider.name} error:`, err);
         }
       }
 
-      console.warn("[hero-bg] all geo providers failed, using default preset:", index.defaultRegion);
+      // 3. If GPS and client IP providers failed or didn't match, fall back to server-resolved initialRegion (Third priority)
+      if (initialRegion && index.byRegion.has(initialRegion)) {
+        console.log("[hero-bg] GPS and IP APIs failed/did not match. Falling back to server-resolved initialRegion:", initialRegion);
+        setRegion(initialRegion);
+        return;
+      }
+
+      console.warn("[hero-bg] all geo options failed, using default preset:", index.defaultRegion);
     };
 
     detectRegion();
