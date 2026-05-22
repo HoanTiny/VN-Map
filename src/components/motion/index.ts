@@ -4,3 +4,4 @@ export { HoverLift, type HoverLiftProps } from "./HoverLift";
 export { PageTransition } from "./PageTransition";
 export { DynamicHeroText } from "./DynamicHeroText";
 export { DynamicHeroBackground } from "./DynamicHeroBackground";
+export { FloatingWavingFlags } from "./FloatingWavingFlags";

@@ -4,6 +4,7 @@ import { AppProviders } from "@/providers/AppProviders";
 import { ThemeNoFlashScript } from "@/components/theme/ThemeToggle";
 import { PWAProvider } from "@/components/pwa/PWAProvider";
 import { siteConfig } from "@/config/site";
+import { FloatingWavingFlags } from "@/components/motion";
 import "@/styles/globals.css";
 
 const inter = Inter({
@@ -63,6 +64,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-dvh bg-bg text-text antialiased">
         <AppProviders>{children}</AppProviders>
+        <FloatingWavingFlags />
         <PWAProvider />
       </body>
     </html>
