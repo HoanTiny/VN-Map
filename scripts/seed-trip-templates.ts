@@ -59,7 +59,7 @@ const TEMPLATES = [
     cover: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=2000&q=85",
     duration_days: 4,
     season: "summer" as const,
-    destinations: ["da-nang", "quang-nam"],
+    destinations: ["da-nang"],
     tags: ["biển", "phố cổ", "di sản", "hè"],
     days: [
       {
@@ -93,7 +93,7 @@ const TEMPLATES = [
     cover: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=2000&q=85",
     duration_days: 3,
     season: "autumn" as const,
-    destinations: ["lao-cai", "hoa-binh"],
+    destinations: ["lao-cai", "phu-tho"],
     tags: ["núi", "ruộng bậc thang", "trekking", "mùa lúa"],
     days: [
       {

@@ -35,8 +35,9 @@ export function MapPlaceCard() {
           animate="animate"
           exit="exit"
           className={cn(
-            "pointer-events-auto w-full max-w-[420px] overflow-hidden rounded-2xl",
-            "glass-strong shadow-xl ring-1 ring-black/5 dark:ring-white/5"
+            "group pointer-events-auto w-full max-w-[420px] overflow-hidden rounded-2xl",
+            "glass-strong shadow-2xl ring-1 ring-black/10 dark:ring-white/10",
+            "hover:ring-brand-500/20 dark:hover:ring-brand-500/30 transition-all duration-500 ease-out"
           )}
           role="dialog"
           aria-label={place.name}
@@ -47,9 +48,9 @@ export function MapPlaceCard() {
               alt={place.name}
               fill
               sizes="420px"
-              className="object-cover"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent opacity-90 transition-opacity duration-500 group-hover:opacity-95" />
 
             <div className="absolute left-3 top-3">
               <CategoryChip category={place.category} />
@@ -85,9 +86,19 @@ export function MapPlaceCard() {
 
           {place.highlight && (
             <div className="px-4 pt-3">
-              <Badge variant="brand" className="bg-brand-50 text-brand-700">
-                ✨ {place.highlight}
-              </Badge>
+              <div
+                className={cn(
+                  "relative overflow-hidden rounded-xl border p-3 text-caption font-medium shadow-sm transition-all duration-300",
+                  "bg-gradient-to-r from-brand-500/[0.04] to-gold-500/[0.04] border-brand-500/10 text-brand-800",
+                  "dark:from-brand-500/[0.12] dark:to-gold-500/[0.08] dark:border-brand-500/25 dark:text-brand-200"
+                )}
+              >
+                <div className="absolute inset-0 bg-gradient-to-r from-brand-500/10 via-transparent to-gold-500/5 opacity-40 pointer-events-none" />
+                <div className="relative flex items-start gap-2 leading-relaxed">
+                  <span className="shrink-0 text-body-sm animate-pulse">✨</span>
+                  <span className="font-sans text-body-sm select-text font-normal">{place.highlight}</span>
+                </div>
+              </div>
             </div>
           )}
 
@@ -103,30 +114,64 @@ export function MapPlaceCard() {
               <>
                 <Button
                   size="sm"
-                  variant={saved ? "tonal" : "primary"}
                   onClick={() => toggleSaved()}
-                  className="flex-1"
+                  className={cn(
+                    "flex-1 font-semibold rounded-full transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]",
+                    saved
+                      ? "bg-brand-50/90 dark:bg-brand-500/15 text-brand-600 dark:text-brand-300 border border-brand-200/50 dark:border-brand-500/25 hover:bg-brand-100/90 dark:hover:bg-brand-500/25"
+                      : "bg-gradient-to-r from-brand-500 to-rose-500 hover:from-brand-600 hover:to-rose-600 text-white border-none shadow-md shadow-brand-500/15 hover:shadow-lg hover:shadow-brand-500/20"
+                  )}
                 >
                   <Heart
                     size={14}
-                    className={cn("transition-all", saved && "fill-brand-700")}
+                    className={cn(
+                      "transition-all duration-300",
+                      saved ? "fill-brand-500 text-brand-500 dark:fill-brand-400 dark:text-brand-400" : "text-white"
+                    )}
                   />
                   {saved ? "Đã lưu" : "Lưu"}
                 </Button>
-                <AddToTripButton slug={place.slug} variant="secondary" size="sm" />
+                <AddToTripButton
+                  slug={place.slug}
+                  variant="secondary"
+                  size="sm"
+                  className="bg-surface-2 dark:bg-white/5 border border-border/80 dark:border-white/10 text-text hover:bg-surface-3 dark:hover:bg-white/10 rounded-full transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-1.5"
+                />
               </>
             )}
-            <IconButton label="Chia sẻ" variant="ghost" size="sm">
+            <IconButton
+              label="Chia sẻ"
+              variant="glass"
+              size="sm"
+              className="rounded-full bg-surface-2 dark:bg-white/5 border border-border/80 dark:border-white/10 text-text hover:bg-surface-3 dark:hover:bg-white/10 hover:scale-105 active:scale-95 transition-all duration-300"
+            >
               <Share2 size={14} />
             </IconButton>
           </div>
 
-          <div className="border-t border-border/60 px-4 py-3">
+          <div className="p-4 pt-1">
             <Link
               href={`/place/${place.slug}`}
-              className="inline-flex items-center gap-1 text-body-sm font-medium text-brand-600 hover:underline"
+              className={cn(
+                "group/footer flex items-center justify-between w-full rounded-xl p-3 text-body-sm font-medium transition-all duration-300",
+                "bg-black/[0.02] dark:bg-white/[0.02] border border-black/[0.04] dark:border-white/[0.04]",
+                "hover:bg-brand-500/[0.04] dark:hover:bg-brand-500/[0.08] hover:border-brand-500/20 dark:hover:border-brand-500/30",
+                "text-brand-600 dark:text-brand-300 shadow-sm"
+              )}
             >
-              <Navigation size={12} /> Xem trang chi tiết
+              <span className="flex items-center gap-2">
+                <Navigation
+                  size={14}
+                  className="text-brand-500 dark:text-brand-400 transition-transform duration-500 ease-out group-hover/footer:rotate-45 group-hover/footer:scale-110"
+                />
+                <span className="font-sans select-none tracking-wide text-text/80 dark:text-text/90 group-hover/footer:text-brand-600 dark:group-hover/footer:text-brand-300 transition-colors duration-300">
+                  Xem chi tiết & Đánh giá
+                </span>
+              </span>
+              <span className="flex items-center gap-0.5 text-brand-500 dark:text-brand-400 group-hover/footer:translate-x-1 transition-transform duration-300">
+                <span className="text-caption font-semibold">Khám phá</span>
+                <span className="text-[14px]">→</span>
+              </span>
             </Link>
           </div>
         </m.div>
@@ -140,11 +185,11 @@ function CategoryChip({ category }: { category: keyof typeof categoryByKey }) {
   const Icon = cat.icon;
   return (
     <div
-      className="inline-flex items-center gap-1.5 rounded-full bg-white/95 px-2.5 py-1 text-caption font-medium shadow-sm"
+      className="inline-flex items-center gap-1.5 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-md border border-white/20 dark:border-white/10 px-3 py-1 text-caption font-semibold shadow-sm transition-colors duration-300"
       style={{ color: cat.color }}
     >
-      <Icon size={12} />
-      {cat.labelVi}
+      <Icon size={12} className="shrink-0" />
+      <span>{cat.labelVi}</span>
     </div>
   );
 }

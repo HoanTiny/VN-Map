@@ -9,7 +9,7 @@ const places: PlaceCardData[] = [
   {
     slug: "hoi-an",
     name: "Phố cổ Hội An",
-    province: "Quảng Nam",
+    province: "Đà Nẵng",
     category: "heritage",
     cover: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200&q=80",
     rating: 4.9,

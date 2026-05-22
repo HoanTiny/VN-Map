@@ -44,14 +44,14 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
     tags: ["mây bay", "trekking", "tháng-9-10"], source: "seed",
   },
   {
-    id: "2", slug: "ha-giang", name: "Cao nguyên đá Hà Giang", province: "Hà Giang", category: "mountain",
+    id: "2", slug: "ha-giang", name: "Cao nguyên đá Hà Giang", province: "Tuyên Quang", district: "Đồng Văn (Hà Giang cũ)", category: "mountain",
     lng: 104.9836, lat: 22.8233, rating: 4.9, reviewCount: 2820,
     cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=900&q=80",
     highlight: "Cung Hà Giang Loop",
     tags: ["motorbike", "loop", "Đồng-Văn"], source: "seed",
   },
   {
-    id: "3", slug: "mu-cang-chai", name: "Mù Cang Chải", province: "Yên Bái", category: "mountain",
+    id: "3", slug: "mu-cang-chai", name: "Mù Cang Chải", province: "Lào Cai", district: "Mù Cang Chải (Yên Bái cũ)", category: "mountain",
     lng: 104.0894, lat: 21.8489, rating: 4.7, reviewCount: 1450,
     cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=900&q=80",
     tags: ["ruộng-bậc-thang"], source: "seed",
@@ -135,7 +135,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "13", slug: "ba-be-lake", name: "Hồ Ba Bể",
-    province: "Bắc Kạn", category: "hidden",
+    province: "Thái Nguyên", district: "Ba Bể (Bắc Kạn cũ)", category: "hidden",
     lng: 105.6244, lat: 22.4081, rating: 4.6, reviewCount: 720,
     cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=900&q=80",
     highlight: "Hồ nước ngọt nguyên sinh — ít người biết",
@@ -144,7 +144,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   // ── Hòa Bình ──
   {
     id: "41", slug: "mai-chau-valley", name: "Thung lũng Mai Châu",
-    province: "Hòa Bình", category: "mountain",
+    province: "Phú Thọ", district: "Mai Châu (Hòa Bình cũ)", category: "mountain",
     lng: 104.8380, lat: 20.6480, rating: 4.7, reviewCount: 1840,
     cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=900&q=80",
     highlight: "Thung lũng xanh — homestay người Thái bản Lác",
@@ -152,7 +152,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "42", slug: "ban-lac-homestay", name: "Bản Lác",
-    province: "Hòa Bình", category: "experience",
+    province: "Phú Thọ", district: "Mai Châu (Hòa Bình cũ)", category: "experience",
     lng: 104.8295, lat: 20.6440, rating: 4.6, reviewCount: 920,
     cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=900&q=80",
     highlight: "Nhà sàn người Thái trắng — đêm lửa trại",
@@ -199,7 +199,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   /* ═══════════════════════════════════════════ Trung ═══════════════════════════════════════════ */
   {
     id: "14", slug: "phong-nha", name: "Phong Nha — Kẻ Bàng",
-    province: "Quảng Bình", category: "nature",
+    province: "Quảng Trị", district: "Bố Trạch (Quảng Bình cũ)", category: "nature",
     lng: 106.2825, lat: 17.5879, rating: 4.9, reviewCount: 2410,
     cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=900&q=80",
     highlight: "Hệ thống hang động lớn nhất thế giới",
@@ -286,7 +286,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "15", slug: "hue-imperial", name: "Đại Nội Huế",
-    province: "Thừa Thiên Huế", district: "Phú Xuân",
+    province: "Huế", district: "Phú Xuân",
     category: "heritage", lng: 107.5909, lat: 16.4637, rating: 4.7, reviewCount: 2640,
     cover: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=900&q=80",
     priceRange: "$$", openingHours: "06:30–17:30",
@@ -294,7 +294,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "16", slug: "bun-bo-hue", name: "Bún bò bà Phụng",
-    province: "Thừa Thiên Huế", district: "Phú Xuân",
+    province: "Huế", district: "Phú Xuân",
     address: "14 Nguyễn Du, Huế", category: "food",
     lng: 107.5821, lat: 16.4675, rating: 4.5, reviewCount: 510,
     cover: "https://images.unsplash.com/photo-1583224944844-5b268c057b72?w=900&q=80",
@@ -328,14 +328,14 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "20", slug: "my-son", name: "Thánh địa Mỹ Sơn",
-    province: "Quảng Nam", category: "heritage",
+    province: "Đà Nẵng", district: "Duy Xuyên (Quảng Nam cũ)", category: "heritage",
     lng: 108.1241, lat: 15.7637, rating: 4.6, reviewCount: 1240,
     cover: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=900&q=80",
     priceRange: "$$", tags: ["UNESCO", "Chăm-pa"], source: "seed",
   },
   {
     id: "21", slug: "hoi-an", name: "Phố cổ Hội An",
-    province: "Quảng Nam", district: "Minh An",
+    province: "Đà Nẵng", district: "Hội An (Quảng Nam cũ)",
     category: "heritage", lng: 108.3380, lat: 15.8801, rating: 4.9, reviewCount: 2420,
     cover: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=900&q=80",
     highlight: "Đèn lồng rực rỡ về đêm",
@@ -344,7 +344,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "22", slug: "hoi-an-lantern-alley", name: "Hẻm đèn lồng Hội An",
-    province: "Quảng Nam", district: "Minh An",
+    province: "Đà Nẵng", district: "Hội An (Quảng Nam cũ)",
     category: "checkin", lng: 108.3268, lat: 15.8770, rating: 4.7, reviewCount: 1980,
     cover: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=900&q=80",
     highlight: "Spot chụp đèn lồng nổi tiếng",
@@ -352,7 +352,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "23", slug: "reaching-out-tea", name: "Reaching Out Tea House",
-    province: "Quảng Nam", district: "Minh An",
+    province: "Đà Nẵng", district: "Hội An (Quảng Nam cũ)",
     address: "131 Trần Phú, Hội An",
     category: "cafe", lng: 108.3270, lat: 15.8772, rating: 4.9, reviewCount: 2140,
     cover: "https://images.unsplash.com/photo-1572116469696-31de0f17cc34?w=900&q=80",
@@ -362,14 +362,14 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "24", slug: "an-bang-beach", name: "Bãi An Bàng",
-    province: "Quảng Nam", category: "beach",
+    province: "Đà Nẵng", district: "Hội An (Quảng Nam cũ)", category: "beach",
     lng: 108.3460, lat: 15.9180, rating: 4.6, reviewCount: 1380,
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
     tags: ["beach-bar", "sunset"], source: "seed",
   },
   {
     id: "25", slug: "hoi-an-lantern-workshop", name: "Lớp làm đèn lồng Hội An",
-    province: "Quảng Nam", district: "Minh An",
+    province: "Đà Nẵng", district: "Hội An (Quảng Nam cũ)",
     category: "experience", lng: 108.3290, lat: 15.8795, rating: 4.8, reviewCount: 920,
     cover: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=900&q=80",
     highlight: "Tự tay làm đèn lồng — mang về",
@@ -378,7 +378,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "26", slug: "quy-nhon", name: "Eo gió Quy Nhơn",
-    province: "Bình Định", category: "beach",
+    province: "Gia Lai", district: "Quy Nhơn (Bình Định cũ)", category: "beach",
     lng: 109.2197, lat: 13.7820, rating: 4.6, reviewCount: 1190,
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
     tags: ["off-the-beaten"], source: "seed",
@@ -403,7 +403,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   // ── Phú Yên ──
   {
     id: "58", slug: "ganh-da-dia", name: "Gành Đá Đĩa",
-    province: "Phú Yên", category: "checkin",
+    province: "Đắk Lắk", district: "Tuy An (Phú Yên cũ)", category: "checkin",
     lng: 109.3110, lat: 13.5040, rating: 4.8, reviewCount: 2180,
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
     highlight: "Cột đá bazan hình lục giác — hiện tượng địa chất độc nhất VN",
@@ -411,7 +411,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "59", slug: "mui-dien-lighthouse", name: "Mũi Điện — Đại Lãnh",
-    province: "Phú Yên", category: "checkin",
+    province: "Đắk Lắk", district: "Đông Hòa (Phú Yên cũ)", category: "checkin",
     lng: 109.4568, lat: 12.8986, rating: 4.7, reviewCount: 1240,
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
     highlight: "Cực Đông Tổ quốc — đón ánh bình minh đầu tiên",
@@ -419,7 +419,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "27", slug: "nha-trang", name: "Vịnh Nha Trang",
-    province: "Khánh Hoà", category: "beach",
+    province: "Khánh Hòa", category: "beach",
     lng: 109.1968, lat: 12.2388, rating: 4.5, reviewCount: 4290,
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
     tags: ["lặn-biển", "tour-đảo"], source: "seed",
@@ -491,7 +491,7 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "30", slug: "mui-ne", name: "Mũi Né",
-    province: "Bình Thuận", category: "beach",
+    province: "Lâm Đồng", district: "Phan Thiết (Bình Thuận cũ)", category: "beach",
     lng: 108.2902, lat: 10.9418, rating: 4.5, reviewCount: 2080,
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
     tags: ["đồi-cát", "kite-surf"], source: "seed",
@@ -624,14 +624,14 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
   },
   {
     id: "39", slug: "phu-quoc", name: "Bãi Sao Phú Quốc",
-    province: "Kiên Giang", category: "beach",
+    province: "An Giang", district: "Phú Quốc (Kiên Giang cũ)", category: "beach",
     lng: 103.9670, lat: 10.2270, rating: 4.7, reviewCount: 2180,
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
     tags: ["cát-trắng", "yên-tĩnh"], source: "seed",
   },
   {
     id: "40", slug: "con-dao", name: "Côn Đảo",
-    province: "Bà Rịa — VT", category: "beach",
+    province: "TP. HCM", district: "Côn Đảo (Bà Rịa - VT cũ)", category: "beach",
     lng: 106.6094, lat: 8.6916, rating: 4.8, reviewCount: 1620,
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
     highlight: "Đảo biệt lập — lịch sử & biển hoang sơ",

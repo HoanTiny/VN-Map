@@ -76,7 +76,7 @@ export function FloatingWavingFlags() {
   if (!isMounted || particles.length === 0) return null;
 
   return (
-    <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-[99]">
+    <div className="fixed inset-0 w-full h-full overflow-hidden pointer-events-none select-none z-[10]">
       {/* Scoped CSS Keyframe Animations to avoid polluting global scope */}
       <style dangerouslySetInnerHTML={{ __html: `
         :root {

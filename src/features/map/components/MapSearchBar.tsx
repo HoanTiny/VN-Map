@@ -150,7 +150,7 @@ export function MapSearchBar() {
     closeAndClear();
   };
   const onSelectProvince = (p: Province) => {
-    window.__mapVN?.flyTo(p.center[0], p.center[1], 11);
+    window.__mapVN?.highlightProvince(p.slug);
     closeAndClear();
   };
   const closeAndClear = () => {

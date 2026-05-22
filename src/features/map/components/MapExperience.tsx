@@ -186,7 +186,7 @@ export function MapExperience({ data }: MapExperienceProps = {}) {
       <MapCanvas data={effectiveData} />
 
       {/* Chrome */}
-      <div className="pointer-events-none absolute inset-0">
+      <div className="pointer-events-none absolute inset-0 z-[20]">
         {/* Top: search + filter chips + trip-pick banner */}
         <div className="absolute inset-x-0 top-4 flex flex-col items-center gap-3 px-4">
           <div className="pointer-events-auto relative w-full max-w-xl">

@@ -19,13 +19,17 @@ import { useMapData } from "../context/MapDataContext";
 import { resolveStyleUrl, categoryColorExpression } from "../lib/style-helpers";
 import { useRealtimePlaces, type NewPlacePayload } from "@/features/realtime/hooks/useRealtimePlaces";
 import type { CategoryKey } from "@/config/categories";
+import { provinces } from "@/config/regions";
 
 const SRC = "places";
+const SRC_PROVINCES = "provinces";
 const LAYER_CLUSTERS = "clusters";
 const LAYER_CLUSTER_COUNT = "cluster-count";
 const LAYER_POINTS = "places-points";
 const LAYER_POINT_HALO = "places-points-halo";
 const LAYER_LABELS = "places-labels";
+const LAYER_PROVINCE_LABELS = "province-labels";
+const LAYER_PROVINCE_HIGHLIGHT = "province-highlight";
 const LAYER_BUILDINGS_3D = "buildings-3d";
 // OpenMapTiles schema source layer name for buildings (used by OpenFreeMap).
 const OMT_SOURCE = "openmaptiles";
@@ -95,6 +99,7 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
       // belt-and-suspenders trigger).
       const installAndRestore = () => {
         installPlacesLayers(map, placesData);
+        installProvinceLayers(map);
         const { filter, selectedPlaceId, enable3D, styleKey } = useMapStore.getState();
         const isDark = styleKey === "dark" || (styleKey == null && resolved === "dark");
         if (enable3D) install3DBuildings(map, isDark);
@@ -140,6 +145,20 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
                 maxZoom: 12,
               }
             ),
+          highlightProvince: (slug) => {
+            const prov = provinces.find((p) => p.slug === slug);
+            if (!prov) return;
+            map.flyTo({
+              center: prov.center,
+              zoom: 8.5,
+              duration: reduceMotion ? 0 : 1100,
+              essential: true,
+            });
+            map.setFeatureState({ source: SRC_PROVINCES, id: slug }, { active: true });
+            window.setTimeout(() => {
+              map.setFeatureState({ source: SRC_PROVINCES, id: slug }, { active: false });
+            }, 2500);
+          },
         };
       });
 
@@ -559,6 +578,96 @@ function installPlacesLayers(map: MapLibreMap, placesData: PlacesFC) {
       "text-halo-color": "#FFFFFF",
       "text-halo-width": 1.5,
       "text-halo-blur": 0.5,
+    },
+  });
+}
+
+function installProvinceLayers(map: MapLibreMap) {
+  if (map.getSource(SRC_PROVINCES)) return;
+
+  map.addSource(SRC_PROVINCES, {
+    type: "geojson",
+    promoteId: "slug",
+    data: {
+      type: "FeatureCollection",
+      features: provinces.map((p) => ({
+        type: "Feature",
+        id: p.slug,
+        geometry: { type: "Point", coordinates: p.center },
+        properties: {
+          slug: p.slug,
+          name: p.name,
+          isCity: !!p.isCity,
+        },
+      })),
+    },
+  });
+
+  // Pulsing highlight ring — invisible unless feature-state.active is true.
+  map.addLayer({
+    id: LAYER_PROVINCE_HIGHLIGHT,
+    type: "circle",
+    source: SRC_PROVINCES,
+    paint: {
+      "circle-radius": [
+        "case",
+        ["boolean", ["feature-state", "active"], false], 42,
+        0,
+      ],
+      "circle-color": "#DA251D",
+      "circle-opacity": [
+        "case",
+        ["boolean", ["feature-state", "active"], false], 0.18,
+        0,
+      ],
+      "circle-stroke-color": "#DA251D",
+      "circle-stroke-width": [
+        "case",
+        ["boolean", ["feature-state", "active"], false], 2,
+        0,
+      ],
+      "circle-stroke-opacity": 0.7,
+      "circle-blur": 0.25,
+    },
+  });
+
+  // Province name labels — visible at low/medium zoom, hidden when zoomed in.
+  map.addLayer({
+    id: LAYER_PROVINCE_LABELS,
+    type: "symbol",
+    source: SRC_PROVINCES,
+    minzoom: 4.5,
+    maxzoom: 9,
+    layout: {
+      "text-field": ["get", "name"],
+      "text-font": ["Open Sans Bold"],
+      "text-size": [
+        "interpolate", ["linear"], ["zoom"],
+        4.5, 10,
+        6, 12,
+        8, 14,
+      ],
+      "text-anchor": "center",
+      "text-allow-overlap": false,
+      "text-padding": 4,
+      "text-letter-spacing": 0.02,
+    },
+    paint: {
+      "text-color": [
+        "case",
+        ["boolean", ["get", "isCity"], false], "#0F172A",
+        "#334155",
+      ],
+      "text-halo-color": "#FFFFFF",
+      "text-halo-width": 1.6,
+      "text-halo-blur": 0.3,
+      "text-opacity": [
+        "interpolate", ["linear"], ["zoom"],
+        4.4, 0,
+        4.8, 1,
+        8.5, 1,
+        9, 0,
+      ],
     },
   });
 }

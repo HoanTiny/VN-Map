@@ -9,29 +9,19 @@ import { categories } from "@/config/categories";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 interface Suggestion {
-  type: "place" | "region" | "category" | "collection";
+  type: "place" | "region" | "category";
   id: string;
   label: string;
   sub?: string;
   href: string;
 }
 
-const MOCK: Suggestion[] = [
-  { type: "place", id: "hoi-an", label: "Hội An", sub: "Quảng Nam · Di sản", href: "/place/hoi-an" },
-  { type: "place", id: "ha-long", label: "Vịnh Hạ Long", sub: "Quảng Ninh · Di sản", href: "/place/ha-long-bay" },
-  { type: "place", id: "da-lat", label: "Đà Lạt", sub: "Lâm Đồng · Cao nguyên", href: "/place/da-lat" },
-  { type: "region", id: "trung", label: "Miền Trung", sub: "Vùng miền", href: "/region/trung" },
-  { type: "category", id: "food", label: "Ẩm thực", sub: "Danh mục", href: "/category/food" },
-  { type: "collection", id: "7d-trung", label: "Cung đường miền Trung 7 ngày", sub: "Bộ sưu tập", href: "/collection/7d-mien-trung" },
-];
-
 const TRENDING = ["Hội An", "Đà Lạt", "Phú Quốc", "Sa Pa", "Ninh Bình"];
 
 const TYPE_META: Record<Suggestion["type"], { icon: typeof MapPin; label: string }> = {
   place: { icon: MapPin, label: "Địa điểm" },
-  region: { icon: MapPin, label: "Vùng miền" },
+  region: { icon: Layers, label: "Vùng miền" },
   category: { icon: Tag, label: "Danh mục" },
-  collection: { icon: Layers, label: "Bộ sưu tập" },
 };
 
 // Staggered layout variants for dropdown items
@@ -101,9 +91,31 @@ export function SearchBar({
     return () => document.removeEventListener("keydown", onSlash);
   }, []);
 
-  const results = debounced
-    ? MOCK.filter((s) => normalize(s.label).includes(normalize(debounced)))
-    : [];
+  const [results, setResults] = useState<Suggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!debounced) {
+      setResults([]);
+      setLoading(false);
+      return;
+    }
+    const ctrl = new AbortController();
+    setLoading(true);
+    fetch(`/api/search/suggest?q=${encodeURIComponent(debounced)}`, {
+      signal: ctrl.signal,
+    })
+      .then((r) => (r.ok ? r.json() : { items: [] }))
+      .then((data: { items: Suggestion[] }) => {
+        setResults(data.items ?? []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        if (err?.name !== "AbortError") setLoading(false);
+      });
+    return () => ctrl.abort();
+  }, [debounced]);
+
   const grouped = groupBy(results, (s) => s.type);
 
   const isExpanded = variant === "expanded" && open;
@@ -213,6 +225,10 @@ export function SearchBar({
           >
             {!debounced ? (
               <EmptyState />
+            ) : loading && results.length === 0 ? (
+              <div className="p-8 text-center text-body-sm text-zinc-500 dark:text-white/50">
+                Đang tìm…
+              </div>
             ) : results.length === 0 ? (
               <NoResults q={debounced} />
             ) : (
@@ -222,7 +238,7 @@ export function SearchBar({
                 animate="show"
                 className="max-h-[60vh] overflow-y-auto p-2 "
               >
-                {(["place", "region", "category", "collection"] as const).map((t) => {
+                {(["place", "region", "category"] as const).map((t) => {
                   const items = grouped[t];
                   if (!items?.length) return null;
                   const meta = TYPE_META[t];
@@ -349,10 +365,6 @@ function NoResults({ q }: { q: string }) {
       </Link>
     </div>
   );
-}
-
-function normalize(s: string) {
-  return s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 }
 
 function groupBy<T, K extends string>(arr: T[], key: (t: T) => K): Partial<Record<K, T[]>> {
