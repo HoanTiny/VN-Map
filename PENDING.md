@@ -233,7 +233,10 @@ Theo plan §5:
   - ✅ Gemini API wired với rate-limit + cache
   - ✅ Viewport-aware: truyền bounds + GPS lên API, Gemini gợi ý địa điểm trong vùng đang xem (2026-05-22)
   - [ ] History-aware: chưa truyền lịch sử conversation vào prompt
-- [ ] **Curated trips** — pre-built trip templates seasonal (Tết, mùa hè…)
+- [x] **Curated trips** — `trip_templates` table + 4 templates seed + landing section "Sao chép — đi liền" + detail page `/trips/[slug]` + ForkTripButton (deep-copy template → user's trips) (Session 2026-05-22)
+  - Migration `0005_trip_templates.sql`, seed `pnpm seed:trips`
+  - [queries.ts](src/features/trip-template/lib/queries.ts), [actions.ts](src/features/trip-template/actions.ts)
+  - **Admin CMS**: `/admin/trip-templates` ([TripTemplatesEditor.tsx](src/features/admin/components/TripTemplatesEditor.tsx)) — CRUD đầy đủ: cover upload, meta (slug/title/summary/season/duration/destinations/tags), days editor (add/remove/reorder day, edit label/note/placeSlugs CSV), toggle ẩn/hiện
 - [x] **PWA** — ✅ manifest, service worker, offline page, install banner (done)
 
 ---

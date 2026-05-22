@@ -184,6 +184,70 @@ export async function toggleHeroPresetEnabled(id: string, enabled: boolean) {
   revalidateHero();
 }
 
+/* ----------------------- Curated trip templates (CMS) ----------------------- */
+
+export interface TripTemplateInput {
+  slug: string;
+  title: string;
+  summary: string;
+  cover: string;
+  duration_days: number;
+  season: "spring" | "summer" | "autumn" | "winter" | "tet" | "national_day" | "any";
+  destinations: string[];
+  tags: string[];
+  days: Array<{ label: string; placeSlugs: string[]; note?: string; date?: string }>;
+  display_order?: number;
+  enabled?: boolean;
+}
+
+function revalidateTripTemplates() {
+  revalidatePath("/admin/trip-templates");
+  revalidatePath("/");
+}
+
+export async function upsertTripTemplate(
+  id: string | null,
+  patch: Partial<TripTemplateInput>
+) {
+  const supabase = createServiceClient();
+
+  if (id) {
+    const { error } = await supabase
+      .from("trip_templates")
+      .update(patch as never)
+      .eq("id", id);
+    if (error) throw new Error("Lỗi cập nhật template: " + error.message);
+  } else {
+    if (!patch.slug || !patch.title || !patch.cover || !patch.days) {
+      throw new Error("Thiếu slug / title / cover / days khi tạo mới");
+    }
+    const { error } = await supabase
+      .from("trip_templates")
+      .insert(patch as never);
+    if (error) throw new Error("Lỗi tạo template: " + error.message);
+  }
+
+  if (patch.slug) revalidatePath(`/trips/${patch.slug}`);
+  revalidateTripTemplates();
+}
+
+export async function deleteTripTemplate(id: string) {
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("trip_templates").delete().eq("id", id);
+  if (error) throw new Error("Lỗi xoá template: " + error.message);
+  revalidateTripTemplates();
+}
+
+export async function toggleTripTemplateEnabled(id: string, enabled: boolean) {
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("trip_templates")
+    .update({ enabled } as never)
+    .eq("id", id);
+  if (error) throw new Error("Lỗi đổi trạng thái: " + error.message);
+  revalidateTripTemplates();
+}
+
 export async function approveReview(id: string) {
   const supabase = createServiceClient();
   await supabase

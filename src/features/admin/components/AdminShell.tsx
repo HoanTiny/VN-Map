@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, MapPin, Star, ChevronRight, Pencil, Image as ImageIcon } from "lucide-react";
+import { LayoutDashboard, MapPin, Star, ChevronRight, Pencil, Image as ImageIcon, Compass } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const NAV = [
@@ -10,6 +10,7 @@ const NAV = [
   { href: "/admin/places/list", label: "Sửa địa điểm", icon: Pencil, exact: false },
   { href: "/admin/reviews", label: "Reviews", icon: Star, exact: false },
   { href: "/admin/hero-presets", label: "Hero", icon: ImageIcon, exact: false },
+  { href: "/admin/trip-templates", label: "Lịch trình", icon: Compass, exact: false },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

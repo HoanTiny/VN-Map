@@ -19,6 +19,8 @@ import { getRecentActivity } from "@/features/activity/lib/queries";
 import { ActivityFeed } from "@/features/activity/components/ActivityFeed";
 import { getHeroPresets, resolveRegionKey } from "@/features/admin/lib/hero-presets-queries";
 import { detectServerGeo } from "@/lib/server-geo";
+import { listCuratedTrips } from "@/features/trip-template/lib/queries";
+import { CuratedTripCard } from "@/features/trip-template/components/CuratedTripCard";
 import type { PlaceCardData } from "@/features/place/components/PlaceCard";
 import { featuredCities, collections } from "@/features/region/data";
 
@@ -29,12 +31,13 @@ function formatCompact(n: number): string {
 }
 
 export default async function LandingPage() {
-  const [featuredPlaces, stats, activity, heroPresets, geo] = await Promise.all([
+  const [featuredPlaces, stats, activity, heroPresets, geo, curatedTrips] = await Promise.all([
     getFeaturedPlaces(),
     getSiteStats(),
     getRecentActivity(8),
     getHeroPresets(),
     detectServerGeo(),
+    listCuratedTrips(6),
   ]);
   const initialHeroRegion = resolveRegionKey(heroPresets, geo.city, geo.region);
   return (
@@ -44,6 +47,7 @@ export default async function LandingPage() {
       <CitiesSection />
       <PlacesSection places={featuredPlaces} />
       {activity.length > 0 && <ActivitySection initial={activity} />}
+      {curatedTrips.length > 0 && <CuratedTripsSection trips={curatedTrips} />}
       <CollectionsSection />
       <MapCtaSection stats={stats} />
       <StatsSection />
@@ -155,18 +159,18 @@ const categoryMetadata: Record<
   string,
   { count: string; tagline: string; isHot?: boolean }
 > = {
-  cafe:       { count: "85+ quán",    tagline: "Không gian kết nối & khơi nguồn cảm hứng" },
-  nightlife:  { count: "42+ pub",     tagline: "Giai điệu lôi cuốn & năng lượng đêm muộn", isHot: true },
-  rooftop:    { count: "30+ view",    tagline: "Thu trọn hoàng hôn & toàn cảnh thành phố", isHot: true },
-  checkin:    { count: "110+ điểm",   tagline: "Lưu giữ khoảnh khắc & góc máy nghệ thuật" },
-  hidden:     { count: "25+ góc",     tagline: "Tìm về chốn bình yên sâu trong ngõ hẻm",  isHot: true },
-  experience: { count: "50+ tour",    tagline: "Trải nghiệm bản địa chân thực cùng chuyên gia" },
-  beach:      { count: "95+ bãi",     tagline: "Sóng vỗ cát vàng & ánh nắng vàng rực rỡ" },
-  mountain:   { count: "60+ đỉnh",    tagline: "Chạm đỉnh sương mờ & săn mây đại ngàn" },
-  heritage:   { count: "40+ di tích", tagline: "Dấu ấn thời gian & câu chuyện di sản xưa", isHot: true },
-  food:       { count: "150+ quán",   tagline: "Hương vị đậm đà tinh hoa ẩm thực ba miền" },
-  city:       { count: "85+ điểm",    tagline: "Khám phá góc phố nhộn nhịp & kiến trúc hiện đại" },
-  nature:     { count: "35+ điểm",    tagline: "Trốn phố về rừng & lắng nghe âm thanh tự nhiên" },
+  cafe: { count: "85+ quán", tagline: "Không gian kết nối & khơi nguồn cảm hứng" },
+  nightlife: { count: "42+ pub", tagline: "Giai điệu lôi cuốn & năng lượng đêm muộn", isHot: true },
+  rooftop: { count: "30+ view", tagline: "Thu trọn hoàng hôn & toàn cảnh thành phố", isHot: true },
+  checkin: { count: "110+ điểm", tagline: "Lưu giữ khoảnh khắc & góc máy nghệ thuật" },
+  hidden: { count: "25+ góc", tagline: "Tìm về chốn bình yên sâu trong ngõ hẻm", isHot: true },
+  experience: { count: "50+ tour", tagline: "Trải nghiệm bản địa chân thực cùng chuyên gia" },
+  beach: { count: "95+ bãi", tagline: "Sóng vỗ cát vàng & ánh nắng vàng rực rỡ" },
+  mountain: { count: "60+ đỉnh", tagline: "Chạm đỉnh sương mờ & săn mây đại ngàn" },
+  heritage: { count: "40+ di tích", tagline: "Dấu ấn thời gian & câu chuyện di sản xưa", isHot: true },
+  food: { count: "150+ quán", tagline: "Hương vị đậm đà tinh hoa ẩm thực ba miền" },
+  city: { count: "85+ điểm", tagline: "Khám phá góc phố nhộn nhịp & kiến trúc hiện đại" },
+  nature: { count: "35+ điểm", tagline: "Trốn phố về rừng & lắng nghe âm thanh tự nhiên" },
 };
 
 function CatCard({
@@ -426,6 +430,43 @@ function ActivitySection({ initial }: { initial: Awaited<ReturnType<typeof getRe
   );
 }
 
+/* ---------------------------- Curated trips ---------------------------- */
+
+function CuratedTripsSection({
+  trips,
+}: {
+  trips: Awaited<ReturnType<typeof listCuratedTrips>>;
+}) {
+  return (
+    <section className="border-t border-border bg-surface-2/40">
+      <div className="container py-20 md:py-28">
+        <div className="mb-10 flex items-end justify-between gap-6">
+          <Reveal>
+            <div>
+              <p className="text-overline text-brand-600">LỊCH TRÌNH TINH TUYỂN</p>
+              <h2 className="mt-2 font-display text-h1 md:text-display-lg text-text">
+                Sao chép — đi liền.
+              </h2>
+              <p className="mt-3 max-w-xl text-body-lg text-text-muted">
+                Lộ trình đa ngày do biên tập viên thiết kế, theo mùa và vùng — chỉ cần
+                bấm sao chép vào chuyến đi của bạn rồi tinh chỉnh.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {trips.map((t, i) => (
+            <Reveal key={t.slug} delay={(i % 3) * 0.06}>
+              <CuratedTripCard trip={t} />
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ------------------------------ Collections ------------------------------ */
 
 function CollectionsSection() {
@@ -557,41 +598,128 @@ function StatsSection() {
       icon: Map,
       title: "Bản đồ tương tác",
       desc: "Mapbox với custom style, cluster, fly-to mượt cho mọi thiết bị.",
+      color: "var(--cat-beach)",
     },
     {
       icon: Sparkles,
       title: "Nội dung tuyển chọn",
       desc: "Mỗi địa điểm đều được biên tập viên duyệt — ảnh đẹp, mô tả chuẩn.",
+      color: "var(--brand-500)",
     },
     {
       icon: Compass,
       title: "Trip planner",
       desc: "Kéo thả địa điểm vào ngày, chia sẻ link cho bạn bè cùng đi.",
+      color: "var(--cat-rooftop)",
     },
   ];
+
   return (
-    <section className="border-t border-border">
-      <div className="container py-20 md:py-28">
-        <div className="mx-auto max-w-2xl text-center">
+    <section className="relative overflow-hidden bg-surface-2/10 dark:bg-surface/5">
+      {/* Decorative ambient background: Giant Glowing Vietnamese Gold Star + Red Aura */}
+      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none flex items-center justify-center">
+        {/* Soft Red/Pink Ambient Aura (representing the flag background) */}
+        <div 
+          className="absolute w-[500px] h-[500px] rounded-full bg-gradient-to-br from-brand-500/10 via-rose-500/5 to-transparent blur-[120px] dark:from-brand-500/22 dark:via-rose-600/10 dark:to-transparent animate-pulse"
+          style={{ animationDuration: '8s' }}
+        />
+
+        {/* Floating, slowly rotating Glowing Gold Star */}
+        <div 
+          className="absolute w-[460px] h-[460px] opacity-[0.16] dark:opacity-[0.24] transition-opacity duration-slower"
+          style={{
+            animation: 'floatAndRotateStar 40s linear infinite',
+          }}
+        >
+          <svg 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-full h-full drop-shadow-[0_0_60px_rgba(255,205,0,0.5)]"
+          >
+            {/* Premium Gold Gradient Fill */}
+            <defs>
+              <linearGradient id="gold-star-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="var(--gold-100)" />
+                <stop offset="50%" stopColor="var(--gold-500)" />
+                <stop offset="100%" stopColor="var(--gold-700)" />
+              </linearGradient>
+              {/* Gold Stroke Gradient */}
+              <linearGradient id="gold-star-stroke" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="var(--gold-500)" />
+                <stop offset="100%" stopColor="var(--gold-100)" />
+              </linearGradient>
+            </defs>
+            <path 
+              d="M12 .587l3.668 7.431 8.2 1.192-5.934 5.787 1.4 8.168L12 18.896l-7.334 3.857 1.4-8.168L.132 9.21l8.2-1.192z" 
+              fill="url(#gold-star-gradient)"
+              stroke="url(#gold-star-stroke)"
+              strokeWidth="0.4"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+
+        {/* CSS Keyframes for slow float and rotation */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          @keyframes floatAndRotateStar {
+            0% {
+              transform: rotate(0deg) translateY(0px) scale(1);
+            }
+            50% {
+              transform: rotate(180deg) translateY(-20px) scale(1.04);
+            }
+            100% {
+              transform: rotate(360deg) translateY(0px) scale(1);
+            }
+          }
+        `}} />
+      </div>
+
+      <div className="container py-24 md:py-32 relative z-10">
+        <div className="mx-auto max-w-2xl text-center mb-16">
           <Reveal>
-            <p className="text-overline text-brand-600">VÌ SAO {siteConfig.name.toUpperCase()}</p>
-            <h2 className="mt-2 font-display text-h1 md:text-display-lg text-text">
-              Premium nhưng thân thuộc.
+            <p className="text-overline tracking-[0.25em] font-bold text-transparent bg-clip-text bg-gradient-to-r from-brand-600 via-rose-500 to-amber-500">
+              VÌ SAO {siteConfig.name.toUpperCase()}
+            </p>
+            <h2 className="mt-4 font-display text-h1 md:text-display-lg text-text">
+              Premium nhưng <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 via-rose-500 to-gold-500">thân thuộc</span>.
             </h2>
           </Reveal>
         </div>
 
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-3">
           {features.map((f, i) => {
             const Icon = f.icon;
             return (
               <Reveal key={f.title} delay={i * 0.08}>
-                <div className="rounded-2xl border border-border bg-surface p-6 transition-shadow hover:shadow-md">
-                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-700">
-                    <Icon size={20} />
+                <div
+                  className="group relative rounded-3xl border border-border bg-surface p-8 md:p-10 transition-all duration-500 hover:-translate-y-2 hover:shadow-xl liquid-glass-card overflow-hidden"
+                  style={{ "--cat-color": f.color } as React.CSSProperties}
+                >
+                  {/* Subtle card grid mesh pattern on hover */}
+                  <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:20px_20px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+                  {/* Glowing halo behind icon */}
+                  <div className="absolute top-8 left-8 w-16 h-16 rounded-2xl blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-500" style={{ backgroundColor: f.color }} />
+
+                  <div
+                    className="relative inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-transparent shadow-sm group-hover:scale-110 group-hover:rotate-3 transition-all duration-300"
+                    style={{
+                      backgroundColor: `color-mix(in srgb, ${f.color} 10%, transparent)`,
+                      color: f.color,
+                      borderColor: `color-mix(in srgb, ${f.color} 20%, transparent)`,
+                    }}
+                  >
+                    <Icon size={24} className="transition-transform duration-300 group-hover:scale-105" />
                   </div>
-                  <h3 className="mt-4 text-h3 text-text">{f.title}</h3>
-                  <p className="mt-2 text-body text-text-muted">{f.desc}</p>
+
+                  <h3 className="mt-6 font-display text-h3 text-text font-bold tracking-tight group-hover:text-brand-600 transition-colors duration-300">
+                    {f.title}
+                  </h3>
+                  <p className="mt-3 text-body-md text-text-muted leading-relaxed">
+                    {f.desc}
+                  </p>
                 </div>
               </Reveal>
             );
