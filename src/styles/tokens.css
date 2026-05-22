@@ -133,7 +133,9 @@
     inset 0 1.5px 2px rgba(255, 255, 255, 0.85),
     inset 0 -1.5px 2px rgba(0, 0, 0, 0.02),
     0 10px 25px -10px color-mix(in srgb, var(--cat-color) 12%, transparent) !important;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.4s ease !important; /* Tối ưu transition thay vì dùng 'all' rất nặng */
+  transform: translate3d(0, 0, 0); /* Kích hoạt tăng tốc phần cứng GPU */
+  backface-visibility: hidden;
 }
 
 [data-theme="dark"] .liquid-glass-card {
@@ -252,6 +254,7 @@
   opacity: 0.28; /* Làm mờ dịu hơn để bảo toàn độ tương phản cho text đè lên */
   filter: blur(65px); /* Tăng cực mạnh từ 30px lên 65px để tạo dải lụa màu mượt như Aurora macOS */
   animation: moveAround var(--speed, 8s) infinite alternate ease-in-out;
+  will-change: transform; /* Báo trước thay đổi để GPU tối ưu hóa render layer */
 }
 
 .blob-1 {
@@ -309,5 +312,27 @@
 
   100% {
     transform: translate(0, 0) scale(1) rotate(360deg);
+  }
+}
+
+/* --- Mobile Performance & Smooth Scrolling Optimizations --- */
+@media (max-width: 768px) {
+  .liquid-glass-card {
+    backdrop-filter: blur(10px) !important; /* Giảm nhẹ độ nhòe nền trên mobile để tối ưu hóa hiệu năng render của GPU */
+    -webkit-backdrop-filter: blur(10px) !important;
+    transition: transform 0.3s ease-out, box-shadow 0.3s ease-out !important; /* Tránh dùng transition: all 0.5s vốn rất nặng cho CPU/GPU di động */
+  }
+
+  .blob {
+    animation: none !important; /* Dừng hoàn toàn keyframe animation để tránh repaint & GPU compositing liên tục khi cuộn */
+    filter: blur(35px) !important; /* Giảm bán kính blur giúp trình duyệt vẽ mượt và nhanh hơn gấp 4 lần */
+    will-change: auto !important;
+    opacity: 0.35 !important; /* Tăng nhẹ độ đậm để bù lại cho việc giảm độ mờ (blur) */
+  }
+
+  /* Giảm 50% số lượng node chất lỏng trên mobile (chỉ render blob-1 và blob-2) giúp giảm đáng kể chi phí Paint & Layer composite */
+  .blob-3,
+  .blob-4 {
+    display: none !important;
   }
 }

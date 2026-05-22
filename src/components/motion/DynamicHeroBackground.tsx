@@ -301,7 +301,7 @@ export function DynamicHeroBackground({
                 opacity: { duration: 1.5, ease: "easeInOut" }, // Slightly longer fade for double visual comfort
                 scale: { duration: 10.0, ease: "easeOut" }, // Slower Ken Burns effect to match rotation
               }}
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 w-full h-full [will-change:transform,opacity] [transform:translate3d(0,0,0)]"
             >
               {/* Background Image - BgImg handles proxy + direct URL fallback and always has alt="" */}
               <BgImg src={activeImage.src} />
