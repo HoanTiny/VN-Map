@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { m, AnimatePresence } from "framer-motion";
-
-type TimeOfDay = "day" | "sunset" | "night";
+import { closestProvince } from "@/config/regions";
+import {
+  PRESETS,
+  REGION_KEYWORDS,
+  type TimeOfDay,
+  type BackgroundPreset,
+  type ImageItem,
+} from "@/config/hero-presets";
 
 export interface DynamicHeroPreset {
   region: string;
@@ -13,372 +19,6 @@ export interface DynamicHeroPreset {
   presets: Record<TimeOfDay, BackgroundPreset>;
 }
 
-interface ImageItem {
-  src: string;
-  alt: string;
-}
-
-interface BackgroundPreset {
-  images: ImageItem[];
-  overlay: string; // Custom gradient overlay styling based on background brightness
-}
-
-const PRESETS: Record<string, Record<TimeOfDay, BackgroundPreset>> = {
-  default: {
-    day: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=2400&q=85",
-          alt: "Vịnh Hạ Long nắng trong xanh",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?auto=format&fit=crop&w=2400&q=85",
-          alt: "Danh thắng Tràng An Ninh Bình hùng vĩ",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=2400&q=85",
-          alt: "Ruộng bậc thang xanh ngút ngàn Tây Bắc",
-        },
-      ],
-      overlay: "from-black/35 via-black/10 to-transparent",
-    },
-    sunset: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=2400&q=855",
-          alt: "Phố cổ Hội An hoàng hôn rực rỡ",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=2400&q=85",
-          alt: "Sông Hoài Hội An buổi chiều tà rực nắng",
-        },
-      ],
-      overlay: "from-black/40 via-black/12 to-transparent",
-    },
-    night: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=2400&q=85",
-          alt: "Sài Gòn sông đêm lấp lánh chói sáng",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?auto=format&fit=crop&w=2400&q=85",
-          alt: "Phố cổ Hội An lung linh đèn lồng đêm",
-        },
-      ],
-      overlay: "from-black/50 via-black/15 to-transparent",
-    },
-  },
-  hanoi: {
-    day: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1599707367072-cd6ada2bc375?auto=format&fit=crop&w=2400&q=85",
-          alt: "Hồ Gươm nắng sớm yên bình tháp Rùa",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1605538032432-a9f0c8d9baac?auto=format&fit=crop&w=2400&q=85",
-          alt: "Phố cổ Hà Nội nhộn nhịp ban ngày",
-        },
-      ],
-      overlay: "from-black/35 via-black/10 to-transparent",
-    },
-    sunset: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=2400&q=85",
-          alt: "Hoàng hôn Hồ Tây nhuộm đỏ rực rỡ",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1543968996-ee822b8176bc?auto=format&fit=crop&w=2400&q=85",
-          alt: "Cầu Long Biên nhuộm màu nắng chiều tà",
-        },
-      ],
-      overlay: "from-black/40 via-black/12 to-transparent",
-    },
-    night: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=2400&q=85",
-          alt: "Phố Tạ Hiện lung linh nhộn nhịp về đêm",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=85",
-          alt: "Nhà Thờ Lớn Hà Nội lung linh ánh đèn đêm",
-        },
-      ],
-      overlay: "from-black/50 via-black/15 to-transparent",
-    },
-  },
-  danang: {
-    day: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=2400&q=85",
-          alt: "Cầu Vàng Bà Nà Hills trong nắng mây ngập tràn",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1559519529-0504685a7327?auto=format&fit=crop&w=2400&q=85",
-          alt: "Bờ biển Đà Nẵng nắng xanh biếc",
-        },
-      ],
-      overlay: "from-black/35 via-black/10 to-transparent",
-    },
-    sunset: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=85",
-          alt: "Hoàng hôn biển Mỹ Khê vàng rực nắng chiều",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1545231027-63b3f162e0cd?auto=format&fit=crop&w=2400&q=85",
-          alt: "Bán đảo Sơn Trà hoàng hôn bóng chiều",
-        },
-      ],
-      overlay: "from-black/40 via-black/12 to-transparent",
-    },
-    night: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1534008757030-27299c4371b6?auto=format&fit=crop&w=2400&q=85",
-          alt: "Cầu Rồng phun lửa rực rỡ lấp lánh ban đêm",
-        },
-      ],
-      overlay: "from-black/45 via-black/15 to-transparent",
-    },
-  },
-  saigon: {
-    day: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=2400&q=85",
-          alt: "Bưu điện Trung tâm Sài Gòn ngày nắng đẹp",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=2400&q=85",
-          alt: "Chung cư Cafe Nguyễn Huệ độc đáo giữa lòng phố",
-        },
-      ],
-      overlay: "from-black/35 via-black/10 to-transparent",
-    },
-    sunset: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=2400&q=85",
-          alt: "Hoàng hôn buông xuống sông Sài Gòn rực rỡ",
-        },
-      ],
-      overlay: "from-black/40 via-black/12 to-transparent",
-    },
-    night: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=2400&q=85",
-          alt: "Đêm đô thị Sài Gòn lung linh Landmark 81 sông nước",
-        },
-      ],
-      overlay: "from-black/50 via-black/15 to-transparent",
-    },
-  },
-  hue: {
-    day: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1583417267826-aebc4d1542e1?auto=format&fit=crop&w=2400&q=85",
-          alt: "Đại Nội Huế cổ kính trầm mặc ngày nắng",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=2400&q=85",
-          alt: "Sông Hương thuyền rồng êm đềm trôi",
-        },
-      ],
-      overlay: "from-black/35 via-black/10 to-transparent",
-    },
-    sunset: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1555921015-5532091f6026?auto=format&fit=crop&w=2400&q=85",
-          alt: "Cầu Trường Tiền in bóng sông Hương chiều tà",
-        },
-      ],
-      overlay: "from-black/40 via-black/12 to-transparent",
-    },
-    night: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=2400&q=85",
-          alt: "Kinh thành Huế lung linh ánh đèn đêm",
-        },
-      ],
-      overlay: "from-black/50 via-black/15 to-transparent",
-    },
-  },
-  hoian: {
-    day: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=2400&q=85",
-          alt: "Phố cổ Hội An nhà cổ vàng dưới nắng",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=2400&q=85",
-          alt: "Chùa Cầu Hội An biểu tượng phố cổ",
-        },
-      ],
-      overlay: "from-black/35 via-black/10 to-transparent",
-    },
-    sunset: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1493780474015-ba834fd0ce2f?auto=format&fit=crop&w=2400&q=85",
-          alt: "Sông Hoài Hội An hoàng hôn nhuộm vàng",
-        },
-      ],
-      overlay: "from-black/40 via-black/12 to-transparent",
-    },
-    night: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?auto=format&fit=crop&w=2400&q=85",
-          alt: "Đèn lồng Hội An lung linh đêm thả hoa đăng",
-        },
-      ],
-      overlay: "from-black/50 via-black/15 to-transparent",
-    },
-  },
-  nhatrang: {
-    day: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1559519529-0504685a7327?auto=format&fit=crop&w=2400&q=85",
-          alt: "Biển Nha Trang xanh ngọc cát trắng ngày hè",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=85",
-          alt: "Vịnh Nha Trang nắng vàng thuyền câu",
-        },
-      ],
-      overlay: "from-black/35 via-black/10 to-transparent",
-    },
-    sunset: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1545231027-63b3f162e0cd?auto=format&fit=crop&w=2400&q=85",
-          alt: "Hoàng hôn biển Nha Trang tím rực rỡ",
-        },
-      ],
-      overlay: "from-black/40 via-black/12 to-transparent",
-    },
-    night: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1534008757030-27299c4371b6?auto=format&fit=crop&w=2400&q=85",
-          alt: "Vinpearl Nha Trang lung linh sáng đêm",
-        },
-      ],
-      overlay: "from-black/50 via-black/15 to-transparent",
-    },
-  },
-  sapa: {
-    day: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=2400&q=85",
-          alt: "Ruộng bậc thang Sapa xanh ngút ngàn mùa nước đổ",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?auto=format&fit=crop&w=2400&q=85",
-          alt: "Sapa biển mây trắng bồng bềnh sườn núi",
-        },
-      ],
-      overlay: "from-black/35 via-black/10 to-transparent",
-    },
-    sunset: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=2400&q=85",
-          alt: "Đỉnh Fansipan hoàng hôn rực hồng cam",
-        },
-      ],
-      overlay: "from-black/40 via-black/12 to-transparent",
-    },
-    night: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=85",
-          alt: "Sapa đêm sương lạnh đèn vàng ấm áp",
-        },
-      ],
-      overlay: "from-black/50 via-black/15 to-transparent",
-    },
-  },
-  phuquoc: {
-    day: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=85",
-          alt: "Bãi Sao Phú Quốc cát trắng nước xanh ngọc",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1559519529-0504685a7327?auto=format&fit=crop&w=2400&q=85",
-          alt: "Vùng biển Phú Quốc thiên đường nhiệt đới",
-        },
-      ],
-      overlay: "from-black/35 via-black/10 to-transparent",
-    },
-    sunset: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1545231027-63b3f162e0cd?auto=format&fit=crop&w=2400&q=85",
-          alt: "Cầu Hôn Phú Quốc hoàng hôn vàng son",
-        },
-      ],
-      overlay: "from-black/40 via-black/12 to-transparent",
-    },
-    night: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=2400&q=85",
-          alt: "Phú Quốc đêm cảng cá nhộn nhịp ánh đèn",
-        },
-      ],
-      overlay: "from-black/50 via-black/15 to-transparent",
-    },
-  },
-  halong: {
-    day: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=2400&q=85",
-          alt: "Vịnh Hạ Long nắng trong núi đá kì vĩ",
-        },
-        {
-          src: "https://images.unsplash.com/photo-1573270689103-d7a4e42b609a?auto=format&fit=crop&w=2400&q=85",
-          alt: "Du thuyền Hạ Long lướt giữa hàng nghìn đảo",
-        },
-      ],
-      overlay: "from-black/35 via-black/10 to-transparent",
-    },
-    sunset: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1573270689103-d7a4e42b609a?auto=format&fit=crop&w=2400&q=85",
-          alt: "Hoàng hôn Vịnh Hạ Long vàng rực biển ngọc",
-        },
-      ],
-      overlay: "from-black/40 via-black/12 to-transparent",
-    },
-    night: {
-      images: [
-        {
-          src: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=2400&q=85",
-          alt: "Hạ Long đêm du thuyền và đảo lung linh",
-        },
-      ],
-      overlay: "from-black/50 via-black/15 to-transparent",
-    },
-  },
-};
 
 function getProxiedUrl(url: string): string {
   if (!url) return "";
@@ -461,19 +101,6 @@ function normalizeForMatch(s: string): string {
     .trim();
 }
 
-// Hardcoded keyword fallback when running without DB.
-const REGION_KEYWORDS: Record<string, string[]> = {
-  hanoi: ["hanoi", "ha noi"],
-  danang: ["da nang", "danang"],
-  saigon: ["ho chi minh", "saigon", "hcm"],
-  hue: ["hue", "thua thien"],
-  hoian: ["hoi an", "hoian", "quang nam"],
-  nhatrang: ["nha trang", "khanh hoa"],
-  sapa: ["sa pa", "sapa", "lao cai"],
-  phuquoc: ["phu quoc", "kien giang"],
-  halong: ["ha long", "halong", "quang ninh", "hai phong"],
-};
-
 export function DynamicHeroBackground({
   presets,
   initialRegion,
@@ -509,16 +136,16 @@ export function DynamicHeroBackground({
       return;
     }
 
-    // 3. Geolocation — cache result for 24h to avoid hammering free-tier API.
-    const CACHE_KEY = "mapvn:ipGeo";
-    const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
-
+    // 3. Geolocation — Fetch and match region to load corresponding presets.
     const matchAgainst = (city: string, regionName: string): string | null => {
+      const c = normalizeForMatch(city).replace(/-/g, " ");
+      const r = normalizeForMatch(regionName).replace(/-/g, " ");
+      console.log("[hero-bg] matching normalized inputs:", { c, r });
       for (const preset of index.byRegion.values()) {
         if (preset.is_default) continue;
         const hit = preset.match_keywords.some((rawKw) => {
           const kw = normalizeForMatch(rawKw);
-          return kw && (city.includes(kw) || regionName.includes(kw));
+          return kw && (c.includes(kw) || r.includes(kw));
         });
         if (hit) return preset.region;
       }
@@ -526,40 +153,44 @@ export function DynamicHeroBackground({
     };
 
     const applyGeo = (city: string, regionName: string) => {
-      console.log("[hero-bg] geo applied:", { city, region: regionName });
+      console.log("[hero-bg] applying geo:", { city, region: regionName });
       const matched = matchAgainst(city, regionName);
       if (matched) {
-        console.log("[hero-bg] matched region from keywords:", matched);
+        console.log("[hero-bg] matched preset region:", matched);
         setRegion(matched);
       } else {
-        console.warn("[hero-bg] no preset matched for city/region. Defaulting to:", index.defaultRegion);
+        console.warn("[hero-bg] no preset matched. Defaulting to:", index.defaultRegion);
       }
     };
 
     const detectRegion = async () => {
-      // Try cache first - TEMPORARILY DISABLED
-      console.log("[hero-bg] client-side cache is temporarily disabled for debugging.");
-      /*
-      try {
-        const cached = window.localStorage.getItem(CACHE_KEY);
-        if (cached) {
-          const parsed = JSON.parse(cached) as { city: string; region: string; ts: number; src?: string };
-          console.log("[hero-bg] found cached geo:", parsed);
-          if (Date.now() - parsed.ts < CACHE_TTL_MS) {
-            console.log("[hero-bg] cached geo is warm. Applying...");
-            applyGeo(parsed.city, parsed.region);
-            return;
-          } else {
-            console.log("[hero-bg] cached geo is expired, will fetch fresh data.");
-          }
-        }
-      } catch (e) {
-        console.error("[hero-bg] failed to read cache:", e);
-      }
-      */
+      // 1. Try HTML5 Geolocation first if available
+      if (typeof window !== "undefined" && navigator.geolocation) {
+        console.log("[hero-bg] attempting HTML5 Geolocation...");
+        const getGPSLocation = (): Promise<GeolocationPosition> => {
+          return new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: false,
+              timeout: 3000,             // 3 seconds timeout
+              maximumAge: 10 * 60 * 1000 // 10 minutes cache
+            });
+          });
+        };
 
-      // Chain of free IP geolocation providers — try each until one returns.
-      // Fast-fail on rate-limit / network error and move to next.
+        try {
+          const position = await getGPSLocation();
+          const { latitude, longitude } = position.coords;
+          console.log("[hero-bg] GPS coordinates resolved:", { latitude, longitude });
+          const province = closestProvince([longitude, latitude]);
+          console.log("[hero-bg] closest province resolved:", province.name, province.slug);
+          applyGeo(province.slug, province.name);
+          return; // Geolocation succeeded, exit.
+        } catch (err) {
+          console.warn("[hero-bg] GPS failed or timed out, falling back to IP Geolocation:", err);
+        }
+      }
+
+      // 2. Chain of free IP geolocation providers fallback
       const providers: Array<{
         name: string;
         url: string;
@@ -591,45 +222,26 @@ export function DynamicHeroBackground({
       for (const provider of providers) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => {
-            console.warn(`[hero-bg] ${provider.name} fetch timed out after 1500ms`);
-            controller.abort();
-          }, 1500);
-          
-          console.log(`[hero-bg] fetching client geo from ${provider.name}...`);
+          const timeoutId = setTimeout(() => controller.abort(), 1500);
+          console.log(`[hero-bg] fetching client IP geo from ${provider.name}...`);
           const res = await fetch(provider.url, { signal: controller.signal });
           clearTimeout(timeoutId);
 
           if (!res.ok) {
-            console.warn(`[hero-bg] ${provider.name} failed with HTTP status: ${res.status}`);
+            console.warn(`[hero-bg] ${provider.name} failed with status: ${res.status}`);
             continue;
           }
           const data = (await res.json()) as Record<string, unknown>;
-          console.log(`[hero-bg] ${provider.name} response:`, data);
-          
           const { city: rawCity, region: rawRegion } = provider.parse(data);
           const city = normalizeForMatch(rawCity);
           const regionName = normalizeForMatch(rawRegion);
-          console.log(`[hero-bg] parsed & normalized:`, { rawCity, rawRegion, city, regionName });
           
           if (!city && !regionName) {
-            console.warn(`[hero-bg] ${provider.name} returned empty city & region`);
+            console.warn(`[hero-bg] ${provider.name} returned empty city/region`);
             continue;
           }
 
-          console.log("[hero-bg] client-side cache write skipped (disabled for debugging).");
-          /*
-          try {
-            window.localStorage.setItem(
-              CACHE_KEY,
-              JSON.stringify({ city, region: regionName, ts: Date.now(), src: provider.name })
-            );
-          } catch (e) {
-            console.warn("[hero-bg] failed to write cache:", e);
-          }
-          */
-
-          console.log(`[hero-bg] resolved via ${provider.name}`);
+          console.log(`[hero-bg] successfully resolved via ${provider.name}`);
           applyGeo(city, regionName);
           return;
         } catch (err) {
