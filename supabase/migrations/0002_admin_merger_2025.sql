@@ -17,106 +17,105 @@
 
 do $$
 declare
-  mapping jsonb := jsonb_build_object(
-    -- ── Giữ nguyên hoặc chuẩn hoá ──
-    'Hà Nội',          jsonb_build_object('name','Hà Nội',      'slug','ha-noi'),
-    'Hải Phòng',       jsonb_build_object('name','Hải Phòng',   'slug','hai-phong'),
-    'Đà Nẵng',         jsonb_build_object('name','Đà Nẵng',     'slug','da-nang'),
-    'TP. HCM',         jsonb_build_object('name','TP. HCM',     'slug','tp-hcm'),
-    'TP.HCM',          jsonb_build_object('name','TP. HCM',     'slug','tp-hcm'),
-    'Hồ Chí Minh',     jsonb_build_object('name','TP. HCM',     'slug','tp-hcm'),
-    'Cần Thơ',         jsonb_build_object('name','Cần Thơ',     'slug','can-tho'),
-    'Lai Châu',        jsonb_build_object('name','Lai Châu',    'slug','lai-chau'),
-    'Điện Biên',       jsonb_build_object('name','Điện Biên',   'slug','dien-bien'),
-    'Sơn La',          jsonb_build_object('name','Sơn La',      'slug','son-la'),
-    'Lào Cai',         jsonb_build_object('name','Lào Cai',     'slug','lao-cai'),
-    'Tuyên Quang',     jsonb_build_object('name','Tuyên Quang', 'slug','tuyen-quang'),
-    'Cao Bằng',        jsonb_build_object('name','Cao Bằng',    'slug','cao-bang'),
-    'Lạng Sơn',        jsonb_build_object('name','Lạng Sơn',    'slug','lang-son'),
-    'Thái Nguyên',     jsonb_build_object('name','Thái Nguyên', 'slug','thai-nguyen'),
-    'Phú Thọ',         jsonb_build_object('name','Phú Thọ',     'slug','phu-tho'),
-    'Bắc Ninh',        jsonb_build_object('name','Bắc Ninh',    'slug','bac-ninh'),
-    'Hưng Yên',        jsonb_build_object('name','Hưng Yên',    'slug','hung-yen'),
-    'Quảng Ninh',      jsonb_build_object('name','Quảng Ninh',  'slug','quang-ninh'),
-    'Ninh Bình',       jsonb_build_object('name','Ninh Bình',   'slug','ninh-binh'),
-    'Thanh Hóa',       jsonb_build_object('name','Thanh Hóa',   'slug','thanh-hoa'),
-    'Nghệ An',         jsonb_build_object('name','Nghệ An',     'slug','nghe-an'),
-    'Hà Tĩnh',         jsonb_build_object('name','Hà Tĩnh',     'slug','ha-tinh'),
-    'Quảng Trị',       jsonb_build_object('name','Quảng Trị',   'slug','quang-tri'),
-    'Quảng Ngãi',      jsonb_build_object('name','Quảng Ngãi',  'slug','quang-ngai'),
-    'Gia Lai',         jsonb_build_object('name','Gia Lai',     'slug','gia-lai'),
-    'Đắk Lắk',         jsonb_build_object('name','Đắk Lắk',     'slug','dak-lak'),
-    'Khánh Hòa',       jsonb_build_object('name','Khánh Hòa',   'slug','khanh-hoa'),
-    'Khánh Hoà',       jsonb_build_object('name','Khánh Hòa',   'slug','khanh-hoa'),
-    'Lâm Đồng',        jsonb_build_object('name','Lâm Đồng',    'slug','lam-dong'),
-    'Tây Ninh',        jsonb_build_object('name','Tây Ninh',    'slug','tay-ninh'),
-    'Đồng Nai',        jsonb_build_object('name','Đồng Nai',    'slug','dong-nai'),
-    'Vĩnh Long',       jsonb_build_object('name','Vĩnh Long',   'slug','vinh-long'),
-    'Đồng Tháp',       jsonb_build_object('name','Đồng Tháp',   'slug','dong-thap'),
-    'An Giang',        jsonb_build_object('name','An Giang',    'slug','an-giang'),
-    'Cà Mau',          jsonb_build_object('name','Cà Mau',      'slug','ca-mau'),
-    'Huế',             jsonb_build_object('name','Huế',         'slug','hue'),
-
-    -- ── Đã sáp nhập — map đến đơn vị mới ──
-    'Hải Dương',       jsonb_build_object('name','Hải Phòng',   'slug','hai-phong'),
-    'Yên Bái',         jsonb_build_object('name','Lào Cai',     'slug','lao-cai'),
-    'Hà Giang',        jsonb_build_object('name','Tuyên Quang', 'slug','tuyen-quang'),
-    'Bắc Kạn',         jsonb_build_object('name','Thái Nguyên', 'slug','thai-nguyen'),
-    'Vĩnh Phúc',       jsonb_build_object('name','Phú Thọ',     'slug','phu-tho'),
-    'Hòa Bình',        jsonb_build_object('name','Phú Thọ',     'slug','phu-tho'),
-    'Hoà Bình',        jsonb_build_object('name','Phú Thọ',     'slug','phu-tho'),
-    'Bắc Giang',       jsonb_build_object('name','Bắc Ninh',    'slug','bac-ninh'),
-    'Thái Bình',       jsonb_build_object('name','Hưng Yên',    'slug','hung-yen'),
-    'Hà Nam',          jsonb_build_object('name','Ninh Bình',   'slug','ninh-binh'),
-    'Nam Định',        jsonb_build_object('name','Ninh Bình',   'slug','ninh-binh'),
-    'Thừa Thiên Huế',  jsonb_build_object('name','Huế',         'slug','hue'),
-    'Quảng Nam',       jsonb_build_object('name','Đà Nẵng',     'slug','da-nang'),
-    'Quảng Bình',      jsonb_build_object('name','Quảng Trị',   'slug','quang-tri'),
-    'Kon Tum',         jsonb_build_object('name','Quảng Ngãi',  'slug','quang-ngai'),
-    'Bình Định',       jsonb_build_object('name','Gia Lai',     'slug','gia-lai'),
-    'Phú Yên',         jsonb_build_object('name','Đắk Lắk',     'slug','dak-lak'),
-    'Ninh Thuận',      jsonb_build_object('name','Khánh Hòa',   'slug','khanh-hoa'),
-    'Đắk Nông',        jsonb_build_object('name','Lâm Đồng',    'slug','lam-dong'),
-    'Bình Thuận',      jsonb_build_object('name','Lâm Đồng',    'slug','lam-dong'),
-    'Bình Dương',      jsonb_build_object('name','TP. HCM',     'slug','tp-hcm'),
-    'Bà Rịa - Vũng Tàu', jsonb_build_object('name','TP. HCM',   'slug','tp-hcm'),
-    'Bà Rịa — VT',     jsonb_build_object('name','TP. HCM',     'slug','tp-hcm'),
-    'Bà Rịa-VT',       jsonb_build_object('name','TP. HCM',     'slug','tp-hcm'),
-    'Vũng Tàu',        jsonb_build_object('name','TP. HCM',     'slug','tp-hcm'),
-    'Bình Phước',      jsonb_build_object('name','Đồng Nai',    'slug','dong-nai'),
-    'Long An',         jsonb_build_object('name','Tây Ninh',    'slug','tay-ninh'),
-    'Bến Tre',         jsonb_build_object('name','Vĩnh Long',   'slug','vinh-long'),
-    'Trà Vinh',        jsonb_build_object('name','Vĩnh Long',   'slug','vinh-long'),
-    'Tiền Giang',      jsonb_build_object('name','Đồng Tháp',   'slug','dong-thap'),
-    'Kiên Giang',      jsonb_build_object('name','An Giang',    'slug','an-giang'),
-    'Sóc Trăng',       jsonb_build_object('name','Cần Thơ',     'slug','can-tho'),
-    'Hậu Giang',       jsonb_build_object('name','Cần Thơ',     'slug','can-tho'),
-    'Bạc Liêu',        jsonb_build_object('name','Cà Mau',      'slug','ca-mau')
-  );
-  k text;
-  v jsonb;
+  r record;
   affected int;
 begin
-  for k, v in select * from jsonb_each(mapping) loop
+  for r in
+    select * from (values
+      -- ── Giữ nguyên hoặc chuẩn hoá ──
+      ('Hà Nội',         'Hà Nội',      'ha-noi'),
+      ('Hải Phòng',      'Hải Phòng',   'hai-phong'),
+      ('Đà Nẵng',        'Đà Nẵng',     'da-nang'),
+      ('TP. HCM',        'TP. HCM',     'tp-hcm'),
+      ('TP.HCM',         'TP. HCM',     'tp-hcm'),
+      ('Hồ Chí Minh',    'TP. HCM',     'tp-hcm'),
+      ('Cần Thơ',        'Cần Thơ',     'can-tho'),
+      ('Lai Châu',       'Lai Châu',    'lai-chau'),
+      ('Điện Biên',      'Điện Biên',   'dien-bien'),
+      ('Sơn La',         'Sơn La',      'son-la'),
+      ('Lào Cai',        'Lào Cai',     'lao-cai'),
+      ('Tuyên Quang',    'Tuyên Quang', 'tuyen-quang'),
+      ('Cao Bằng',       'Cao Bằng',    'cao-bang'),
+      ('Lạng Sơn',       'Lạng Sơn',    'lang-son'),
+      ('Thái Nguyên',    'Thái Nguyên', 'thai-nguyen'),
+      ('Phú Thọ',        'Phú Thọ',     'phu-tho'),
+      ('Bắc Ninh',       'Bắc Ninh',    'bac-ninh'),
+      ('Hưng Yên',       'Hưng Yên',    'hung-yen'),
+      ('Quảng Ninh',     'Quảng Ninh',  'quang-ninh'),
+      ('Ninh Bình',      'Ninh Bình',   'ninh-binh'),
+      ('Thanh Hóa',      'Thanh Hóa',   'thanh-hoa'),
+      ('Nghệ An',        'Nghệ An',     'nghe-an'),
+      ('Hà Tĩnh',        'Hà Tĩnh',     'ha-tinh'),
+      ('Quảng Trị',      'Quảng Trị',   'quang-tri'),
+      ('Quảng Ngãi',     'Quảng Ngãi',  'quang-ngai'),
+      ('Gia Lai',        'Gia Lai',     'gia-lai'),
+      ('Đắk Lắk',        'Đắk Lắk',     'dak-lak'),
+      ('Khánh Hòa',      'Khánh Hòa',   'khanh-hoa'),
+      ('Khánh Hoà',      'Khánh Hòa',   'khanh-hoa'),
+      ('Lâm Đồng',       'Lâm Đồng',    'lam-dong'),
+      ('Tây Ninh',       'Tây Ninh',    'tay-ninh'),
+      ('Đồng Nai',       'Đồng Nai',    'dong-nai'),
+      ('Vĩnh Long',      'Vĩnh Long',   'vinh-long'),
+      ('Đồng Tháp',      'Đồng Tháp',   'dong-thap'),
+      ('An Giang',       'An Giang',    'an-giang'),
+      ('Cà Mau',         'Cà Mau',      'ca-mau'),
+      ('Huế',            'Huế',         'hue'),
+      -- ── Đã sáp nhập — map đến đơn vị mới ──
+      ('Hải Dương',      'Hải Phòng',   'hai-phong'),
+      ('Yên Bái',        'Lào Cai',     'lao-cai'),
+      ('Hà Giang',       'Tuyên Quang', 'tuyen-quang'),
+      ('Bắc Kạn',        'Thái Nguyên', 'thai-nguyen'),
+      ('Vĩnh Phúc',      'Phú Thọ',     'phu-tho'),
+      ('Hòa Bình',       'Phú Thọ',     'phu-tho'),
+      ('Hoà Bình',       'Phú Thọ',     'phu-tho'),
+      ('Bắc Giang',      'Bắc Ninh',    'bac-ninh'),
+      ('Thái Bình',      'Hưng Yên',    'hung-yen'),
+      ('Hà Nam',         'Ninh Bình',   'ninh-binh'),
+      ('Nam Định',       'Ninh Bình',   'ninh-binh'),
+      ('Thừa Thiên Huế', 'Huế',         'hue'),
+      ('Quảng Nam',      'Đà Nẵng',     'da-nang'),
+      ('Quảng Bình',     'Quảng Trị',   'quang-tri'),
+      ('Kon Tum',        'Quảng Ngãi',  'quang-ngai'),
+      ('Bình Định',      'Gia Lai',     'gia-lai'),
+      ('Phú Yên',        'Đắk Lắk',     'dak-lak'),
+      ('Ninh Thuận',     'Khánh Hòa',   'khanh-hoa'),
+      ('Đắk Nông',       'Lâm Đồng',    'lam-dong'),
+      ('Bình Thuận',     'Lâm Đồng',    'lam-dong'),
+      ('Bình Dương',     'TP. HCM',     'tp-hcm'),
+      ('Bà Rịa - Vũng Tàu', 'TP. HCM',  'tp-hcm'),
+      ('Bà Rịa — VT',    'TP. HCM',     'tp-hcm'),
+      ('Bà Rịa-VT',      'TP. HCM',     'tp-hcm'),
+      ('Vũng Tàu',       'TP. HCM',     'tp-hcm'),
+      ('Bình Phước',     'Đồng Nai',    'dong-nai'),
+      ('Long An',        'Tây Ninh',    'tay-ninh'),
+      ('Bến Tre',        'Vĩnh Long',   'vinh-long'),
+      ('Trà Vinh',       'Vĩnh Long',   'vinh-long'),
+      ('Tiền Giang',     'Đồng Tháp',   'dong-thap'),
+      ('Kiên Giang',     'An Giang',    'an-giang'),
+      ('Sóc Trăng',      'Cần Thơ',     'can-tho'),
+      ('Hậu Giang',      'Cần Thơ',     'can-tho'),
+      ('Bạc Liêu',       'Cà Mau',      'ca-mau')
+    ) as t(old_name, new_name, new_slug)
+  loop
     update public.places
-       set province      = v->>'name',
-           province_slug = v->>'slug',
+       set province      = r.new_name,
+           province_slug = r.new_slug,
            updated_at    = now()
-     where province = k
-       and (province <> v->>'name' or province_slug <> v->>'slug');
+     where province = r.old_name
+       and (province <> r.new_name or province_slug <> r.new_slug);
     get diagnostics affected = row_count;
     if affected > 0 then
-      raise notice 'places: % rows  (% → %)', affected, k, v->>'name';
+      raise notice 'places: % rows  (% → %)', affected, r.old_name, r.new_name;
     end if;
 
     update public.place_submissions
-       set province      = v->>'name',
-           province_slug = v->>'slug'
-     where province = k
-       and (province <> v->>'name' or province_slug <> v->>'slug');
+       set province      = r.new_name,
+           province_slug = r.new_slug
+     where province = r.old_name
+       and (province <> r.new_name or province_slug <> r.new_slug);
     get diagnostics affected = row_count;
     if affected > 0 then
-      raise notice 'submissions: % rows  (% → %)', affected, k, v->>'name';
+      raise notice 'submissions: % rows  (% → %)', affected, r.old_name, r.new_name;
     end if;
   end loop;
 end $$;

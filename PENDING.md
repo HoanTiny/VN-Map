@@ -15,6 +15,8 @@
 - ✅ **PWA hoàn tất** — manifest, service worker, offline page, install banner.
 - ✅ **SEO & Favicon hoàn tất** — Dynamic OG images `/api/og`, favicon từ logo MapVN, apple-icon.
 - ✅ **Production live** — Deployed Vercel, env vars set, Supabase migrations 0001–0003 chạy.
+- ✅ **Admin merger 01/07/2025** — Update 63 → 34 đơn vị hành chính theo Nghị quyết. Provinces config, places remap, search match legacy name, map polygon highlight đều hoàn tất.
+- ⏳ **Pending action** — (1) `git push` (đang ahead 2 commits) — (2) chạy migration `0002_admin_merger_2025.sql` trên Supabase production sau khi push.
 - ⏳ **Phase 3 chưa đụng** — 3D map, i18n, realtime, curated trips.
 
 Khi resume: chạy `pnpm dev` và smoke test các route chính. Nếu lỗi → đọc section [Known issues](#known-issues).
@@ -213,6 +215,35 @@ URL deep-link `?place=slug` cũng lookup qua effectiveData (không còn sync moc
 - Env vars set: `NEXT_PUBLIC_APP_URL`, `GEMINI_API_KEY`, Supabase keys
 - Supabase migrations 0001–0003 chạy xong
 
+### ✅ Administrative merger 01/07/2025 (Session 2026-05-22 chiều) — DONE (local), pending DB push
+Áp dụng Nghị quyết 60-NQ/TW: 63 tỉnh/TP cũ → **34 đơn vị mới** (6 TP TW + 28 tỉnh).
+
+**Config & data:**
+- [src/config/regions.ts](src/config/regions.ts) — viết lại 34 đơn vị, thêm field `isCity`, `merged[]` (tỉnh cũ gộp vào), export `legacyProvinceMap` (oldName → newSlug)
+- [src/features/map/lib/places-data.ts](src/features/map/lib/places-data.ts) — remap 20 places sang tỉnh mới, giữ tỉnh cũ trong `district` (vd: Hội An → province "Đà Nẵng", district "Hội An (Quảng Nam cũ)")
+- [scripts/seed-trip-templates.ts](scripts/seed-trip-templates.ts) — update destinations
+- [app/design/page.tsx](app/design/page.tsx) — fix province placeholder
+- [supabase/migrations/0002_admin_merger_2025.sql](supabase/migrations/0002_admin_merger_2025.sql) — idempotent UPDATE province/province_slug cho `places` + `place_submissions`, dùng `VALUES (...)` trong DO block (tránh giới hạn 100 args của `jsonb_build_object`), có warning log row chưa map được. **Cần chạy lại trên Supabase production sau khi push.**
+
+**Homepage search nâng cấp:**
+- [app/api/search/suggest/route.ts](app/api/search/suggest/route.ts) — endpoint mới, gọi `searchPlacesAsync` (DB + fallback mock), match thêm provinces/categories, **match legacy names** (Bắc Giang → suggest "Bắc Giang → Bắc Ninh")
+- [src/features/search/components/SearchBar.tsx](src/features/search/components/SearchBar.tsx) — bỏ MOCK cứng, fetch API với debounce + AbortController, hiện "Đang tìm…" loading state
+
+**Map polygon layer:**
+- [public/json/VN63.geojson](public/json/VN63.geojson) — 63 tỉnh cũ (user cung cấp, 15 MB)
+- [public/json/VN34.geojson](public/json/VN34.geojson) — 34 tỉnh mới đã merge (0.7 MB), generate từ VN63 bằng [scripts/build-vn34-geojson.ts](scripts/build-vn34-geojson.ts) (turf union + simplify, dùng `legacyProvinceMap`)
+- npm script: `pnpm build:vn34` để regenerate
+- [MapCanvas.tsx](src/features/map/components/MapCanvas.tsx):
+  - `province-line` — boundary xám nhạt luôn hiện
+  - `province-fill` — đỏ brand 18% khi `feature-state.active=true`
+  - `province-labels` — tên tỉnh hiện ở zoom 4.5-9
+  - `window.__mapVN.highlightProvince(slug)` — flyTo (zoom 8.2) + active 5.5s + auto-clear
+- [MapSearchBar.tsx](src/features/map/components/MapSearchBar.tsx) — search match cả legacy names, suggest hiện "Bắc Giang → Bắc Ninh" với hint "Đã sáp nhập vào ... (01/07/2025)", click → flyTo + highlight polygon
+
+**Dependencies thêm (dev):** `@turf/union`, `@turf/simplify`, `@turf/helpers`, `@types/geojson`
+
+**Git status:** 2 commits ahead of origin/main (`c6ff458` + `53eadbc`), chưa push.
+
 ---
 
 ## ⏳ Phase 3 — Polish & Differentiation (chưa đụng)
@@ -269,27 +300,51 @@ Hai search bars khác mục đích nhưng UX có thể confuse — navbar search
 
 ## 🔧 Resume checklist (phiên sau)
 
-1. **Smoke test**:
+### 0. **Push & migrate** (ưu tiên cao — đang pending từ session trước):
+```powershell
+cd f:/VTVLive/Map-VN
+git status              # xác nhận 2 commits ahead of origin/main
+git push                # push c6ff458 + 53eadbc lên origin
+```
+Sau khi push → vào **Supabase Dashboard → SQL Editor → New query** → paste toàn bộ
+[supabase/migrations/0002_admin_merger_2025.sql](supabase/migrations/0002_admin_merger_2025.sql) → Run.
+
+Kỳ vọng output (panel "Messages"):
+```
+NOTICE:  places: N rows  (Quảng Nam → Đà Nẵng)
+NOTICE:  places: N rows  (Hòa Bình → Phú Thọ)
+...
+```
+Nếu thấy `WARNING: Unmapped province: ...` → báo lại, có tỉnh nào sót.
+
+### 1. **Smoke test mới (sau merger):**
    ```powershell
    pnpm dev
    ```
    Mở:
-   - http://localhost:3000/ — landing, categories marquee chạy? drag được?
-   - http://localhost:3000/explore — map markers hiện? AI suggest panel ở trên trái?
+   - http://localhost:3000/explore — zoom out, thấy tên 34 tỉnh + ranh giới xám?
+   - Tìm "Bắc Giang" → suggest "Bắc Giang → Bắc Ninh"? Click → polygon Bắc Ninh đỏ?
+   - Tìm "Phú Thọ" → polygon bao cả Vĩnh Phúc + Hòa Bình cũ (gộp)?
+   - Tìm "TP. HCM" → bao Sài Gòn + Bình Dương + Côn Đảo?
+   - Tìm "Đà Nẵng" → bao Đà Nẵng + Quảng Nam (Hội An)?
+
+### 2. **Smoke test cũ:**
+   - http://localhost:3000/ — landing, categories marquee, search homepage gõ "Hòa Bình" có ra "Phú Thọ" không?
+   - http://localhost:3000/place/hoi-an — chip province hiện "Đà Nẵng"?
    - http://localhost:3000/place/cafe-giang — detail hiện?
-   - http://localhost:3000/sign-in — form Google + magic link hiện?
+   - http://localhost:3000/sign-in — Google + magic link hiện?
    - http://localhost:3000/me — session-aware?
 
-2. **Auth test**:
+### 3. **Auth test:**
    - Click "Đăng nhập với Google" → consent → redirect với navbar avatar
    - `/me` hiện "Xin chào, ..." + nút Đăng xuất
    - Magic link: nhập email → check inbox → click link → đăng nhập
 
-3. **Verify Supabase wired**:
+### 4. **Verify Supabase wired:**
    - DevTools Network → fetch `*.supabase.co/rest/v1/places` (read path)
    - DB: `profiles` row tự tạo khi user mới signup
 
-4. **Hướng tiếp theo (Phase 3)**:
+### 5. **Hướng tiếp theo (Phase 3):**
    - **3D buildings** — MapLibre extrusion, pitch/bearing controls
    - **Hero stats dynamic** — query count từ Supabase thay hardcode
    - **Mở rộng mock data** — thêm ~40 places (target 80)
