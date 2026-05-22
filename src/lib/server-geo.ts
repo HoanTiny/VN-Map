@@ -64,12 +64,14 @@ export async function detectServerGeo(): Promise<ServerGeo> {
     const vRegion = h.get("x-vercel-ip-country-region");
     const vCountry = h.get("x-vercel-ip-country");
     if (vCity || vRegion) {
-      return {
+      const data: ServerGeo = {
         city: normalize(decodeURIComponent(vCity ?? "")),
         region: normalize(decodeURIComponent(vRegion ?? "")),
         country: normalize(vCountry ?? ""),
         source: "vercel",
       };
+      console.log("[server-geo] detected via Vercel headers:", data);
+      return data;
     }
 
     // Cloudflare
@@ -77,12 +79,14 @@ export async function detectServerGeo(): Promise<ServerGeo> {
     const cfRegion = h.get("cf-region");
     const cfCountry = h.get("cf-ipcountry");
     if (cfCity || cfRegion) {
-      return {
+      const data: ServerGeo = {
         city: normalize(cfCity ?? ""),
         region: normalize(cfRegion ?? ""),
         country: normalize(cfCountry ?? ""),
         source: "cloudflare",
       };
+      console.log("[server-geo] detected via Cloudflare headers:", data);
+      return data;
     }
 
     // Fallback: server-side fetch (no CORS issues here).
@@ -90,16 +94,24 @@ export async function detectServerGeo(): Promise<ServerGeo> {
     // actual client, not the server.
     const forwarded = h.get("x-forwarded-for") ?? "";
     const ip = forwarded.split(",")[0]?.trim() || "";
+    console.log("[server-geo] no CDN headers found. x-forwarded-for IP:", ip);
 
-    // Hit in-memory cache before re-calling external APIs.
+    // Hit in-memory cache before re-calling external APIs. - TEMPORARILY DISABLED
+    console.log("[server-geo] server-side cache is temporarily disabled for debugging.");
+    /*
     const cached = readCache(ip || "server");
-    if (cached) return cached;
+    if (cached) {
+      console.log("[server-geo] returning cached geo data:", cached);
+      return cached;
+    }
+    */
 
     // ip-api.com — free, 45 req/min from same IP, HTTPS via "https://" endpoint.
     try {
       const url = ip
         ? `https://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,city,regionName,country`
         : `https://ip-api.com/json/?fields=status,city,regionName,country`;
+      console.log(`[server-geo] calling ip-api.com for IP: ${ip || "server"}...`);
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 1500);
       const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
@@ -111,6 +123,7 @@ export async function detectServerGeo(): Promise<ServerGeo> {
           regionName?: string;
           country?: string;
         };
+        console.log("[server-geo] ip-api.com raw response:", j);
         if (j.status === "success") {
           const data: ServerGeo = {
             city: normalize(j.city),
@@ -118,12 +131,16 @@ export async function detectServerGeo(): Promise<ServerGeo> {
             country: normalize(j.country),
             source: "ipapi",
           };
-          writeCache(ip || "server", data);
+          console.log("[server-geo] successfully resolved via ip-api.com:", data);
           return data;
+        } else {
+          console.warn("[server-geo] ip-api.com status was not success");
         }
+      } else {
+        console.warn(`[server-geo] ip-api.com returned status: ${res.status}`);
       }
-    } catch {
-      // fall through to next provider
+    } catch (err) {
+      console.error("[server-geo] ip-api.com failed with error:", err);
     }
 
     // geojs.io — generous, free.
@@ -131,6 +148,7 @@ export async function detectServerGeo(): Promise<ServerGeo> {
       const url = ip
         ? `https://get.geojs.io/v1/ip/geo/${encodeURIComponent(ip)}.json`
         : `https://get.geojs.io/v1/ip/geo.json`;
+      console.log(`[server-geo] calling geojs.io for IP: ${ip || "server"}...`);
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 1500);
       const res = await fetch(url, { signal: ctrl.signal, cache: "no-store" });
@@ -141,21 +159,26 @@ export async function detectServerGeo(): Promise<ServerGeo> {
           region?: string;
           country?: string;
         };
+        console.log("[server-geo] geojs.io raw response:", j);
         const data: ServerGeo = {
           city: normalize(j.city),
           region: normalize(j.region),
           country: normalize(j.country),
           source: "geojs",
         };
-        writeCache(ip || "server", data);
+        console.log("[server-geo] successfully resolved via geojs.io:", data);
         return data;
+      } else {
+        console.warn(`[server-geo] geojs.io returned status: ${res.status}`);
       }
-    } catch {
-      // ignore
+    } catch (err) {
+      console.error("[server-geo] geojs.io failed with error:", err);
     }
 
+    console.warn("[server-geo] all server-side geolocators failed. Returning EMPTY.");
     return EMPTY;
-  } catch {
+  } catch (err) {
+    console.error("[server-geo] detectServerGeo outer catch error:", err);
     return EMPTY;
   }
 }

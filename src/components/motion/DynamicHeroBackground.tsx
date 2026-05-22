@@ -503,10 +503,9 @@ export function DynamicHeroBackground({
     // 2. If the server already resolved a region from request headers / IP, skip
     //    client-side fetch entirely (this is the common path on Vercel/Cloudflare
     //    and avoids 429 / CORS hits on free-tier IP APIs).
+    console.log("[hero-bg] initialRegion from server:", initialRegion, "exists in DB:", initialRegion ? index.byRegion.has(initialRegion) : false);
     if (initialRegion && index.byRegion.has(initialRegion)) {
-      if (process.env.NODE_ENV !== "production") {
-        console.log("[hero-bg] using server-resolved region:", initialRegion);
-      }
+      console.log("[hero-bg] using server-resolved region:", initialRegion);
       return;
     }
 
@@ -527,28 +526,37 @@ export function DynamicHeroBackground({
     };
 
     const applyGeo = (city: string, regionName: string) => {
-      console.log("[hero-bg] geo:", { city, region: regionName });
+      console.log("[hero-bg] geo applied:", { city, region: regionName });
       const matched = matchAgainst(city, regionName);
       if (matched) {
-        console.log("[hero-bg] matched region:", matched);
+        console.log("[hero-bg] matched region from keywords:", matched);
         setRegion(matched);
+      } else {
+        console.warn("[hero-bg] no preset matched for city/region. Defaulting to:", index.defaultRegion);
       }
     };
 
     const detectRegion = async () => {
-      // Try cache first
+      // Try cache first - TEMPORARILY DISABLED
+      console.log("[hero-bg] client-side cache is temporarily disabled for debugging.");
+      /*
       try {
         const cached = window.localStorage.getItem(CACHE_KEY);
         if (cached) {
-          const parsed = JSON.parse(cached) as { city: string; region: string; ts: number };
+          const parsed = JSON.parse(cached) as { city: string; region: string; ts: number; src?: string };
+          console.log("[hero-bg] found cached geo:", parsed);
           if (Date.now() - parsed.ts < CACHE_TTL_MS) {
+            console.log("[hero-bg] cached geo is warm. Applying...");
             applyGeo(parsed.city, parsed.region);
             return;
+          } else {
+            console.log("[hero-bg] cached geo is expired, will fetch fresh data.");
           }
         }
-      } catch {
-        // ignore corrupt cache
+      } catch (e) {
+        console.error("[hero-bg] failed to read cache:", e);
       }
+      */
 
       // Chain of free IP geolocation providers — try each until one returns.
       // Fast-fail on rate-limit / network error and move to next.
@@ -583,44 +591,53 @@ export function DynamicHeroBackground({
       for (const provider of providers) {
         try {
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 1500);
+          const timeoutId = setTimeout(() => {
+            console.warn(`[hero-bg] ${provider.name} fetch timed out after 1500ms`);
+            controller.abort();
+          }, 1500);
+          
+          console.log(`[hero-bg] fetching client geo from ${provider.name}...`);
           const res = await fetch(provider.url, { signal: controller.signal });
           clearTimeout(timeoutId);
 
           if (!res.ok) {
-            if (process.env.NODE_ENV !== "production") {
-              console.warn(`[hero-bg] ${provider.name} ${res.status}, trying next…`);
-            }
+            console.warn(`[hero-bg] ${provider.name} failed with HTTP status: ${res.status}`);
             continue;
           }
           const data = (await res.json()) as Record<string, unknown>;
+          console.log(`[hero-bg] ${provider.name} response:`, data);
+          
           const { city: rawCity, region: rawRegion } = provider.parse(data);
           const city = normalizeForMatch(rawCity);
           const regionName = normalizeForMatch(rawRegion);
-          if (!city && !regionName) continue;
+          console.log(`[hero-bg] parsed & normalized:`, { rawCity, rawRegion, city, regionName });
+          
+          if (!city && !regionName) {
+            console.warn(`[hero-bg] ${provider.name} returned empty city & region`);
+            continue;
+          }
 
+          console.log("[hero-bg] client-side cache write skipped (disabled for debugging).");
+          /*
           try {
             window.localStorage.setItem(
               CACHE_KEY,
               JSON.stringify({ city, region: regionName, ts: Date.now(), src: provider.name })
             );
-          } catch {
-            // localStorage unavailable (privacy mode)
+          } catch (e) {
+            console.warn("[hero-bg] failed to write cache:", e);
           }
+          */
 
-          if (process.env.NODE_ENV !== "production") {
-            console.log(`[hero-bg] resolved via ${provider.name}`);
-          }
+          console.log(`[hero-bg] resolved via ${provider.name}`);
           applyGeo(city, regionName);
           return;
-        } catch {
-          // Network error / timeout — try next provider.
+        } catch (err) {
+          console.error(`[hero-bg] ${provider.name} error:`, err);
         }
       }
 
-      if (process.env.NODE_ENV !== "production") {
-        console.warn("[hero-bg] all geo providers failed, using default preset");
-      }
+      console.warn("[hero-bg] all geo providers failed, using default preset:", index.defaultRegion);
     };
 
     detectRegion();

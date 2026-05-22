@@ -40,6 +40,7 @@ export default async function LandingPage() {
     listCuratedTrips(6),
   ]);
   const initialHeroRegion = resolveRegionKey(heroPresets, geo.city, geo.region);
+  console.log("[LandingPage server log] resolved client geo:", geo, "-> initialHeroRegion:", initialHeroRegion);
   return (
     <>
       <HeroSection stats={stats} heroPresets={heroPresets} initialRegion={initialHeroRegion} />
