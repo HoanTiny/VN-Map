@@ -21,6 +21,7 @@ interface MapState {
   ready: boolean;
   filter: Set<CategoryKey>;
   styleKey: MapStyleKey | null; // null = follow theme
+  enable3D: boolean;
   userLocation: { lng: number; lat: number; accuracy?: number } | null;
   setViewport: (v: Partial<Viewport>) => void;
   setBounds: (b: MapState["bounds"]) => void;
@@ -30,6 +31,7 @@ interface MapState {
   toggleCategory: (key: CategoryKey) => void;
   clearFilter: () => void;
   setStyleKey: (s: MapStyleKey | null) => void;
+  setEnable3D: (v: boolean) => void;
   setUserLocation: (loc: MapState["userLocation"]) => void;
 }
 
@@ -43,6 +45,7 @@ export const useMapStore = create<MapState>()(
       ready: false,
       filter: new Set<CategoryKey>(),
       styleKey: null,
+      enable3D: false,
       userLocation: null,
       setViewport: (v) => set((s) => ({ viewport: { ...s.viewport, ...v } })),
       setBounds: (b) => set({ bounds: b }),
@@ -58,6 +61,7 @@ export const useMapStore = create<MapState>()(
         }),
       clearFilter: () => set({ filter: new Set() }),
       setStyleKey: (s) => set({ styleKey: s }),
+      setEnable3D: (v) => set({ enable3D: v }),
       setUserLocation: (loc) => set({ userLocation: loc }),
     })),
     { name: "map" }

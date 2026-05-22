@@ -3,10 +3,17 @@ import type { MapStyleKey } from "@/stores/map-store";
 
 export function resolveStyleUrl(
   styleKey: MapStyleKey | null,
-  resolved: "light" | "dark"
+  resolved: "light" | "dark",
+  enable3D = false
 ): string {
   // OpenFreeMap doesn't have a satellite layer — fall back to "bright" (vivid colors)
   if (styleKey === "satellite") return MAP_STYLE_URL.bright;
+  // 3D mode uses OpenFreeMap which carries building heights in the `openmaptiles` source.
+  // CartoCDN positron/dark-matter don't include building footprints, so extrusion would be a no-op.
+  if (enable3D) {
+    const isDark = styleKey === "dark" || (styleKey == null && resolved === "dark");
+    return isDark ? MAP_STYLE_URL.ofmDark : MAP_STYLE_URL.ofmLiberty;
+  }
   if (styleKey === "dark") return MAP_STYLE_URL.dark;
   if (styleKey === "light") return MAP_STYLE_URL.light;
   return resolved === "dark" ? MAP_STYLE_URL.dark : MAP_STYLE_URL.light;

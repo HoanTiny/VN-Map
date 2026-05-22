@@ -219,7 +219,10 @@ URL deep-link `?place=slug` cũng lookup qua effectiveData (không còn sync moc
 
 Theo plan §5:
 
-- [ ] **3D map** — MapLibre building extrusion từ OpenMapTiles + pitch/bearing controls + tilt auto-enable zoom > 15
+- [x] **3D map** — MapLibre building extrusion từ OpenFreeMap (OpenMapTiles schema) + pitch/bearing controls (Session 2026-05-22)
+  - `enable3D` state ở [map-store.ts](src/stores/map-store.ts), Box toggle button trong [MapControls.tsx](src/features/map/components/MapControls.tsx)
+  - Khi bật: setStyle sang OpenFreeMap liberty/positron, easeTo pitch 45° bearing -17°, fill-extrusion layer ở zoom ≥ 14
+  - Khi tắt: revert sang CartoCDN positron/dark-matter, pitch 0
 - [ ] **i18n** — VI/EN dictionaries, locale prefix `/en/...`, place names song ngữ (`name_vi` + `name_en` columns)
 - [x] **Realtime** (partial):
   - ✅ `usePresence` — "X người đang xem" trên place detail (hiện khi ≥2 viewer cùng lúc)
@@ -256,8 +259,8 @@ Hai search bars khác mục đích nhưng UX có thể confuse — navbar search
 ### PWA screenshots placeholder
 `public/screenshots/` vẫn còn ảnh placeholder. Chưa ảnh hưởng chức năng, chỉ cần thay khi có thời gian chụp màn hình thật.
 
-### Hero stats hardcoded
-Landing page hiện thị `4.8 ⭐ · 12k users · 580+ places · 63 tỉnh` — không fetch từ DB. Khi có đủ real data nên wire thành dynamic query.
+### ~~Hero stats hardcoded~~ — FIXED (2026-05-22)
+Đã wire `getSiteStats()` ([queries.ts](src/features/place/lib/queries.ts)) — landing fetch placeCount / provinceCount / categoryCount / avgRating / userCount từ Supabase, fallback về mock khi backend disabled.
 
 ---
 

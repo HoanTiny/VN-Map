@@ -26,6 +26,10 @@ const LAYER_CLUSTER_COUNT = "cluster-count";
 const LAYER_POINTS = "places-points";
 const LAYER_POINT_HALO = "places-points-halo";
 const LAYER_LABELS = "places-labels";
+const LAYER_BUILDINGS_3D = "buildings-3d";
+// OpenMapTiles schema source layer name for buildings (used by OpenFreeMap).
+const OMT_SOURCE = "openmaptiles";
+const OMT_BUILDING_LAYER = "building";
 
 export interface MapCanvasProps {
   /** Place data for the map source. Falls back to mock if not provided. */
@@ -67,7 +71,7 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     let cancelled = false;
-    const { viewport, styleKey } = useMapStore.getState();
+    const { viewport, styleKey, enable3D } = useMapStore.getState();
 
     (async () => {
       const mod = await import("maplibre-gl");
@@ -77,9 +81,10 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
 
       const map = new mod.Map({
         container: containerRef.current,
-        style: resolveStyleUrl(styleKey, resolved),
+        style: resolveStyleUrl(styleKey, resolved, enable3D),
         center: [viewport.lng, viewport.lat],
         zoom: viewport.zoom,
+        pitch: enable3D ? 45 : 0,
         attributionControl: { compact: true },
       });
 
@@ -90,7 +95,9 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
       // belt-and-suspenders trigger).
       const installAndRestore = () => {
         installPlacesLayers(map, placesData);
-        const { filter, selectedPlaceId } = useMapStore.getState();
+        const { filter, selectedPlaceId, enable3D, styleKey } = useMapStore.getState();
+        const isDark = styleKey === "dark" || (styleKey == null && resolved === "dark");
+        if (enable3D) install3DBuildings(map, isDark);
         if (filter.size > 0) {
           const src = map.getSource(SRC) as GeoJSONSource | undefined;
           src?.setData({
@@ -251,9 +258,29 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
     const map = mapRef.current;
     if (!map) return;
     const { styleKey } = useMapStore.getState();
-    map.setStyle(resolveStyleUrl(styleKey, resolved));
+    map.setStyle(resolveStyleUrl(styleKey, resolved, useMapStore.getState().enable3D));
     reinstallAfterStyleSwap(map);
   }, [resolved]);
+
+  /* -------------------------------- 3D toggle -------------------------------- */
+  useEffect(() => {
+    const unsub = useMapStore.subscribe(
+      (s) => s.enable3D,
+      (enable3D) => {
+        const map = mapRef.current;
+        if (!map) return;
+        const { styleKey } = useMapStore.getState();
+        map.setStyle(resolveStyleUrl(styleKey, resolved, enable3D));
+        reinstallAfterStyleSwap(map);
+        map.easeTo({
+          pitch: enable3D ? 45 : 0,
+          bearing: enable3D ? -17 : 0,
+          duration: reduceMotion ? 0 : 900,
+        });
+      }
+    );
+    return unsub;
+  }, [resolved, reduceMotion]);
 
   /* ----------------------- Style key change (user-pick) ----------------------- */
   useEffect(() => {
@@ -262,7 +289,7 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
       (styleKey) => {
         const map = mapRef.current;
         if (!map) return;
-        map.setStyle(resolveStyleUrl(styleKey, resolved));
+        map.setStyle(resolveStyleUrl(styleKey, resolved, useMapStore.getState().enable3D));
         reinstallAfterStyleSwap(map);
       }
     );
@@ -511,6 +538,7 @@ function installPlacesLayers(map: MapLibreMap, placesData: PlacesFC) {
     },
   });
 
+
   map.addLayer({
     id: LAYER_LABELS,
     type: "symbol",
@@ -533,4 +561,65 @@ function installPlacesLayers(map: MapLibreMap, placesData: PlacesFC) {
       "text-halo-blur": 0.5,
     },
   });
+}
+
+/**
+ * Insert a fill-extrusion buildings layer using the `openmaptiles` source
+ * shipped by OpenFreeMap styles. No-ops when the source/layer is absent
+ * (e.g. CartoCDN basemaps don't carry building geometry).
+ */
+function install3DBuildings(map: MapLibreMap, isDark = false) {
+  if (map.getLayer(LAYER_BUILDINGS_3D)) return;
+  if (!map.getSource(OMT_SOURCE)) return;
+
+  // Insert before our points layer so markers stay on top.
+  const beforeId = map.getLayer(LAYER_POINT_HALO) ? LAYER_POINT_HALO : undefined;
+
+  const colorRamp = isDark
+    ? ([
+        "interpolate",
+        ["linear"],
+        ["get", "render_height"],
+        0, "#3a3d44",
+        50, "#4a4e57",
+        200, "#5c616c",
+      ] as const)
+    : ([
+        "interpolate",
+        ["linear"],
+        ["get", "render_height"],
+        0, "#d6d6d6",
+        50, "#c0c0c0",
+        200, "#a0a0a0",
+      ] as const);
+
+  map.addLayer(
+    {
+      id: LAYER_BUILDINGS_3D,
+      type: "fill-extrusion",
+      source: OMT_SOURCE,
+      "source-layer": OMT_BUILDING_LAYER,
+      minzoom: 14,
+      filter: ["all", ["!=", ["get", "hide_3d"], true]],
+      paint: {
+        "fill-extrusion-color": colorRamp as never,
+        "fill-extrusion-height": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          14, 0,
+          15.05, ["get", "render_height"],
+        ],
+        "fill-extrusion-base": [
+          "interpolate",
+          ["linear"],
+          ["zoom"],
+          14, 0,
+          15.05, ["get", "render_min_height"],
+        ],
+        "fill-extrusion-opacity": 0.85,
+      },
+    },
+    beforeId
+  );
 }

@@ -14,19 +14,29 @@ import { CityCard } from "@/features/region/components/CityCard";
 import { categoriesByGroup } from "@/config/categories";
 import { siteConfig } from "@/config/site";
 import { getFeaturedPlaces } from "@/features/place/data";
+import { getSiteStats, type SiteStats } from "@/features/place/lib/queries";
 import type { PlaceCardData } from "@/features/place/components/PlaceCard";
 import { featuredCities, collections } from "@/features/region/data";
 
+function formatCompact(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}k`;
+  return String(n);
+}
+
 export default async function LandingPage() {
-  const featuredPlaces = await getFeaturedPlaces();
+  const [featuredPlaces, stats] = await Promise.all([
+    getFeaturedPlaces(),
+    getSiteStats(),
+  ]);
   return (
     <>
-      <HeroSection />
+      <HeroSection stats={stats} />
       <CategoriesStrip />
       <CitiesSection />
       <PlacesSection places={featuredPlaces} />
       <CollectionsSection />
-      <MapCtaSection />
+      <MapCtaSection stats={stats} />
       <StatsSection />
     </>
   );
@@ -34,9 +44,11 @@ export default async function LandingPage() {
 
 /* ---------------------------------- Hero ---------------------------------- */
 
-function HeroSection() {
+function HeroSection({ stats }: { stats: SiteStats }) {
+  const userLabel = stats.userCount > 0 ? formatCompact(stats.userCount) : null;
+  const placeLabel = `${formatCompact(stats.placeCount)}+`;
   return (
-    <section className="relative isolate pt-36 md:pt-[19rem]">
+    <section className="relative isolate pt-36 md:pt-[19rem]">{/* */}
       {/* Dynamic Adaptive Background */}
       <DynamicHeroBackground />
 
@@ -86,14 +98,16 @@ function HeroSection() {
           <Reveal delay={0.25}>
             <div className="mt-10 inline-flex flex-wrap items-center justify-center gap-x-6 gap-y-2.5 rounded-full bg-black/30 backdrop-blur-md px-6 py-2.5 border border-white/10 shadow-lg text-body-sm text-white/95 select-none transition-all hover:bg-black/35 hover:border-white/15">
               <span className="flex items-center gap-1.5 font-medium">
-                <Star size={14} className="fill-warning text-warning" /> 4.8 từ 12k người dùng
+                <Star size={14} className="fill-warning text-warning" />{" "}
+                {stats.avgRating.toFixed(1)}
+                {userLabel ? ` từ ${userLabel} người dùng` : ` · ${formatCompact(stats.reviewCount)} đánh giá`}
               </span>
               <span className="hidden h-3 w-px bg-white/15 md:inline" />
               <span className="flex items-center gap-1.5 font-medium">
-                <Users size={14} className="text-white/80" /> 580+ địa điểm được duyệt
+                <Users size={14} className="text-white/80" /> {placeLabel} địa điểm được duyệt
               </span>
               <span className="hidden h-3 w-px bg-white/15 md:inline" />
-              <span className="font-medium">63 tỉnh thành</span>
+              <span className="font-medium">{stats.provinceCount} tỉnh thành</span>
             </div>
           </Reveal>
         </div>
@@ -407,7 +421,7 @@ function CollectionsSection() {
 
 /* -------------------------------- Map CTA -------------------------------- */
 
-function MapCtaSection() {
+function MapCtaSection({ stats }: { stats: SiteStats }) {
   return (
     <section className="container pb-20 md:pb-28">
       <Reveal>
@@ -448,10 +462,16 @@ function MapCtaSection() {
             <Glass variant="strong" className="hidden p-6 md:block">
               <div className="grid grid-cols-2 gap-4 text-white">
                 {[
-                  { k: "63", v: "Tỉnh thành" },
-                  { k: "580+", v: "Địa điểm" },
-                  { k: "6", v: "Danh mục" },
-                  { k: "12k", v: "Người dùng" },
+                  { k: String(stats.provinceCount), v: "Tỉnh thành" },
+                  { k: `${formatCompact(stats.placeCount)}+`, v: "Địa điểm" },
+                  { k: String(stats.categoryCount), v: "Danh mục" },
+                  {
+                    k:
+                      stats.userCount > 0
+                        ? formatCompact(stats.userCount)
+                        : formatCompact(stats.reviewCount),
+                    v: stats.userCount > 0 ? "Người dùng" : "Đánh giá",
+                  },
                 ].map((s) => (
                   <div key={s.v} className="rounded-xl bg-white/5 p-4">
                     <div className="font-display text-h1">{s.k}</div>

@@ -188,6 +188,70 @@ function haversineKm(a: [number, number], b: [number, number]): number {
   return 2 * R * Math.asin(Math.sqrt(x));
 }
 
+/** Aggregated site stats for landing page hero / CTA. */
+export interface SiteStats {
+  placeCount: number;
+  provinceCount: number;
+  categoryCount: number;
+  avgRating: number;
+  reviewCount: number;
+  userCount: number;
+}
+
+const FALLBACK_STATS: SiteStats = {
+  placeCount: mockAllPlaces.length,
+  provinceCount: new Set(mockAllPlaces.map((p) => p.province)).size,
+  categoryCount: new Set(mockAllPlaces.map((p) => p.category)).size,
+  avgRating:
+    Math.round(
+      (mockAllPlaces.reduce((s, p) => s + p.rating, 0) / mockAllPlaces.length) *
+        10
+    ) / 10,
+  reviewCount: mockAllPlaces.reduce((s, p) => s + (p.reviewCount ?? 0), 0),
+  userCount: 0,
+};
+
+export async function getSiteStats(): Promise<SiteStats> {
+  if (!isSupabaseConfigured()) return FALLBACK_STATS;
+  try {
+    const supabase = await createServerClient();
+    const [placesRes, profilesRes] = await Promise.all([
+      supabase.from("places").select("province,category,rating,review_count"),
+      supabase.from("profiles").select("id", { count: "exact", head: true }),
+    ]);
+    if (placesRes.error) throw placesRes.error;
+    const rows = (placesRes.data ?? []) as Array<{
+      province: string;
+      category: string;
+      rating: number | null;
+      review_count: number | null;
+    }>;
+    if (rows.length === 0) return FALLBACK_STATS;
+    const provinces = new Set(rows.map((r) => r.province));
+    const cats = new Set(rows.map((r) => r.category));
+    const ratings = rows.map((r) => Number(r.rating ?? 0)).filter((r) => r > 0);
+    const avgRating = ratings.length
+      ? Math.round((ratings.reduce((s, x) => s + x, 0) / ratings.length) * 10) /
+        10
+      : 0;
+    const reviewCount = rows.reduce(
+      (s, r) => s + Number(r.review_count ?? 0),
+      0
+    );
+    return {
+      placeCount: rows.length,
+      provinceCount: provinces.size,
+      categoryCount: cats.size,
+      avgRating,
+      reviewCount,
+      userCount: profilesRes.count ?? 0,
+    };
+  } catch (err) {
+    console.error("getSiteStats failed:", (err as Error).message);
+    return FALLBACK_STATS;
+  }
+}
+
 /** GeoJSON for map source. */
 export async function getPlacesGeoJSON(): Promise<PlacesFC> {
   if (!isSupabaseConfigured()) return mockPlacesData;

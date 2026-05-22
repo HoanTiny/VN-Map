@@ -13,6 +13,10 @@ export const MAP_STYLE_URL = {
   light: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
   dark: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json",
   bright: "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json",
+  // OpenFreeMap (OpenMapTiles schema) — includes building heights for 3D extrusion.
+  ofmLiberty: "https://tiles.openfreemap.org/styles/liberty",
+  ofmPositron: "https://tiles.openfreemap.org/styles/positron",
+  ofmDark: "https://tiles.openfreemap.org/styles/dark",
 } as const;
 
 export const BREAKPOINTS = {
