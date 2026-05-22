@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import { m, AnimatePresence } from "framer-motion";
 
 type TimeOfDay = "day" | "sunset" | "night";
-type Region = "hanoi" | "danang" | "saigon" | "default";
+
+export interface DynamicHeroPreset {
+  region: string;
+  label: string;
+  match_keywords: string[];
+  is_default: boolean;
+  presets: Record<TimeOfDay, BackgroundPreset>;
+}
 
 interface ImageItem {
   src: string;
@@ -16,7 +23,7 @@ interface BackgroundPreset {
   overlay: string; // Custom gradient overlay styling based on background brightness
 }
 
-const PRESETS: Record<Region, Record<TimeOfDay, BackgroundPreset>> = {
+const PRESETS: Record<string, Record<TimeOfDay, BackgroundPreset>> = {
   default: {
     day: {
       images: [
@@ -173,6 +180,204 @@ const PRESETS: Record<Region, Record<TimeOfDay, BackgroundPreset>> = {
       overlay: "from-black/50 via-black/15 to-transparent",
     },
   },
+  hue: {
+    day: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1583417267826-aebc4d1542e1?auto=format&fit=crop&w=2400&q=85",
+          alt: "Đại Nội Huế cổ kính trầm mặc ngày nắng",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=2400&q=85",
+          alt: "Sông Hương thuyền rồng êm đềm trôi",
+        },
+      ],
+      overlay: "from-black/35 via-black/10 to-transparent",
+    },
+    sunset: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1555921015-5532091f6026?auto=format&fit=crop&w=2400&q=85",
+          alt: "Cầu Trường Tiền in bóng sông Hương chiều tà",
+        },
+      ],
+      overlay: "from-black/40 via-black/12 to-transparent",
+    },
+    night: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?auto=format&fit=crop&w=2400&q=85",
+          alt: "Kinh thành Huế lung linh ánh đèn đêm",
+        },
+      ],
+      overlay: "from-black/50 via-black/15 to-transparent",
+    },
+  },
+  hoian: {
+    day: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=2400&q=85",
+          alt: "Phố cổ Hội An nhà cổ vàng dưới nắng",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=2400&q=85",
+          alt: "Chùa Cầu Hội An biểu tượng phố cổ",
+        },
+      ],
+      overlay: "from-black/35 via-black/10 to-transparent",
+    },
+    sunset: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1493780474015-ba834fd0ce2f?auto=format&fit=crop&w=2400&q=85",
+          alt: "Sông Hoài Hội An hoàng hôn nhuộm vàng",
+        },
+      ],
+      overlay: "from-black/40 via-black/12 to-transparent",
+    },
+    night: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1568515045052-f9a854d70bfd?auto=format&fit=crop&w=2400&q=85",
+          alt: "Đèn lồng Hội An lung linh đêm thả hoa đăng",
+        },
+      ],
+      overlay: "from-black/50 via-black/15 to-transparent",
+    },
+  },
+  nhatrang: {
+    day: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1559519529-0504685a7327?auto=format&fit=crop&w=2400&q=85",
+          alt: "Biển Nha Trang xanh ngọc cát trắng ngày hè",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=85",
+          alt: "Vịnh Nha Trang nắng vàng thuyền câu",
+        },
+      ],
+      overlay: "from-black/35 via-black/10 to-transparent",
+    },
+    sunset: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1545231027-63b3f162e0cd?auto=format&fit=crop&w=2400&q=85",
+          alt: "Hoàng hôn biển Nha Trang tím rực rỡ",
+        },
+      ],
+      overlay: "from-black/40 via-black/12 to-transparent",
+    },
+    night: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1534008757030-27299c4371b6?auto=format&fit=crop&w=2400&q=85",
+          alt: "Vinpearl Nha Trang lung linh sáng đêm",
+        },
+      ],
+      overlay: "from-black/50 via-black/15 to-transparent",
+    },
+  },
+  sapa: {
+    day: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=2400&q=85",
+          alt: "Ruộng bậc thang Sapa xanh ngút ngàn mùa nước đổ",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?auto=format&fit=crop&w=2400&q=85",
+          alt: "Sapa biển mây trắng bồng bềnh sườn núi",
+        },
+      ],
+      overlay: "from-black/35 via-black/10 to-transparent",
+    },
+    sunset: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=2400&q=85",
+          alt: "Đỉnh Fansipan hoàng hôn rực hồng cam",
+        },
+      ],
+      overlay: "from-black/40 via-black/12 to-transparent",
+    },
+    night: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=2400&q=85",
+          alt: "Sapa đêm sương lạnh đèn vàng ấm áp",
+        },
+      ],
+      overlay: "from-black/50 via-black/15 to-transparent",
+    },
+  },
+  phuquoc: {
+    day: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=2400&q=85",
+          alt: "Bãi Sao Phú Quốc cát trắng nước xanh ngọc",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1559519529-0504685a7327?auto=format&fit=crop&w=2400&q=85",
+          alt: "Vùng biển Phú Quốc thiên đường nhiệt đới",
+        },
+      ],
+      overlay: "from-black/35 via-black/10 to-transparent",
+    },
+    sunset: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1545231027-63b3f162e0cd?auto=format&fit=crop&w=2400&q=85",
+          alt: "Cầu Hôn Phú Quốc hoàng hôn vàng son",
+        },
+      ],
+      overlay: "from-black/40 via-black/12 to-transparent",
+    },
+    night: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=2400&q=85",
+          alt: "Phú Quốc đêm cảng cá nhộn nhịp ánh đèn",
+        },
+      ],
+      overlay: "from-black/50 via-black/15 to-transparent",
+    },
+  },
+  halong: {
+    day: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=2400&q=85",
+          alt: "Vịnh Hạ Long nắng trong núi đá kì vĩ",
+        },
+        {
+          src: "https://images.unsplash.com/photo-1573270689103-d7a4e42b609a?auto=format&fit=crop&w=2400&q=85",
+          alt: "Du thuyền Hạ Long lướt giữa hàng nghìn đảo",
+        },
+      ],
+      overlay: "from-black/35 via-black/10 to-transparent",
+    },
+    sunset: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1573270689103-d7a4e42b609a?auto=format&fit=crop&w=2400&q=85",
+          alt: "Hoàng hôn Vịnh Hạ Long vàng rực biển ngọc",
+        },
+      ],
+      overlay: "from-black/40 via-black/12 to-transparent",
+    },
+    night: {
+      images: [
+        {
+          src: "https://images.unsplash.com/photo-1508804185872-d7badad00f7d?auto=format&fit=crop&w=2400&q=85",
+          alt: "Hạ Long đêm du thuyền và đảo lung linh",
+        },
+      ],
+      overlay: "from-black/50 via-black/15 to-transparent",
+    },
+  },
 };
 
 function getProxiedUrl(url: string): string {
@@ -211,11 +416,76 @@ function BgImg({ src }: { src: string }) {
   );
 }
 
-export function DynamicHeroBackground() {
+interface DynamicHeroBackgroundProps {
+  /** DB-driven presets. If omitted/empty, fall back to hardcoded PRESETS map. */
+  presets?: DynamicHeroPreset[];
+  /** Region key resolved server-side (from request headers / IP). Skips client-side fetch. */
+  initialRegion?: string | null;
+}
+
+function buildPresetIndex(presets: DynamicHeroPreset[] | undefined) {
+  if (presets && presets.length > 0) {
+    const byRegion = new Map<string, DynamicHeroPreset>();
+    let defaultRegion = "default";
+    for (const p of presets) {
+      byRegion.set(p.region, p);
+      if (p.is_default) defaultRegion = p.region;
+    }
+    if (!byRegion.has(defaultRegion) && presets[0]) {
+      defaultRegion = presets[0].region;
+    }
+    return { byRegion, defaultRegion, fromDb: true as const };
+  }
+  // Fallback: hardcoded map
+  const byRegion = new Map<string, DynamicHeroPreset>();
+  for (const [region, byTime] of Object.entries(PRESETS)) {
+    byRegion.set(region, {
+      region,
+      label: region,
+      match_keywords: REGION_KEYWORDS[region] ?? [],
+      is_default: region === "default",
+      presets: byTime,
+    });
+  }
+  return { byRegion, defaultRegion: "default", fromDb: false as const };
+}
+
+/** Strip Vietnamese diacritics + đ→d so "Hà Nội" matches "ha noi". */
+function normalizeForMatch(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "d")
+    .toLowerCase()
+    .trim();
+}
+
+// Hardcoded keyword fallback when running without DB.
+const REGION_KEYWORDS: Record<string, string[]> = {
+  hanoi: ["hanoi", "ha noi"],
+  danang: ["da nang", "danang"],
+  saigon: ["ho chi minh", "saigon", "hcm"],
+  hue: ["hue", "thua thien"],
+  hoian: ["hoi an", "hoian", "quang nam"],
+  nhatrang: ["nha trang", "khanh hoa"],
+  sapa: ["sa pa", "sapa", "lao cai"],
+  phuquoc: ["phu quoc", "kien giang"],
+  halong: ["ha long", "halong", "quang ninh", "hai phong"],
+};
+
+export function DynamicHeroBackground({
+  presets,
+  initialRegion,
+}: DynamicHeroBackgroundProps = {}) {
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>("day");
-  const [region, setRegion] = useState<Region>("default");
   const [imageIndex, setImageIndex] = useState(0);
   const [isMounted, setIsMounted] = useState(false);
+
+  const index = buildPresetIndex(presets);
+  const [region, setRegion] = useState<string>(
+    initialRegion && index.byRegion.has(initialRegion) ? initialRegion : index.defaultRegion
+  );
 
   useEffect(() => {
     setIsMounted(true);
@@ -230,63 +500,158 @@ export function DynamicHeroBackground() {
       setTimeOfDay("night");
     }
 
-    // 2. Geolocation (via silent non-blocking IP lookup)
-    const detectRegion = async () => {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1200); // 1.2s strict timeout
+    // 2. If the server already resolved a region from request headers / IP, skip
+    //    client-side fetch entirely (this is the common path on Vercel/Cloudflare
+    //    and avoids 429 / CORS hits on free-tier IP APIs).
+    if (initialRegion && index.byRegion.has(initialRegion)) {
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[hero-bg] using server-resolved region:", initialRegion);
+      }
+      return;
+    }
 
-        const res = await fetch("https://ipapi.co/json/", { signal: controller.signal });
-        clearTimeout(timeoutId);
+    // 3. Geolocation — cache result for 24h to avoid hammering free-tier API.
+    const CACHE_KEY = "mapvn:ipGeo";
+    const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
-        if (!res.ok) return;
-        const data = await res.json();
+    const matchAgainst = (city: string, regionName: string): string | null => {
+      for (const preset of index.byRegion.values()) {
+        if (preset.is_default) continue;
+        const hit = preset.match_keywords.some((rawKw) => {
+          const kw = normalizeForMatch(rawKw);
+          return kw && (city.includes(kw) || regionName.includes(kw));
+        });
+        if (hit) return preset.region;
+      }
+      return null;
+    };
 
-        const city = (data.city || "").toLowerCase();
-        const regionName = (data.region || "").toLowerCase();
-
-        if (city.includes("hanoi") || regionName.includes("hanoi")) {
-          setRegion("hanoi");
-        } else if (city.includes("da nang") || city.includes("danang") || regionName.includes("da nang") || regionName.includes("danang")) {
-          setRegion("danang");
-        } else if (
-          city.includes("ho chi minh") ||
-          city.includes("saigon") ||
-          city.includes("hcm") ||
-          regionName.includes("ho chi minh") ||
-          regionName.includes("saigon")
-        ) {
-          setRegion("saigon");
+    const applyGeo = (city: string, regionName: string) => {
+      if (process.env.NODE_ENV !== "production") {
+        console.log("[hero-bg] geo:", { city, region: regionName });
+      }
+      const matched = matchAgainst(city, regionName);
+      if (matched) {
+        if (process.env.NODE_ENV !== "production") {
+          console.log("[hero-bg] matched region:", matched);
         }
-      } catch (err) {
-        // Silent catch: Fail gracefully to default presets if blocked or offline
-        console.log("IP geolocation fallback to default scenic preset.");
+        setRegion(matched);
+      }
+    };
+
+    const detectRegion = async () => {
+      // Try cache first
+      try {
+        const cached = window.localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached) as { city: string; region: string; ts: number };
+          if (Date.now() - parsed.ts < CACHE_TTL_MS) {
+            applyGeo(parsed.city, parsed.region);
+            return;
+          }
+        }
+      } catch {
+        // ignore corrupt cache
+      }
+
+      // Chain of free IP geolocation providers — try each until one returns.
+      // Fast-fail on rate-limit / network error and move to next.
+      const providers: Array<{
+        name: string;
+        url: string;
+        parse: (j: Record<string, unknown>) => { city: string; region: string };
+      }> = [
+        {
+          name: "ipwho.is",
+          url: "https://ipwho.is/",
+          parse: (j) => ({ city: String(j.city ?? ""), region: String(j.region ?? "") }),
+        },
+        {
+          name: "freeipapi",
+          url: "https://freeipapi.com/api/json",
+          parse: (j) => ({
+            city: String(j.cityName ?? ""),
+            region: String(j.regionName ?? ""),
+          }),
+        },
+        {
+          name: "geojs",
+          url: "https://get.geojs.io/v1/ip/geo.json",
+          parse: (j) => ({
+            city: String(j.city ?? ""),
+            region: String(j.region ?? ""),
+          }),
+        },
+      ];
+
+      for (const provider of providers) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 1500);
+          const res = await fetch(provider.url, { signal: controller.signal });
+          clearTimeout(timeoutId);
+
+          if (!res.ok) {
+            if (process.env.NODE_ENV !== "production") {
+              console.warn(`[hero-bg] ${provider.name} ${res.status}, trying next…`);
+            }
+            continue;
+          }
+          const data = (await res.json()) as Record<string, unknown>;
+          const { city: rawCity, region: rawRegion } = provider.parse(data);
+          const city = normalizeForMatch(rawCity);
+          const regionName = normalizeForMatch(rawRegion);
+          if (!city && !regionName) continue;
+
+          try {
+            window.localStorage.setItem(
+              CACHE_KEY,
+              JSON.stringify({ city, region: regionName, ts: Date.now(), src: provider.name })
+            );
+          } catch {
+            // localStorage unavailable (privacy mode)
+          }
+
+          if (process.env.NODE_ENV !== "production") {
+            console.log(`[hero-bg] resolved via ${provider.name}`);
+          }
+          applyGeo(city, regionName);
+          return;
+        } catch {
+          // Network error / timeout — try next provider.
+        }
+      }
+
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("[hero-bg] all geo providers failed, using default preset");
       }
     };
 
     detectRegion();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const activeRegionData =
+    index.byRegion.get(region) ?? index.byRegion.get(index.defaultRegion);
+  const currentPreset = activeRegionData?.presets[timeOfDay] ??
+    activeRegionData?.presets.day ?? { images: [], overlay: "from-black/35 via-black/10 to-transparent" };
 
   // Reset image carousel index whenever region or timeOfDay shifts
   useEffect(() => {
     setImageIndex(0);
   }, [region, timeOfDay]);
 
-  // Set up auto-rotation interval for multiple sceneries (Every 10 seconds for premium slow-tempo transitions)
+  // Set up auto-rotation interval (10s slow Ken Burns)
   useEffect(() => {
     if (!isMounted) return;
-
-    const currentImages = PRESETS[region][timeOfDay].images;
-    if (currentImages.length <= 1) return;
+    if (currentPreset.images.length <= 1) return;
 
     const interval = setInterval(() => {
-      setImageIndex((prev) => (prev + 1) % currentImages.length);
-    }, 10000); // 10 seconds smooth rotation
+      setImageIndex((prev) => (prev + 1) % currentPreset.images.length);
+    }, 10000);
 
     return () => clearInterval(interval);
-  }, [region, timeOfDay, isMounted]);
-
-  const currentPreset = isMounted ? PRESETS[region][timeOfDay] : PRESETS.default.day;
+  }, [region, timeOfDay, isMounted, currentPreset.images.length]);
   const activeImage = (currentPreset.images[imageIndex] || currentPreset.images[0] || { src: "", alt: "" }) as ImageItem;
 
   return (

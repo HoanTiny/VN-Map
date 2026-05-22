@@ -1,12 +1,12 @@
 "use client";
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Flag, MapPin, Navigation, Eye } from "lucide-react";
+import { ArrowRight, Flag, MapPin, Navigation, Eye, Star } from "lucide-react";
 import { Button } from "@/ui/button";
 import { Reveal } from "@/components/motion";
 import { AddToTripButton } from "@/features/trip/components/AddToTripButton";
 import { PlaceHero } from "./PlaceHero";
 import { PlaceMeta } from "./PlaceMeta";
-import { NearbyPlaces } from "./NearbyPlaces";
 import { ReviewList } from "@/features/review/components/ReviewList";
 import { categoryByKey } from "@/config/categories";
 import { usePresence } from "@/features/realtime/hooks/usePresence";
@@ -140,15 +140,161 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
               </div>
             </Reveal>
           )}
+
+          {/* Localized Category Tips Card */}
+          <Reveal>
+            <CategoryTipsCard category={place.category} />
+          </Reveal>
+
+          {/* Sidebar Nearby Places Exploration */}
+          <Reveal>
+            <SidebarNearbyPlaces places={nearby} />
+          </Reveal>
         </aside>
       </div>
-
-      {/* Nearby */}
-      <div className="container mt-16">
-        <Reveal>
-          <NearbyPlaces places={nearby} />
-        </Reveal>
-      </div>
     </article>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*                              Helper Components                             */
+/* -------------------------------------------------------------------------- */
+
+function formatReviewCount(n: number) {
+  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
+  return String(n);
+}
+
+function CategoryTipsCard({ category }: { category: string }) {
+  let tips: string[] = [];
+  let title = "Lưu ý hữu ích";
+  switch (category) {
+    case "heritage":
+      title = "Lưu ý văn hóa";
+      tips = [
+        "Lựa chọn trang phục lịch sự, kín đáo khi tham quan di tích lịch sử.",
+        "Nên đi nhẹ nói khẽ, giữ gìn trật tự và tôn trọng không gian tôn nghiêm.",
+        "Chuẩn bị sẵn tiền mặt nhỏ để mua vé tham quan hoặc đóng góp.",
+      ];
+      break;
+    case "nightlife":
+    case "rooftop":
+      title = "Mẹo trải nghiệm";
+      tips = [
+        "Nên liên hệ đặt bàn trước vào cuối tuần để có vị trí ngồi đẹp nhất.",
+        "Mang theo giấy tờ tùy thân (CCCD/Hộ chiếu) để kiểm tra độ tuổi.",
+        "Quy định trang phục (dress code) thường là lịch thiệp, tránh đi dép lê.",
+      ];
+      break;
+    case "nature":
+    case "mountain":
+      title = "Mẹo an toàn & Chuẩn bị";
+      tips = [
+        "Chuẩn bị giày đi bộ dã ngoại chuyên dụng có độ bám tốt.",
+        "Mang theo bình nước cá nhân, kem chống nắng và thuốc xịt côn trùng.",
+        "Luôn chú ý theo dõi dự báo thời tiết trước khi khởi hành.",
+      ];
+      break;
+    case "cafe":
+      title = "Mẹo ghé quán";
+      tips = [
+        "Khung giờ hoàng hôn hoặc sáng sớm thường có ánh sáng đẹp nhất để chụp ảnh.",
+        "Nên thử món đặc trưng (signature) được gợi ý bởi menu.",
+        "Nhiều quán trong ngõ hẻm sẽ có chỗ gửi xe máy giới hạn, vui lòng hỏi nhân viên.",
+      ];
+      break;
+    case "food":
+      title = "Mẹo thưởng thức";
+      tips = [
+        "Nên ghé sớm trước giờ cao điểm để tránh phải xếp hàng chờ đợi lâu.",
+        "Hầu hết các quán ăn địa phương ưu tiên thanh toán bằng tiền mặt hoặc chuyển khoản nhanh.",
+        "Thử trải nghiệm hương vị nguyên bản trước khi thêm các gia vị ăn kèm.",
+      ];
+      break;
+    default:
+      tips = [
+        "Nên chuẩn bị sẵn bản đồ offline hoặc định vị GPS khi di chuyển.",
+        "Bảo vệ môi trường, không xả rác bừa bãi tại điểm đến.",
+        "Tham khảo ý kiến người dân bản địa nếu bạn cần hỗ trợ tìm đường.",
+      ];
+  }
+
+  return (
+    <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-sm">
+      <h3 className="font-display text-h3 text-text flex items-center gap-2">
+        💡 {title}
+      </h3>
+      <ul className="space-y-3">
+        {tips.map((tip, idx) => (
+          <li key={idx} className="text-body-sm text-text-muted flex items-start gap-2 leading-relaxed">
+            <span className="text-brand-500 font-bold shrink-0 mt-0.5">•</span>
+            <span>{tip}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function SidebarNearbyPlaces({ places }: { places: PlaceItem[] }) {
+  if (places.length === 0) return null;
+  const sidebarPlaces = places.slice(0, 3);
+
+  return (
+    <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-sm">
+      <h3 className="font-display text-h3 text-text flex items-center gap-2">
+        📍 Khám phá gần đây
+      </h3>
+      <div className="space-y-3">
+        {sidebarPlaces.map((p) => {
+          const cat = categoryByKey[p.category];
+          const CatIcon = cat.icon;
+          return (
+            <Link
+              key={p.slug}
+              href={`/place/${p.slug}`}
+              className="flex items-center gap-3 p-3 rounded-xl border border-border/60 bg-surface hover:bg-surface-2 transition-colors duration-200 group"
+            >
+              <div className="relative h-14 w-14 overflow-hidden rounded-lg bg-surface-2 shrink-0">
+                <Image
+                  src={p.cover}
+                  alt={p.name}
+                  fill
+                  sizes="56px"
+                  className="object-cover transition-transform duration-slow group-hover:scale-105"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1 text-caption font-medium" style={{ color: cat.color }}>
+                  <CatIcon size={10} />
+                  <span>{cat.labelVi}</span>
+                </div>
+                <h4 className="font-display text-body-sm font-bold text-text truncate mt-0.5 group-hover:text-brand-600 transition-colors">
+                  {p.name}
+                </h4>
+                <p className="text-[10px] text-text-muted truncate">
+                  {p.province}
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-col items-end pl-1">
+                <div className="flex items-center gap-0.5 text-body-sm font-semibold text-text">
+                  <Star size={12} className="fill-warning text-warning shrink-0" />
+                  <span>{p.rating.toFixed(1)}</span>
+                </div>
+                <span className="text-[9px] text-text-subtle">({formatReviewCount(p.reviewCount)})</span>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+      <div className="pt-1 text-center">
+        <Link
+          href="/explore"
+          className="inline-flex items-center gap-1 text-body-sm font-semibold text-brand-600 hover:underline"
+        >
+          Xem tất cả trên bản đồ <ArrowRight size={12} />
+        </Link>
+      </div>
+    </div>
   );
 }

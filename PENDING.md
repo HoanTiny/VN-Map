@@ -228,7 +228,7 @@ Theo plan §5:
   - ✅ `usePresence` — "X người đang xem" trên place detail (hiện khi ≥2 viewer cùng lúc)
   - ✅ `useRealtimeReviews` — review mới tự append vào list không cần reload
   - ✅ `useRealtimePlaces` — place mới được approve tự hiện marker trên map (wired 2026-05-22)
-  - [ ] Activity feed landing — chưa có UI hiển thị submissions/reviews mới nhất
+  - [x] Activity feed landing — `ActivityFeed` ([components/ActivityFeed.tsx](src/features/activity/components/ActivityFeed.tsx)) trên homepage, fetch initial 8 mixed places+reviews từ Supabase, prepend places mới qua `useRealtimePlaces` (Session 2026-05-22)
 - [x] **AI** (partial):
   - ✅ Gemini API wired với rate-limit + cache
   - ✅ Viewport-aware: truyền bounds + GPS lên API, Gemini gợi ý địa điểm trong vùng đang xem (2026-05-22)

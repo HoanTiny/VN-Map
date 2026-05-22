@@ -40,7 +40,7 @@ export function NearbyPlaces({ places }: NearbyPlacesProps) {
       </header>
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {places.map((p) => (
-          <PlaceCard key={p.slug} place={toCard(p)} />
+          <PlaceCard key={p.slug} place={toCard(p)} className="h-full" />
         ))}
       </div>
     </section>

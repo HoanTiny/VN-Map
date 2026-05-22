@@ -96,7 +96,7 @@ export default function DesignShowcase() {
         <Section title="Place Card — Premium">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {places.map((p, i) => (
-              <PlaceCard key={p.slug} place={p} priority={i < 2} />
+              <PlaceCard key={p.slug} place={p} priority={i < 2} className="h-full" />
             ))}
           </div>
         </Section>

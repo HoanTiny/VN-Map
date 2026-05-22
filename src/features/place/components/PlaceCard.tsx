@@ -46,12 +46,12 @@ export function PlaceCard({ place, priority, onToggleSave, className }: PlaceCar
       transition={spring.snappy}
       className={cn(
         "group relative overflow-hidden rounded-xl bg-surface shadow-sm transition-shadow duration-base",
-        "border border-border hover:shadow-md dark:border-transparent",
+        "border border-border hover:shadow-md dark:border-transparent flex flex-col",
         className
       )}
     >
-      <Link href={`/place/${place.slug}`} className="block">
-        <div className="relative aspect-[4/3] overflow-hidden">
+      <Link href={`/place/${place.slug}`} className="flex flex-col h-full">
+        <div className="relative aspect-[4/3] overflow-hidden shrink-0 bg-surface-2">
           <m.div
             className="absolute inset-0"
             whileHover={{ scale: 1.04 }}
@@ -101,22 +101,24 @@ export function PlaceCard({ place, priority, onToggleSave, className }: PlaceCar
           )}
         </div>
 
-        <div className="p-4">
-          <div className="flex items-start justify-between gap-3">
-            <h3 className="line-clamp-1 font-display text-h3 text-text">{place.name}</h3>
-            {typeof place.rating === "number" && (
-              <div className="flex shrink-0 items-center gap-1 text-body-sm text-text">
-                <Star size={14} className="fill-warning text-warning" />
-                <span className="font-medium">{place.rating.toFixed(1)}</span>
-                {place.reviewCount && (
-                  <span className="text-text-muted">({formatCount(place.reviewCount)})</span>
-                )}
-              </div>
-            )}
-          </div>
-          <div className="mt-1 flex items-center gap-1 text-body-sm text-text-muted">
-            <MapPin size={12} />
-            <span className="line-clamp-1">{place.province}</span>
+        <div className="p-4 flex-1 flex flex-col justify-between">
+          <div>
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="line-clamp-1 font-display text-h3 text-text">{place.name}</h3>
+              {typeof place.rating === "number" && (
+                <div className="flex shrink-0 items-center gap-1 text-body-sm text-text">
+                  <Star size={14} className="fill-warning text-warning" />
+                  <span className="font-medium">{place.rating.toFixed(1)}</span>
+                  {place.reviewCount && (
+                    <span className="text-text-muted">({formatCount(place.reviewCount)})</span>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="mt-1 flex items-center gap-1 text-body-sm text-text-muted">
+              <MapPin size={12} />
+              <span className="line-clamp-1">{place.province}</span>
+            </div>
           </div>
           {place.price && (
             <div className="mt-3 text-body text-text">

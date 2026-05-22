@@ -15,6 +15,10 @@ import { categoriesByGroup } from "@/config/categories";
 import { siteConfig } from "@/config/site";
 import { getFeaturedPlaces } from "@/features/place/data";
 import { getSiteStats, type SiteStats } from "@/features/place/lib/queries";
+import { getRecentActivity } from "@/features/activity/lib/queries";
+import { ActivityFeed } from "@/features/activity/components/ActivityFeed";
+import { getHeroPresets, resolveRegionKey } from "@/features/admin/lib/hero-presets-queries";
+import { detectServerGeo } from "@/lib/server-geo";
 import type { PlaceCardData } from "@/features/place/components/PlaceCard";
 import { featuredCities, collections } from "@/features/region/data";
 
@@ -25,16 +29,21 @@ function formatCompact(n: number): string {
 }
 
 export default async function LandingPage() {
-  const [featuredPlaces, stats] = await Promise.all([
+  const [featuredPlaces, stats, activity, heroPresets, geo] = await Promise.all([
     getFeaturedPlaces(),
     getSiteStats(),
+    getRecentActivity(8),
+    getHeroPresets(),
+    detectServerGeo(),
   ]);
+  const initialHeroRegion = resolveRegionKey(heroPresets, geo.city, geo.region);
   return (
     <>
-      <HeroSection stats={stats} />
+      <HeroSection stats={stats} heroPresets={heroPresets} initialRegion={initialHeroRegion} />
       <CategoriesStrip />
       <CitiesSection />
       <PlacesSection places={featuredPlaces} />
+      {activity.length > 0 && <ActivitySection initial={activity} />}
       <CollectionsSection />
       <MapCtaSection stats={stats} />
       <StatsSection />
@@ -44,13 +53,21 @@ export default async function LandingPage() {
 
 /* ---------------------------------- Hero ---------------------------------- */
 
-function HeroSection({ stats }: { stats: SiteStats }) {
+function HeroSection({
+  stats,
+  heroPresets,
+  initialRegion,
+}: {
+  stats: SiteStats;
+  heroPresets: Awaited<ReturnType<typeof getHeroPresets>>;
+  initialRegion: string | null;
+}) {
   const userLabel = stats.userCount > 0 ? formatCompact(stats.userCount) : null;
   const placeLabel = `${formatCompact(stats.placeCount)}+`;
   return (
     <section className="relative isolate pt-36 md:pt-[19rem]">{/* */}
       {/* Dynamic Adaptive Background */}
-      <DynamicHeroBackground />
+      <DynamicHeroBackground presets={heroPresets} initialRegion={initialRegion} />
 
       <div className="container relative pb-24 md:pb-32">
         <div className="mx-auto max-w-3xl text-center">
@@ -354,10 +371,55 @@ function PlacesSection({ places }: { places: PlaceCardData[] }) {
 
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {places.slice(0, 8).map((p, i) => (
-            <Reveal key={p.slug} delay={(i % 4) * 0.06}>
-              <PlaceCard place={p} priority={i < 2} />
+            <Reveal key={p.slug} delay={(i % 4) * 0.06} className="h-full">
+              <PlaceCard place={p} priority={i < 2} className="h-full" />
             </Reveal>
           ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* -------------------------------- Activity ------------------------------- */
+
+function ActivitySection({ initial }: { initial: Awaited<ReturnType<typeof getRecentActivity>> }) {
+  return (
+    <section className="border-t border-border">
+      <div className="container py-20 md:py-28">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-12">
+          {/* Left: heading + CTA */}
+          <div className="lg:col-span-5 lg:sticky lg:top-32 lg:self-start">
+            <Reveal>
+              <p className="text-overline text-brand-600">NHỊP SỐNG CỘNG ĐỒNG</p>
+              <h2 className="mt-2 font-display text-h1 md:text-display-lg text-text">
+                Việt Nam đang được khám phá.
+              </h2>
+              <p className="mt-4 max-w-md text-body-lg text-text-muted">
+                Mỗi địa điểm bạn thấy ở đây vừa được duyệt hoặc đánh giá trong vài giờ qua —
+                bởi những người đi trước.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <Button asChild>
+                  <Link href="/submit">
+                    <Sparkles size={16} /> Đóng góp địa điểm
+                  </Link>
+                </Button>
+                <Button variant="ghost" asChild>
+                  <Link href="/explore">
+                    Mở bản đồ <ArrowRight size={16} />
+                  </Link>
+                </Button>
+              </div>
+            </Reveal>
+          </div>
+
+          {/* Right: live feed */}
+          <div className="lg:col-span-7">
+            <Reveal delay={0.1}>
+              <ActivityFeed initial={initial} />
+            </Reveal>
+          </div>
         </div>
       </div>
     </section>

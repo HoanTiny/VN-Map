@@ -31,8 +31,8 @@ export function PlaceGrid({ places }: { places: PlaceItem[] }) {
   return (
     <Stagger className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
       {places.map((p) => (
-        <StaggerItem key={p.slug}>
-          <PlaceCard place={toPlaceCard(p)} />
+        <StaggerItem key={p.slug} className="h-full">
+          <PlaceCard place={toPlaceCard(p)} className="h-full" />
         </StaggerItem>
       ))}
     </Stagger>

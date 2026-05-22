@@ -85,6 +85,105 @@ export async function rejectReview(id: string) {
   revalidatePath("/admin/reviews");
 }
 
+export interface PlacePatch {
+  name?: string;
+  cover?: string;
+  highlight?: string | null;
+  address?: string | null;
+  province?: string;
+  category?: string;
+  price_range?: "$" | "$$" | "$$$" | "$$$$" | null;
+  opening_hours?: string | null;
+  tags?: string[] | null;
+}
+
+export async function updatePlace(id: string, patch: PlacePatch) {
+  const supabase = createServiceClient();
+  const cleaned = Object.fromEntries(
+    Object.entries(patch).filter(([, v]) => v !== undefined)
+  );
+  if (Object.keys(cleaned).length === 0) return;
+
+  const { error } = await supabase
+    .from("places")
+    .update(cleaned as never)
+    .eq("id", id);
+
+  if (error) throw new Error("Lỗi cập nhật place: " + error.message);
+
+  revalidatePath("/admin/places/list");
+  revalidatePath("/explore");
+  revalidatePath("/");
+}
+
+/* ----------------------- Hero presets (CMS) ----------------------- */
+
+export interface HeroImagePatch { src: string; alt: string }
+export interface HeroTimePresetPatch { images: HeroImagePatch[]; overlay: string }
+export interface HeroPresetInput {
+  region: string;
+  label: string;
+  match_keywords: string[];
+  presets: {
+    day: HeroTimePresetPatch;
+    sunset: HeroTimePresetPatch;
+    night: HeroTimePresetPatch;
+  };
+  is_default?: boolean;
+  enabled?: boolean;
+  display_order?: number;
+}
+
+function revalidateHero() {
+  revalidatePath("/admin/hero-presets");
+  revalidatePath("/");
+}
+
+export async function upsertHeroPreset(id: string | null, patch: Partial<HeroPresetInput>) {
+  const supabase = createServiceClient();
+
+  if (patch.is_default === true) {
+    // Only one row can be default.
+    await supabase
+      .from("hero_presets")
+      .update({ is_default: false } as never)
+      .neq("id", id ?? "00000000-0000-0000-0000-000000000000");
+  }
+
+  if (id) {
+    const { error } = await supabase
+      .from("hero_presets")
+      .update(patch as never)
+      .eq("id", id);
+    if (error) throw new Error("Lỗi cập nhật preset: " + error.message);
+  } else {
+    if (!patch.region || !patch.label || !patch.presets) {
+      throw new Error("Thiếu region / label / presets khi tạo mới");
+    }
+    const { error } = await supabase.from("hero_presets").insert(patch as never);
+    if (error) throw new Error("Lỗi tạo preset: " + error.message);
+  }
+
+  revalidateHero();
+}
+
+export async function deleteHeroPreset(id: string) {
+  const supabase = createServiceClient();
+  const { error } = await supabase.from("hero_presets").delete().eq("id", id);
+  if (error) throw new Error("Lỗi xoá preset: " + error.message);
+  revalidateHero();
+}
+
+export async function toggleHeroPresetEnabled(id: string, enabled: boolean) {
+  const supabase = createServiceClient();
+  const { error } = await supabase
+    .from("hero_presets")
+    .update({ enabled } as never)
+    .eq("id", id);
+  if (error) throw new Error("Lỗi đổi trạng thái: " + error.message);
+  revalidateHero();
+}
+
 export async function approveReview(id: string) {
   const supabase = createServiceClient();
   await supabase
