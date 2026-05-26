@@ -15,6 +15,7 @@ import {
 } from "@/config/regions";
 import { listPlacesByProvince } from "@/features/place/lib/queries";
 import { siteConfig } from "@/config/site";
+import { localizedAlternates } from "@/i18n/metadata";
 import { PlaceGrid } from "@/features/place/components/PlaceGrid";
 import { categories, type CategoryKey } from "@/config/categories";
 
@@ -28,11 +29,11 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: { params: Promise<Params> }) {
-  const { province } = await params;
-  const t = await getTranslations("RegionPage");
+  const { region, province } = await params;
+  const [t, locale] = await Promise.all([getTranslations("RegionPage"), getLocale()]);
   const prov = provinceBySlug[province];
   if (!prov) return { title: t("notFound") };
-  const ogUrl = `${siteConfig.url}/api/og?title=${encodeURIComponent(prov.name)}&subtitle=${encodeURIComponent(prov.tagline)}&cover=${encodeURIComponent(prov.cover)}`;
+  const ogUrl = `${siteConfig.url}/api/og?title=${encodeURIComponent(prov.name)}&subtitle=${encodeURIComponent(prov.tagline)}&cover=${encodeURIComponent(prov.cover)}&locale=${locale}`;
   return {
     title: `${prov.name} · Map-VN`,
     description: prov.tagline,
@@ -42,6 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
       images: [{ url: ogUrl, width: 1200, height: 630 }],
     },
     twitter: { card: "summary_large_image", title: prov.name, description: prov.tagline },
+    alternates: localizedAlternates(`/region/${region}/${province}`, locale),
   };
 }
 

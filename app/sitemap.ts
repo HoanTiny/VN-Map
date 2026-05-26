@@ -1,36 +1,36 @@
 import type { MetadataRoute } from "next";
-import { siteConfig } from "@/config/site";
 import { categories } from "@/config/categories";
 import { regions, provinces } from "@/config/regions";
 import { allPlaces } from "@/features/map/lib/places-data";
+import { routing } from "@/i18n/routing";
+import { absoluteUrl, localizedHref } from "@/i18n/metadata";
+
+type ChangeFreq = NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>;
+
+function entry(path: string, changeFrequency: ChangeFreq, priority: number) {
+  const languages: Record<string, string> = {};
+  for (const loc of routing.locales) {
+    languages[loc] = absoluteUrl(localizedHref(path, loc));
+  }
+  languages["x-default"] = absoluteUrl(localizedHref(path, routing.defaultLocale));
+  return {
+    url: absoluteUrl(localizedHref(path, routing.defaultLocale)),
+    changeFrequency,
+    priority,
+    alternates: { languages },
+  };
+}
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = siteConfig.url;
   return [
-    { url: `${base}/`, changeFrequency: "weekly", priority: 1 },
-    { url: `${base}/explore`, changeFrequency: "daily", priority: 0.9 },
-    { url: `${base}/search`, changeFrequency: "weekly", priority: 0.5 },
-    { url: `${base}/region`, changeFrequency: "weekly", priority: 0.7 },
-    { url: `${base}/submit`, changeFrequency: "monthly", priority: 0.4 },
-    ...regions.map((r) => ({
-      url: `${base}/region/${r.key}`,
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
-    ...provinces.map((p) => ({
-      url: `${base}/region/${p.region}/${p.slug}`,
-      changeFrequency: "weekly" as const,
-      priority: 0.6,
-    })),
-    ...categories.map((c) => ({
-      url: `${base}/category/${c.key}`,
-      changeFrequency: "weekly" as const,
-      priority: 0.7,
-    })),
-    ...allPlaces.map((p) => ({
-      url: `${base}/place/${p.slug}`,
-      changeFrequency: "weekly" as const,
-      priority: 0.5,
-    })),
+    entry("/", "weekly", 1),
+    entry("/explore", "daily", 0.9),
+    entry("/search", "weekly", 0.5),
+    entry("/region", "weekly", 0.7),
+    entry("/submit", "monthly", 0.4),
+    ...regions.map((r) => entry(`/region/${r.key}`, "weekly", 0.7)),
+    ...provinces.map((p) => entry(`/region/${p.region}/${p.slug}`, "weekly", 0.6)),
+    ...categories.map((c) => entry(`/category/${c.key}`, "weekly", 0.7)),
+    ...allPlaces.map((p) => entry(`/place/${p.slug}`, "weekly", 0.5)),
   ];
 }

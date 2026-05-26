@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Map, Search as SearchIcon } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localizedAlternates } from "@/i18n/metadata";
 import { Reveal } from "@/components/motion";
 import { Button } from "@/ui/button";
 import { searchPlacesAsync } from "@/features/search/lib/search-server";
@@ -10,8 +11,8 @@ import { PlaceGrid } from "@/features/place/components/PlaceGrid";
 import type { CategoryKey } from "@/config/categories";
 
 export async function generateMetadata() {
-  const t = await getTranslations("SearchPage");
-  return { title: t("metaTitle") };
+  const [t, locale] = await Promise.all([getTranslations("SearchPage"), getLocale()]);
+  return { title: t("metaTitle"), alternates: localizedAlternates("/search", locale) };
 }
 
 export default async function SearchPage({

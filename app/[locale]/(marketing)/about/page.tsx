@@ -1,13 +1,18 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localizedAlternates } from "@/i18n/metadata";
 import { Reveal } from "@/components/motion";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { siteConfig } from "@/config/site";
 
 export async function generateMetadata() {
-  const t = await getTranslations("About");
-  return { title: t("metaTitle"), description: t("metaDesc") };
+  const [t, locale] = await Promise.all([getTranslations("About"), getLocale()]);
+  return {
+    title: t("metaTitle"),
+    description: t("metaDesc"),
+    alternates: localizedAlternates("/about", locale),
+  };
 }
 
 export default async function AboutPage() {

@@ -1,7 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Compass, Map, Sparkles, Star, Users } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localizedAlternates } from "@/i18n/metadata";
 import { Reveal } from "@/components/Reveal";
 import { DynamicHeroBackground, DynamicHeroText, FloatingWavingFlags } from "@/components/motion";
 import { CategoriesBento } from "@/components/CategoriesBento";
@@ -29,6 +30,22 @@ function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}k`;
   return String(n);
+}
+
+export async function generateMetadata() {
+  const [tc, locale] = await Promise.all([getTranslations("Common"), getLocale()]);
+  const ogUrl = `${siteConfig.url}/api/og?title=${encodeURIComponent(siteConfig.name)}&subtitle=${encodeURIComponent(tc("tagline"))}&locale=${locale}`;
+  return {
+    description: tc("tagline"),
+    alternates: localizedAlternates("/", locale),
+    openGraph: {
+      title: siteConfig.name,
+      description: tc("tagline"),
+      images: [{ url: ogUrl, width: 1200, height: 630 }],
+      locale: locale === "en" ? "en_US" : "vi_VN",
+    },
+    twitter: { card: "summary_large_image" as const, title: siteConfig.name, description: tc("tagline") },
+  };
 }
 
 export default async function LandingPage() {

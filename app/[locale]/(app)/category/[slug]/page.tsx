@@ -10,6 +10,7 @@ import { listPlacesByCategory } from "@/features/place/lib/queries";
 import { PlaceGrid } from "@/features/place/components/PlaceGrid";
 import { ProvinceFilterChips } from "@/features/place/components/ProvinceFilterChips";
 import { siteConfig } from "@/config/site";
+import { localizedAlternates } from "@/i18n/metadata";
 
 interface Params {
   slug: string;
@@ -25,7 +26,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
   const cat = categoryByKey[slug as CategoryKey];
   if (!cat) return { title: t("notFound") };
   const label = locale === "en" ? cat.label : cat.labelVi;
-  const ogUrl = `${siteConfig.url}/api/og?title=${encodeURIComponent(label)}&subtitle=${encodeURIComponent(cat.description)}&tag=${encodeURIComponent("Map-VN · " + label)}`;
+  const ogUrl = `${siteConfig.url}/api/og?title=${encodeURIComponent(label)}&subtitle=${encodeURIComponent(cat.description)}&tag=${encodeURIComponent("Map-VN · " + label)}&locale=${locale}`;
   return {
     title: t("metaTitle", { name: label }),
     description: cat.description,
@@ -35,6 +36,7 @@ export async function generateMetadata({ params }: { params: Promise<Params> }) 
       images: [{ url: ogUrl, width: 1200, height: 630 }],
     },
     twitter: { card: "summary_large_image", title: label, description: cat.description },
+    alternates: localizedAlternates(`/category/${slug}`, locale),
   };
 }
 

@@ -1,10 +1,15 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Badge } from "@/ui/badge";
 import { Reveal } from "@/components/motion";
+import { localizedAlternates } from "@/i18n/metadata";
 
 export async function generateMetadata() {
-  const t = await getTranslations("Terms");
-  return { title: t("metaTitle"), description: t("metaDesc") };
+  const [t, locale] = await Promise.all([getTranslations("Terms"), getLocale()]);
+  return {
+    title: t("metaTitle"),
+    description: t("metaDesc"),
+    alternates: localizedAlternates("/terms", locale),
+  };
 }
 
 export default function TermsPage() {

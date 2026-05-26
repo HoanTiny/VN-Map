@@ -2,7 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MapPin } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localizedAlternates } from "@/i18n/metadata";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
@@ -24,12 +25,13 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<Params> }) {
   const { region } = await params;
-  const t = await getTranslations("RegionPage");
+  const [t, locale] = await Promise.all([getTranslations("RegionPage"), getLocale()]);
   const r = regionByKey[region as RegionKey];
   if (!r) return { title: t("notFound") };
   return {
     title: `${r.label} · Map-VN`,
     description: r.description,
+    alternates: localizedAlternates(`/region/${region}`, locale),
   };
 }
 

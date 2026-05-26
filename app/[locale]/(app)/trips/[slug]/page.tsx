@@ -2,8 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Calendar, MapPin } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { getCuratedTrip } from "@/features/trip-template/lib/queries";
+import { localizedAlternates } from "@/i18n/metadata";
 import { ForkTripButton } from "@/features/trip-template/components/ForkTripButton";
 import { listAllPlaces } from "@/features/place/lib/queries";
 import { Badge } from "@/ui/badge";
@@ -11,12 +12,17 @@ import { PlaceCard, type PlaceCardData } from "@/features/place/components/Place
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const [trip, t] = await Promise.all([getCuratedTrip(slug), getTranslations("CuratedTrip")]);
+  const [trip, t, locale] = await Promise.all([
+    getCuratedTrip(slug),
+    getTranslations("CuratedTrip"),
+    getLocale(),
+  ]);
   if (!trip) return { title: t("metaFallback") };
   return {
     title: `${trip.title} · Map-VN`,
     description: trip.summary,
     openGraph: { images: [trip.cover] },
+    alternates: localizedAlternates(`/trips/${slug}`, locale),
   };
 }
 

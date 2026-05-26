@@ -1,11 +1,16 @@
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Badge } from "@/ui/badge";
 import { Reveal } from "@/components/motion";
+import { localizedAlternates } from "@/i18n/metadata";
 
 export async function generateMetadata() {
-  const t = await getTranslations("Help");
-  return { title: t("metaTitle"), description: t("metaDesc") };
+  const [t, locale] = await Promise.all([getTranslations("Help"), getLocale()]);
+  return {
+    title: t("metaTitle"),
+    description: t("metaDesc"),
+    alternates: localizedAlternates("/help", locale),
+  };
 }
 
 const QAS: Array<{ q: string; a: React.ReactNode }> = [

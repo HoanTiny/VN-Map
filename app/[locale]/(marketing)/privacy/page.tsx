@@ -1,10 +1,15 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Badge } from "@/ui/badge";
 import { Reveal } from "@/components/motion";
+import { localizedAlternates } from "@/i18n/metadata";
 
 export async function generateMetadata() {
-  const t = await getTranslations("Privacy");
-  return { title: t("metaTitle"), description: t("metaDesc") };
+  const [t, locale] = await Promise.all([getTranslations("Privacy"), getLocale()]);
+  return {
+    title: t("metaTitle"),
+    description: t("metaDesc"),
+    alternates: localizedAlternates("/privacy", locale),
+  };
 }
 
 export default function PrivacyPage() {

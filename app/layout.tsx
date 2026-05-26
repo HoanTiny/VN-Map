@@ -4,6 +4,7 @@ import { AppProviders } from "@/providers/AppProviders";
 import { ThemeNoFlashScript } from "@/components/theme/ThemeToggle";
 import { PWAProvider } from "@/components/pwa/PWAProvider";
 import { siteConfig } from "@/config/site";
+import { localizedAlternates } from "@/i18n/metadata";
 import { FloatingWavingFlags } from "@/components/motion";
 import "@/styles/globals.css";
 
@@ -30,6 +31,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url),
   title: { default: siteConfig.name, template: `%s · ${siteConfig.name}` },
   description: siteConfig.description,
+  alternates: localizedAlternates("/"),
   openGraph: {
     type: "website",
     locale: siteConfig.locale,

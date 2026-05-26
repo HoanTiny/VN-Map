@@ -1,10 +1,11 @@
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { MapExperienceLazy } from "@/features/map/components/MapCanvasLazy";
 import { getPlacesGeoJSON } from "@/features/place/lib/queries";
+import { localizedAlternates } from "@/i18n/metadata";
 
 export async function generateMetadata() {
-  const t = await getTranslations("Explore");
-  return { title: t("metaTitle") };
+  const [t, locale] = await Promise.all([getTranslations("Explore"), getLocale()]);
+  return { title: t("metaTitle"), alternates: localizedAlternates("/explore", locale) };
 }
 
 export default async function ExplorePage() {

@@ -1,13 +1,18 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { regions, provincesByRegion } from "@/config/regions";
+import { localizedAlternates } from "@/i18n/metadata";
 
 export async function generateMetadata() {
-  const t = await getTranslations("RegionPage");
-  return { title: t("metaTitle"), description: t("metaDesc") };
+  const [t, locale] = await Promise.all([getTranslations("RegionPage"), getLocale()]);
+  return {
+    title: t("metaTitle"),
+    description: t("metaDesc"),
+    alternates: localizedAlternates("/region", locale),
+  };
 }
 
 export default async function RegionLandingPage() {

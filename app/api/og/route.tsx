@@ -6,8 +6,11 @@ export const runtime = "edge";
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
+  const locale = searchParams.get("locale") === "en" ? "en" : "vi";
+  const defaultSubtitle =
+    locale === "en" ? "Experience map of Vietnam" : "Bản đồ trải nghiệm Việt Nam";
   const title = searchParams.get("title") ?? "VN Go";
-  const subtitle = searchParams.get("subtitle") ?? "Bản đồ trải nghiệm Việt Nam";
+  const subtitle = searchParams.get("subtitle") ?? defaultSubtitle;
   const cover = searchParams.get("cover");
   const tag = searchParams.get("tag"); // e.g. "Cafe · Hà Nội"
 
