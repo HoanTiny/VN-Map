@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { Heart } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { IconButton } from "@/ui/icon-button";
 import { useSaved } from "@/features/saved/hooks/useSaved";
 import { transition } from "@/lib/motion";
@@ -10,16 +11,13 @@ export interface SavedHeartButtonProps {
   className?: string;
 }
 
-/**
- * Navbar heart icon with a count badge that reflects the current saved list.
- * Hydration-safe — badge appears after client-side mount.
- */
 export function SavedHeartButton({ className }: SavedHeartButtonProps) {
+  const t = useTranslations("Nav");
   const { saved, hydrated } = useSaved();
   const count = saved.length;
 
   return (
-    <IconButton label="Đã lưu" variant="ghost" asChild className={className}>
+    <IconButton label={t("saved")} variant="ghost" asChild className={className}>
       <Link href="/saved" className="relative">
         <Heart size={18} />
         <AnimatePresence>

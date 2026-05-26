@@ -1,22 +1,23 @@
 import { Map, Search, Heart, Briefcase, User, type LucideIcon } from "lucide-react";
 
 export interface NavItem {
-  label: string;
+  /** i18n key under the `Nav` namespace, e.g. "explore" -> messages.Nav.explore */
+  key: string;
   href: string;
   icon?: LucideIcon;
 }
 
 export const topNav: NavItem[] = [
-  { label: "Khám phá", href: "/explore" },
-  { label: "Vùng miền", href: "/region" },
-  { label: "Bộ sưu tập", href: "/collection" },
-  { label: "Chuyến đi", href: "/trip" },
+  { key: "explore", href: "/explore" },
+  { key: "regions", href: "/region" },
+  { key: "collections", href: "/collection" },
+  { key: "trips", href: "/trip" },
 ];
 
 export const bottomTabs: Required<NavItem>[] = [
-  { label: "Bản đồ", href: "/explore", icon: Map },
-  { label: "Tìm",    href: "/search",  icon: Search },
-  { label: "Đã lưu", href: "/saved",   icon: Heart },
-  { label: "Chuyến đi", href: "/trip", icon: Briefcase },
-  { label: "Tôi",    href: "/me",      icon: User },
+  { key: "map",    href: "/explore", icon: Map },
+  { key: "find",   href: "/search",  icon: Search },
+  { key: "saved",  href: "/saved",   icon: Heart },
+  { key: "trips",  href: "/trip",    icon: Briefcase },
+  { key: "me",     href: "/me",      icon: User },
 ];

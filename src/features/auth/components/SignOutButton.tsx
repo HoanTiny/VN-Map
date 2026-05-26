@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { LogOut } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button, type ButtonProps } from "@/ui/button";
 import { useToast } from "@/ui/toast";
@@ -21,6 +22,7 @@ export function SignOutButton({
 }: SignOutButtonProps) {
   const router = useRouter();
   const { show: toast } = useToast();
+  const t = useTranslations("MePage");
   const [loading, setLoading] = useState(false);
 
   const signOut = async () => {
@@ -29,11 +31,11 @@ export function SignOutButton({
       const supabase = createClient();
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      toast("Đã đăng xuất.", { variant: "info" });
+      toast(t("signedOutSuccess"), { variant: "info" });
       router.push(redirectTo);
       router.refresh();
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Đăng xuất thất bại.", {
+      toast(err instanceof Error ? err.message : t("signOutFailed"), {
         variant: "danger",
       });
     } finally {
@@ -49,7 +51,7 @@ export function SignOutButton({
       loading={loading}
       onClick={signOut}
     >
-      <LogOut size={16} /> Đăng xuất
+      <LogOut size={16} /> {t("signOut")}
     </Button>
   );
 }

@@ -3,15 +3,16 @@ import { useState } from "react";
 import { Plus, Minus, Locate, Layers, Check, Box } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import * as Tooltip from "@radix-ui/react-tooltip";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { useMapStore, type MapStyleKey } from "@/stores/map-store";
 import { transition } from "@/lib/motion";
 
-const STYLES: { key: MapStyleKey | "auto"; label: string }[] = [
-  { key: "auto", label: "Tự động (theo theme)" },
-  { key: "light", label: "Sáng" },
-  { key: "dark", label: "Tối" },
-  { key: "satellite", label: "Vệ tinh" },
+const STYLES: { key: MapStyleKey | "auto"; labelKey: "styleAuto" | "styleLight" | "styleDark" | "styleSatellite" }[] = [
+  { key: "auto", labelKey: "styleAuto" },
+  { key: "light", labelKey: "styleLight" },
+  { key: "dark", labelKey: "styleDark" },
+  { key: "satellite", labelKey: "styleSatellite" },
 ];
 
 interface MapControlsProps {
@@ -21,6 +22,7 @@ interface MapControlsProps {
 }
 
 export function MapControls({ onZoomIn, onZoomOut, onLocate }: MapControlsProps) {
+  const t = useTranslations("Map");
   const styleKey = useMapStore((s) => s.styleKey);
   const setStyleKey = useMapStore((s) => s.setStyleKey);
   const enable3D = useMapStore((s) => s.enable3D);
@@ -56,7 +58,7 @@ export function MapControls({ onZoomIn, onZoomOut, onLocate }: MapControlsProps)
                 className="absolute bottom-12 right-0 w-56 rounded-2xl glass shadow-lg p-1.5"
                 role="listbox"
               >
-                <div className="px-3 py-2 text-overline text-text-subtle">Kiểu bản đồ</div>
+                <div className="px-3 py-2 text-overline text-text-subtle">{t("styleHeader")}</div>
                 {STYLES.map((s) => {
                   const active = (activeKey as string) === s.key;
                   return (
@@ -71,7 +73,7 @@ export function MapControls({ onZoomIn, onZoomOut, onLocate }: MapControlsProps)
                         active ? "bg-brand-50 text-brand-700" : "text-text hover:bg-surface-2"
                       )}
                     >
-                      <span>{s.label}</span>
+                      <span>{t(s.labelKey)}</span>
                       {active && <Check size={14} />}
                     </button>
                   );
@@ -81,7 +83,7 @@ export function MapControls({ onZoomIn, onZoomOut, onLocate }: MapControlsProps)
           </AnimatePresence>
 
           <ControlButton
-            label="Kiểu bản đồ"
+            label={t("stylePicker")}
             active={openLayers}
             onClick={() => setOpenLayers((v) => !v)}
           >
@@ -100,14 +102,14 @@ export function MapControls({ onZoomIn, onZoomOut, onLocate }: MapControlsProps)
                 transition={transition.fast}
                 className="pointer-events-none absolute right-12 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-lg bg-brand-500 px-3 py-1.5 text-body-sm font-medium text-white shadow-lg"
               >
-                Thử chế độ 3D
+                {t("try3D")}
                 <span className="absolute right-[-4px] top-1/2 h-2 w-2 -translate-y-1/2 rotate-45 bg-brand-500" />
               </m.div>
             )}
           </AnimatePresence>
 
           <ControlButton
-            label={enable3D ? "Tắt chế độ 3D" : "Bật chế độ 3D — xem nhà cửa nổi khối"}
+            label={enable3D ? t("disable3D") : t("enable3DLong")}
             active={enable3D}
             onClick={() => {
               setEnable3D(!enable3D);
@@ -124,16 +126,16 @@ export function MapControls({ onZoomIn, onZoomOut, onLocate }: MapControlsProps)
           </ControlButton>
         </div>
 
-        <ControlButton label="Vị trí của tôi" onClick={onLocate}>
+        <ControlButton label={t("locate")} onClick={onLocate}>
           <Locate size={16} />
         </ControlButton>
 
         <div className="flex flex-col overflow-hidden rounded-xl glass shadow-md">
-          <ZoomButton label="Phóng to" onClick={onZoomIn}>
+          <ZoomButton label={t("zoomIn")} onClick={onZoomIn}>
             <Plus size={16} />
           </ZoomButton>
           <div className="h-px w-full bg-border" />
-          <ZoomButton label="Thu nhỏ" onClick={onZoomOut}>
+          <ZoomButton label={t("zoomOut")} onClick={onZoomOut}>
             <Minus size={16} />
           </ZoomButton>
         </div>

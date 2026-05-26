@@ -2,6 +2,7 @@
 import { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { Briefcase, Check, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { Button, type ButtonProps } from "@/ui/button";
 import { useToast } from "@/ui/toast";
@@ -24,9 +25,11 @@ export function AddToTripButton({
   slug,
   variant = "secondary",
   size = "sm",
-  label = "Thêm vào trip",
+  label,
   className,
 }: AddToTripButtonProps) {
+  const t = useTranslations("AddToTrip");
+  const resolvedLabel = label ?? t("addToTrip");
   const { trips, addPlaceToDay, getTripById } = useTrips();
   const { show: showToast } = useToast();
   const [newOpen, setNewOpen] = useState(false);
@@ -39,7 +42,7 @@ export function AddToTripButton({
     setJustAdded(key);
     const trip = getTripById(tripId);
     showToast(
-      `Đã thêm vào "${trip?.name ?? "chuyến đi"}" — Ngày ${dayIndex + 1}`,
+      t("addedToast", { name: trip?.name ?? t("fallbackTripName"), day: dayIndex + 1 }),
       { variant: "success" }
     );
     setTimeout(() => {
@@ -53,7 +56,7 @@ export function AddToTripButton({
       <Popover.Root open={popoverOpen} onOpenChange={setPopoverOpen}>
         <Popover.Trigger asChild>
           <Button variant={variant} size={size} className={className}>
-            <Briefcase size={14} /> {label}
+            <Briefcase size={14} /> {resolvedLabel}
           </Button>
         </Popover.Trigger>
         <Popover.Portal>
@@ -66,7 +69,7 @@ export function AddToTripButton({
             )}
           >
             <div className="px-3 pt-2 pb-1 text-overline text-text-subtle">
-              {trips.length === 0 ? "Chưa có chuyến đi" : "Chọn chuyến đi"}
+              {trips.length === 0 ? t("noTrips") : t("pickTrip")}
             </div>
 
             {trips.length > 0 && (
@@ -75,7 +78,7 @@ export function AddToTripButton({
                   <li key={trip.id} className="border-b border-border/40 last:border-b-0">
                     <div className="px-3 pt-2 pb-1">
                       <p className="line-clamp-1 text-body font-medium text-text">{trip.name}</p>
-                      <p className="text-caption text-text-muted">{trip.days.length} ngày</p>
+                      <p className="text-caption text-text-muted">{t("tripDays", { count: trip.days.length })}</p>
                     </div>
                     <ul className="pb-2">
                       {trip.days.map((day, i) => {
@@ -101,7 +104,7 @@ export function AddToTripButton({
                                 <Check size={12} className="text-success" />
                               ) : (
                                 <span className="text-caption text-text-muted">
-                                  {day.placeSlugs.length} địa điểm
+                                  {t("placesInDay", { count: day.placeSlugs.length })}
                                 </span>
                               )}
                             </button>
@@ -122,7 +125,7 @@ export function AddToTripButton({
               }}
               className="mt-1 flex w-full items-center gap-2 rounded-lg border border-dashed border-border px-3 py-2 text-body-sm font-medium text-brand-600 hover:bg-brand-50/40"
             >
-              <Plus size={14} /> Tạo chuyến đi mới
+              <Plus size={14} /> {t("createNewTrip")}
             </button>
           </Popover.Content>
         </Popover.Portal>

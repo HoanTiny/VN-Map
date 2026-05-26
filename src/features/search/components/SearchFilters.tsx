@@ -2,10 +2,13 @@
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { ChevronDown } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/cn";
 import { categories } from "@/config/categories";
 
 export function SearchFilters({ total }: { total: number }) {
+  const t = useTranslations("SearchPage");
+  const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -43,7 +46,7 @@ export function SearchFilters({ total }: { total: number }) {
               : "border-border bg-surface text-text hover:bg-surface-2"
           )}
         >
-          Tất cả
+          {t("all")}
         </button>
         {categories.map((c) => {
           const Icon = c.icon;
@@ -67,7 +70,7 @@ export function SearchFilters({ total }: { total: number }) {
                 className={active ? "text-white" : undefined}
                 style={!active ? { color: c.color } : undefined}
               />
-              {c.labelVi}
+              {locale === "en" ? c.label : c.labelVi}
             </button>
           );
         })}
@@ -79,9 +82,9 @@ export function SearchFilters({ total }: { total: number }) {
               onChange={(e) => update("sort", e.target.value === "rating" ? null : e.target.value)}
               className="h-9 appearance-none rounded-full border border-border bg-surface pl-3 pr-8 text-body-sm text-text hover:bg-surface-2 focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
-              <option value="rating">Sắp xếp: Đánh giá</option>
-              <option value="reviews">Sắp xếp: Phổ biến</option>
-              <option value="name">Sắp xếp: Tên</option>
+              <option value="rating">{t("sortRating")}</option>
+              <option value="reviews">{t("sortReviews")}</option>
+              <option value="name">{t("sortName")}</option>
             </select>
             <ChevronDown
               size={14}
@@ -90,7 +93,7 @@ export function SearchFilters({ total }: { total: number }) {
           </label>
         </div>
       </div>
-      <p className="mt-2 text-body-sm text-text-muted">{total} kết quả</p>
+      <p className="mt-2 text-body-sm text-text-muted">{t("resultsCountShort", { count: total })}</p>
     </div>
   );
 }

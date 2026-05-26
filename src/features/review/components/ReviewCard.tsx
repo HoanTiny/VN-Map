@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Trash2 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { RatingStars } from "./RatingStars";
 import { companionLabels, type Review } from "../lib/types";
 import { Badge } from "@/ui/badge";
@@ -13,6 +14,8 @@ export interface ReviewCardProps {
 }
 
 export function ReviewCard({ review, onDelete }: ReviewCardProps) {
+  const t = useTranslations("Review");
+  const locale = useLocale();
   const [expanded, setExpanded] = useState(false);
   const longBody = review.body.length > 280;
   const visibleBody = !longBody || expanded ? review.body : review.body.slice(0, 280) + "…";
@@ -27,10 +30,10 @@ export function ReviewCard({ review, onDelete }: ReviewCardProps) {
           <div className="min-w-0">
             <div className="truncate text-body font-medium text-text">{review.authorName}</div>
             <div className="text-body-sm text-text-muted">
-              {formatDate(review.createdAt)}
+              {formatDate(review.createdAt, locale, t)}
               {review.visitedAt && (
                 <>
-                  <span> · Đi vào </span>
+                  <span> · {t("visitedOn")} </span>
                   <span>{formatMonth(review.visitedAt)}</span>
                 </>
               )}
@@ -39,7 +42,7 @@ export function ReviewCard({ review, onDelete }: ReviewCardProps) {
         </div>
         {onDelete && (
           <IconButton
-            label="Xoá review"
+            label={t("deleteAria")}
             variant="ghost"
             size="sm"
             onClick={() => onDelete(review.id)}
@@ -68,7 +71,7 @@ export function ReviewCard({ review, onDelete }: ReviewCardProps) {
           onClick={() => setExpanded((v) => !v)}
           className="mt-1 text-body-sm font-medium text-brand-600 hover:underline"
         >
-          {expanded ? "Thu gọn" : "Đọc thêm"}
+          {expanded ? t("collapse") : t("readMore")}
         </button>
       )}
 
@@ -81,7 +84,7 @@ export function ReviewCard({ review, onDelete }: ReviewCardProps) {
             >
               <Image
                 src={src}
-                alt={`Ảnh review ${i + 1}`}
+                alt={t("photoAlt", { n: i + 1 })}
                 fill
                 sizes="160px"
                 className="object-cover"
@@ -99,14 +102,22 @@ function initial(name: string): string {
   return name.trim().charAt(0).toUpperCase() || "?";
 }
 
-function formatDate(ms: number): string {
+function formatDate(
+  ms: number,
+  locale: string,
+  t: (k: "justNow" | "minutesAgo" | "hoursAgo" | "daysAgo", v?: Record<string, number>) => string,
+): string {
   const now = Date.now();
   const diff = (now - ms) / 1000;
-  if (diff < 60) return "vừa xong";
-  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
-  if (diff < 86400 * 7) return `${Math.floor(diff / 86400)} ngày trước`;
-  return new Date(ms).toLocaleDateString("vi-VN", { day: "2-digit", month: "short", year: "numeric" });
+  if (diff < 60) return t("justNow");
+  if (diff < 3600) return t("minutesAgo", { n: Math.floor(diff / 60) });
+  if (diff < 86400) return t("hoursAgo", { n: Math.floor(diff / 3600) });
+  if (diff < 86400 * 7) return t("daysAgo", { n: Math.floor(diff / 86400) });
+  return new Date(ms).toLocaleDateString(locale === "en" ? "en-US" : "vi-VN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function formatMonth(yearMonth: string): string {

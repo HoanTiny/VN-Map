@@ -2,6 +2,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { PencilLine, ArrowDown } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
 import { spring } from "@/lib/motion";
@@ -18,14 +19,14 @@ export interface ReviewListProps {
   baseline?: { rating: number; count: number };
 }
 
-const SORT_OPTIONS: Array<{ key: ReviewSort; label: string }> = [
-  { key: "newest", label: "Mới nhất" },
-  { key: "highest", label: "Đánh giá cao" },
-  { key: "lowest", label: "Đánh giá thấp" },
-  { key: "photos", label: "Có ảnh" },
-];
-
 export function ReviewList({ placeSlug, placeName, baseline }: ReviewListProps) {
+  const t = useTranslations("Review");
+  const SORT_OPTIONS: Array<{ key: ReviewSort; label: string }> = [
+    { key: "newest", label: t("sortNewest") },
+    { key: "highest", label: t("sortHighest") },
+    { key: "lowest", label: t("sortLowest") },
+    { key: "photos", label: t("sortPhotos") },
+  ];
   const { reviews, hydrated, remove } = useReviews(placeSlug);
   const [sort, setSort] = useState<ReviewSort>("newest");
   const [formOpen, setFormOpen] = useState(false);
@@ -60,11 +61,11 @@ export function ReviewList({ placeSlug, placeName, baseline }: ReviewListProps) 
     <section id="reviews" className="scroll-mt-24">
       <div className="mb-5 flex items-center justify-between gap-4">
         <div>
-          <p className="text-overline text-brand-600">CỘNG ĐỒNG</p>
-          <h2 className="mt-1 font-display text-h2 text-text">Review thực tế</h2>
+          <p className="text-overline text-brand-600">{t("communityOverline")}</p>
+          <h2 className="mt-1 font-display text-h2 text-text">{t("title")}</h2>
         </div>
         <Button onClick={() => setFormOpen(true)}>
-          <PencilLine size={16} /> Viết review
+          <PencilLine size={16} /> {t("writeReview")}
         </Button>
       </div>
 
@@ -82,7 +83,7 @@ export function ReviewList({ placeSlug, placeName, baseline }: ReviewListProps) 
             className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-brand-500/30 bg-brand-500/10 py-2 text-body-sm font-medium text-brand-600 hover:bg-brand-500/15"
           >
             <ArrowDown size={14} />
-            {newCount} review mới — Tải lại để xem
+            {t("newReviewsNotice", { count: newCount })}
           </m.button>
         )}
       </AnimatePresence>
@@ -113,12 +114,12 @@ export function ReviewList({ placeSlug, placeName, baseline }: ReviewListProps) 
 
       <div className="mt-6 space-y-4">
         {!hydrated ? (
-          <p className="text-body-sm text-text-muted">Đang tải…</p>
+          <p className="text-body-sm text-text-muted">{t("loading")}</p>
         ) : reviews.length === 0 ? (
           <EmptyState onWrite={() => setFormOpen(true)} />
         ) : sorted.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-border p-6 text-center text-body-sm text-text-muted">
-            Chưa có review nào khớp bộ lọc này.
+            {t("noMatchFilter")}
           </p>
         ) : (
           <AnimatePresence initial={false}>
@@ -149,15 +150,16 @@ export function ReviewList({ placeSlug, placeName, baseline }: ReviewListProps) 
 }
 
 function EmptyState({ onWrite }: { onWrite: () => void }) {
+  const t = useTranslations("Review");
   return (
     <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-      <Badge variant="brand" className="mb-3">Đầu tiên</Badge>
-      <h3 className="font-display text-h3 text-text">Chưa có review nào</h3>
+      <Badge variant="brand" className="mb-3">{t("firstBadge")}</Badge>
+      <h3 className="font-display text-h3 text-text">{t("emptyTitle")}</h3>
       <p className="mx-auto mt-1 max-w-md text-body-sm text-text-muted">
-        Hãy là người đầu tiên chia sẻ trải nghiệm — giúp cộng đồng biết nên đến hay không.
+        {t("emptyBody")}
       </p>
       <Button className="mt-4" onClick={onWrite}>
-        <PencilLine size={16} /> Viết review đầu tiên
+        <PencilLine size={16} /> {t("writeFirst")}
       </Button>
     </div>
   );

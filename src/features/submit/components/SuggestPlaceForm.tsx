@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { m, AnimatePresence } from "framer-motion";
 import { X, ImagePlus, MapPin } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/cn";
 import { transition, spring } from "@/lib/motion";
 import { Button } from "@/ui/button";
@@ -16,13 +17,6 @@ import { uploadPhotos } from "@/lib/upload";
 
 const MAX_PHOTOS = 3;
 const MAX_PHOTO_BYTES = 1_500_000;
-
-const PRICE_OPTIONS: Array<{ value: "$" | "$$" | "$$$" | "$$$$"; label: string }> = [
-  { value: "$", label: "$ Bình dân" },
-  { value: "$$", label: "$$ Trung bình" },
-  { value: "$$$", label: "$$$ Cao cấp" },
-  { value: "$$$$", label: "$$$$ Sang trọng" },
-];
 
 export interface SuggestPlaceFormProps {
   open: boolean;
@@ -51,6 +45,14 @@ export function SuggestPlaceForm({
   initialCoords,
   onSubmitted,
 }: SuggestPlaceFormProps) {
+  const t = useTranslations("Suggest");
+  const locale = useLocale();
+  const PRICE_OPTIONS: Array<{ value: "$" | "$$" | "$$$" | "$$$$"; label: string }> = [
+    { value: "$", label: t("priceCheap") },
+    { value: "$$", label: t("priceMid") },
+    { value: "$$$", label: t("priceHigh") },
+    { value: "$$$$", label: t("priceLux") },
+  ];
   const titleId = useId();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { add } = useSubmissions();
@@ -141,7 +143,7 @@ export function SuggestPlaceForm({
     setError(null);
     for (const file of toRead) {
       if (file.size > MAX_PHOTO_BYTES) {
-        setError(`Ảnh "${file.name}" quá lớn (≤ 1.5 MB)`);
+        setError(t("photoTooLarge", { name: file.name }));
         continue;
       }
       const dataUrl = await readAsDataURL(file);
@@ -153,7 +155,7 @@ export function SuggestPlaceForm({
 
   const useMyLocation = () => {
     if (!navigator.geolocation) {
-      setError("Trình duyệt không hỗ trợ định vị");
+      setError(t("geoUnsupported"));
       return;
     }
     navigator.geolocation.getCurrentPosition(
@@ -161,28 +163,28 @@ export function SuggestPlaceForm({
         setLng(pos.coords.longitude.toFixed(6));
         setLat(pos.coords.latitude.toFixed(6));
       },
-      () => setError("Không thể lấy vị trí — vui lòng nhập thủ công")
+      () => setError(t("geoFailed"))
     );
   };
 
   const submit = async () => {
     setError(null);
-    if (name.trim().length < 2) return setError("Vui lòng nhập tên địa điểm");
-    if (!category) return setError("Chọn danh mục");
-    if (!provinceSlug) return setError("Chọn tỉnh thành");
+    if (name.trim().length < 2) return setError(t("needName"));
+    if (!category) return setError(t("needCategory"));
+    if (!provinceSlug) return setError(t("needProvince"));
     if (description.trim().length < 50)
-      return setError("Mô tả tối thiểu 50 ký tự");
-    if (description.length > 1000) return setError("Mô tả tối đa 1000 ký tự");
+      return setError(t("minDesc"));
+    if (description.length > 1000) return setError(t("maxDesc"));
     const lngNum = Number(lng);
     const latNum = Number(lat);
     if (!Number.isFinite(lngNum) || !Number.isFinite(latNum))
-      return setError("Toạ độ không hợp lệ");
+      return setError(t("badCoords"));
     if (lngNum < 102 || lngNum > 110 || latNum < 8 || latNum > 24)
-      return setError("Toạ độ không nằm trong VN");
-    if (submittedBy.trim().length < 2) return setError("Vui lòng nhập tên hiển thị");
+      return setError(t("outsideVN"));
+    if (submittedBy.trim().length < 2) return setError(t("needContributor"));
 
     const prov = provinceBySlug[provinceSlug];
-    if (!prov) return setError("Tỉnh không hợp lệ");
+    if (!prov) return setError(t("invalidProvince"));
 
     setSubmitting(true);
     try {
@@ -210,14 +212,14 @@ export function SuggestPlaceForm({
         photos: uploadedPhotos.length > 0 ? uploadedPhotos : undefined,
         submittedBy: submittedBy.trim(),
       });
-      showToast("Cảm ơn — đề xuất đã được ghi nhận, sẽ duyệt sớm.", {
+      showToast(t("submittedToast"), {
         variant: "success",
         duration: 4000,
       });
       onSubmitted?.();
       onOpenChange(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Đã xảy ra lỗi");
+      setError(e instanceof Error ? e.message : t("genericError"));
     } finally {
       setSubmitting(false);
     }
@@ -254,22 +256,22 @@ export function SuggestPlaceForm({
                   "rounded-t-2xl md:rounded-2xl"
                 )}
               >
-                <Dialog.Title className="sr-only">Đóng góp địa điểm mới</Dialog.Title>
+                <Dialog.Title className="sr-only">{t("dialogTitle")}</Dialog.Title>
                 <Dialog.Description className="sr-only">
-                  Đề xuất một địa điểm mới cho cộng đồng. Sẽ qua duyệt trước khi hiển thị.
+                  {t("dialogDesc")}
                 </Dialog.Description>
 
                 <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
                   <div>
                     <h2 id={titleId} className="font-display text-h3 text-text">
-                      Đóng góp địa điểm
+                      {t("heading")}
                     </h2>
                     <p className="text-body-sm text-text-muted">
-                      Chia sẻ quán ăn / cafe / hidden gem của bạn
+                      {t("subheading")}
                     </p>
                   </div>
                   <Dialog.Close
-                    aria-label="Đóng"
+                    aria-label={t("close")}
                     className="flex h-9 w-9 items-center justify-center rounded-full text-text-muted hover:bg-surface-2"
                   >
                     <X size={16} />
@@ -280,46 +282,46 @@ export function SuggestPlaceForm({
                   className="min-h-0 flex-1 overflow-y-auto px-6 py-5"
                   style={{ maxHeight: "calc(92dvh - 9rem)" }}
                 >
-                  <Field label="Tên địa điểm" required>
+                  <Field label={t("fieldName")} required>
                     <input
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       maxLength={80}
-                      placeholder="VD: Cafe Sài Gòn Cũ"
+                      placeholder={t("namePlaceholder")}
                       className={inputCls}
                     />
                   </Field>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <Field label="Danh mục" required>
+                    <Field label={t("fieldCategory")} required>
                       <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value as CategoryKey)}
                         className={inputCls}
                       >
-                        <option value="">— Chọn danh mục —</option>
-                        <optgroup label="Lifestyle">
+                        <option value="">{t("pickCategory")}</option>
+                        <optgroup label={t("groupLifestyle")}>
                           {categories
                             .filter((c) => c.group === "lifestyle")
                             .map((c) => (
                               <option key={c.key} value={c.key}>
-                                {c.labelVi}
+                                {locale === "en" ? c.label : c.labelVi}
                               </option>
                             ))}
                         </optgroup>
-                        <optgroup label="Travel">
+                        <optgroup label={t("groupTravel")}>
                           {categories
                             .filter((c) => c.group === "travel")
                             .map((c) => (
                               <option key={c.key} value={c.key}>
-                                {c.labelVi}
+                                {locale === "en" ? c.label : c.labelVi}
                               </option>
                             ))}
                         </optgroup>
                       </select>
                     </Field>
-                    <Field label="Tỉnh thành" required>
+                    <Field label={t("fieldProvince")} required>
                       <select
                         value={provinceSlug}
                         onChange={(e) => {
@@ -329,7 +331,7 @@ export function SuggestPlaceForm({
                         }}
                         className={inputCls}
                       >
-                        <option value="">— Chọn tỉnh thành —</option>
+                        <option value="">{t("pickProvince")}</option>
                         {provinces.map((p) => (
                           <option key={p.slug} value={p.slug}>
                             {p.name}
@@ -340,30 +342,30 @@ export function SuggestPlaceForm({
                   </div>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <Field label="Quận / Huyện" hint="Tuỳ chọn">
+                    <Field label={t("fieldDistrict")} hint={t("optional")}>
                       <input
                         type="text"
                         value={district}
                         onChange={(e) => setDistrict(e.target.value)}
-                        placeholder="VD: Hoàn Kiếm"
+                        placeholder={t("districtPlaceholder")}
                         className={inputCls}
                       />
                     </Field>
-                    <Field label="Địa chỉ chi tiết" hint="Tuỳ chọn">
+                    <Field label={t("fieldAddress")} hint={t("optional")}>
                       <input
                         type="text"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Số nhà, đường…"
+                        placeholder={t("addressPlaceholder")}
                         className={inputCls}
                       />
                     </Field>
                   </div>
 
                   <Field
-                    label="Toạ độ"
+                    label={t("fieldCoords")}
                     required
-                    hint="Tự động lấy từ tỉnh — bạn có thể chỉnh lại cho chính xác"
+                    hint={t("coordsHint")}
                   >
                     <div className="grid grid-cols-[1fr_1fr_auto] gap-2">
                       <input
@@ -371,7 +373,7 @@ export function SuggestPlaceForm({
                         step="0.0001"
                         value={lng}
                         onChange={(e) => setLng(e.target.value)}
-                        placeholder="Kinh độ"
+                        placeholder={t("lng")}
                         className={inputCls}
                       />
                       <input
@@ -379,7 +381,7 @@ export function SuggestPlaceForm({
                         step="0.0001"
                         value={lat}
                         onChange={(e) => setLat(e.target.value)}
-                        placeholder="Vĩ độ"
+                        placeholder={t("lat")}
                         className={inputCls}
                       />
                       <button
@@ -393,28 +395,28 @@ export function SuggestPlaceForm({
                   </Field>
 
                   <Field
-                    label="Mô tả"
+                    label={t("fieldDesc")}
                     required
-                    hint={`${description.length}/1000 ký tự (tối thiểu 50)`}
+                    hint={t("descHint", { count: description.length })}
                   >
                     <textarea
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                       maxLength={1000}
                       rows={4}
-                      placeholder="Tại sao địa điểm này đáng đến? Món gì ngon? View thế nào? Lưu ý gì?"
+                      placeholder={t("descPlaceholder")}
                       className={cn(inputCls, "resize-y")}
                     />
                   </Field>
 
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <Field label="Khung giá" hint="Tuỳ chọn">
+                    <Field label={t("fieldPrice")} hint={t("optional")}>
                       <select
                         value={priceRange}
                         onChange={(e) => setPriceRange(e.target.value as typeof priceRange)}
                         className={inputCls}
                       >
-                        <option value="">— Không xác định —</option>
+                        <option value="">{t("pricePickNone")}</option>
                         {PRICE_OPTIONS.map((o) => (
                           <option key={o.value} value={o.value}>
                             {o.label}
@@ -422,39 +424,39 @@ export function SuggestPlaceForm({
                         ))}
                       </select>
                     </Field>
-                    <Field label="Giờ mở cửa" hint="Tuỳ chọn">
+                    <Field label={t("fieldHours")} hint={t("optional")}>
                       <input
                         type="text"
                         value={openingHours}
                         onChange={(e) => setOpeningHours(e.target.value)}
-                        placeholder="VD: 07:00–22:00 hàng ngày"
+                        placeholder={t("hoursPlaceholder")}
                         className={inputCls}
                       />
                     </Field>
                   </div>
 
-                  <Field label="Tags" hint="Cách nhau bằng dấu phẩy">
+                  <Field label={t("fieldTags")} hint={t("tagsHint")}>
                     <input
                       type="text"
                       value={tagsInput}
                       onChange={(e) => setTagsInput(e.target.value)}
-                      placeholder="VD: view-đẹp, couple, instagram"
+                      placeholder={t("tagsPlaceholder")}
                       className={inputCls}
                     />
                   </Field>
 
-                  <Field label="Ảnh" hint={`Tối đa ${MAX_PHOTOS} ảnh, ≤ 1.5 MB mỗi ảnh`}>
+                  <Field label={t("fieldPhotos")} hint={t("photosHint", { max: MAX_PHOTOS })}>
                     <div className="grid grid-cols-3 gap-3">
                       {photos.map((src, i) => (
                         <div
                           key={i}
                           className="relative aspect-square overflow-hidden rounded-lg border border-border"
                         >
-                          <Image src={src} alt={`Ảnh ${i + 1}`} fill className="object-cover" sizes="120px" unoptimized />
+                          <Image src={src} alt={t("photoAlt", { n: i + 1 })} fill className="object-cover" sizes="120px" unoptimized />
                           <button
                             type="button"
                             onClick={() => removePhoto(i)}
-                            aria-label="Xoá ảnh"
+                            aria-label={t("removePhoto")}
                             className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black/90"
                           >
                             <X size={12} />
@@ -468,7 +470,7 @@ export function SuggestPlaceForm({
                           className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border text-text-muted hover:border-brand-500 hover:bg-brand-50/40 hover:text-brand-600"
                         >
                           <ImagePlus size={18} />
-                          <span className="text-caption">Thêm ảnh</span>
+                          <span className="text-caption">{t("addPhoto")}</span>
                         </button>
                       )}
                     </div>
@@ -482,13 +484,13 @@ export function SuggestPlaceForm({
                     />
                   </Field>
 
-                  <Field label="Tên người đóng góp" required>
+                  <Field label={t("fieldContributor")} required>
                     <input
                       type="text"
                       value={submittedBy}
                       onChange={(e) => setSubmittedBy(e.target.value)}
                       maxLength={40}
-                      placeholder="Sẽ hiển thị công khai"
+                      placeholder={t("contributorPlaceholder")}
                       className={inputCls}
                     />
                   </Field>
@@ -502,14 +504,14 @@ export function SuggestPlaceForm({
 
                 <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border bg-surface-2/30 px-6 py-3">
                   <p className="hidden text-caption text-text-muted md:block">
-                    Sẽ qua duyệt trước khi hiển thị công khai
+                    {t("moderationNotice")}
                   </p>
                   <div className="ml-auto flex items-center gap-2">
                     <Dialog.Close asChild>
-                      <Button variant="ghost">Huỷ</Button>
+                      <Button variant="ghost">{t("cancel")}</Button>
                     </Dialog.Close>
                     <Button onClick={submit} loading={submitting}>
-                      Gửi đề xuất
+                      {t("submit")}
                     </Button>
                   </div>
                 </div>
@@ -554,7 +556,7 @@ function readAsDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Lỗi đọc file"));
+    reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsDataURL(file);
   });
 }

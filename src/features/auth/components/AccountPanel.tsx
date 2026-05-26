@@ -12,6 +12,7 @@ import {
   Compass,
   ArrowRight
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Reveal } from "@/components/motion";
 import { Skeleton } from "@/ui/skeleton";
 import { useSession } from "../hooks/useSession";
@@ -21,6 +22,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/ui/toast";
 
 export function AccountPanel() {
+  const t = useTranslations("MePage");
   const { user, hydrated: sessionHydrated, disabled } = useSession();
   const { saved, hydrated: savedHydrated } = useSaved();
   const { trips, hydrated: tripsHydrated } = useTrips();
@@ -36,11 +38,11 @@ export function AccountPanel() {
       const supabase = createClient();
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      toast("Đã đăng xuất thành công.", { variant: "info" });
+      toast(t("signedOutSuccess"), { variant: "info" });
       router.push("/");
       router.refresh();
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Đăng xuất thất bại.", {
+      toast(err instanceof Error ? err.message : t("signOutFailed"), {
         variant: "danger",
       });
     } finally {
@@ -75,20 +77,20 @@ export function AccountPanel() {
               <div className="space-y-6">
                 {/* Header Title with Status */}
                 <div className="flex items-center justify-between border-b border-white/10 pb-4">
-                  <span className="font-display text-h3 text-text font-bold">Hồ sơ cá nhân</span>
+                  <span className="font-display text-h3 text-text font-bold">{t("profileTitle")}</span>
                   {disabled ? (
                     <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border border-amber-500/20 bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                      Bản Beta
+                      {t("statusBeta")}
                     </span>
                   ) : !hydrated ? (
                     <Skeleton className="h-5 w-14 bg-surface-2" />
                   ) : user ? (
                     <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border border-emerald-500/20 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                      Đã kết nối
+                      {t("statusConnected")}
                     </span>
                   ) : (
                     <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border border-zinc-200/20 bg-zinc-200/10 dark:border-zinc-800/40 dark:bg-zinc-800/30 text-text-muted">
-                      Ngoại tuyến
+                      {t("statusOffline")}
                     </span>
                   )}
                 </div>
@@ -118,7 +120,7 @@ export function AccountPanel() {
                     ) : user ? (
                       <>
                         <h2 className="font-display text-h2 text-text font-bold truncate max-w-full">
-                          {displayName(user.email, user.user_metadata)}
+                          {displayName(user.email, user.user_metadata, t("fallbackUserName"))}
                         </h2>
                         <p className="text-body-sm text-text-muted truncate max-w-full">
                           {user.email}
@@ -127,10 +129,10 @@ export function AccountPanel() {
                     ) : (
                       <>
                         <h2 className="font-display text-h2 text-text font-bold">
-                          Khách du lịch
+                          {t("guestName")}
                         </h2>
                         <p className="text-body-sm text-text-muted">
-                          Chưa liên kết tài khoản
+                          {t("noAccountLinked")}
                         </p>
                       </>
                     )}
@@ -140,9 +142,7 @@ export function AccountPanel() {
                 {/* Cloud synchronization briefing styled in nested satin frosted look */}
                 <div className="rounded-xl bg-black/5 dark:bg-white/5 p-4 text-xs leading-relaxed text-text-muted border border-white/5 backdrop-blur-sm">
                   {disabled ? (
-                    <p>
-                      Hiện đang dùng chế độ khách — dữ liệu lưu trên trình duyệt này. Backend (Supabase) chưa được cấu hình.
-                    </p>
+                    <p>{t("betaSyncNote")}</p>
                   ) : !hydrated ? (
                     <div className="space-y-2">
                       <Skeleton className="h-3 w-full bg-surface" />
@@ -150,12 +150,13 @@ export function AccountPanel() {
                     </div>
                   ) : user ? (
                     <p>
-                      Email: <span className="text-text font-medium">{user.email}</span>. Dữ liệu được tự động đồng bộ giữa các thiết bị khi bạn đăng nhập cùng email này.
+                      {t.rich("signedInSyncNote", {
+                        email: user.email ?? "",
+                        b: (chunks) => <span className="text-text font-medium">{chunks}</span>,
+                      })}
                     </p>
                   ) : (
-                    <p>
-                      Đăng nhập để đồng bộ saved, trips, reviews giữa các thiết bị. Dùng email 1-click — không cần mật khẩu.
-                    </p>
+                    <p>{t("signedOutSyncNote")}</p>
                   )}
                 </div>
               </div>
@@ -170,15 +171,15 @@ export function AccountPanel() {
                       href="/explore"
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-98 text-white text-body-sm font-semibold transition-all duration-200 shadow-sm"
                     >
-                      <Compass size={16} /> Khám phá Bản đồ
+                      <Compass size={16} /> {t("exploreMap")}
                     </Link>
-                    
+
                     <button
                       onClick={handleSignOut}
                       disabled={loading}
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/10 bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-98 text-text-muted hover:text-text text-body-sm font-medium transition-all duration-200"
                     >
-                      <LogOut size={16} /> Đăng xuất
+                      <LogOut size={16} /> {t("signOut")}
                     </button>
                   </div>
                 ) : (
@@ -187,13 +188,13 @@ export function AccountPanel() {
                       href="/sign-in"
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-brand-500 hover:bg-brand-600 active:scale-98 text-white text-body-sm font-semibold transition-all duration-200 shadow-sm"
                     >
-                      <LogIn size={16} /> Đăng nhập
+                      <LogIn size={16} /> {t("signIn")}
                     </Link>
                     <Link
                       href="/explore"
                       className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-white/10 bg-black/5 hover:bg-black/10 dark:bg-white/5 dark:hover:bg-white/10 active:scale-98 text-text hover:text-brand-500 text-body-sm font-medium transition-all duration-200"
                     >
-                      Mở bản đồ khách <ArrowRight size={14} />
+                      {t("guestMap")} <ArrowRight size={14} />
                     </Link>
                   </div>
                 )}
@@ -207,10 +208,10 @@ export function AccountPanel() {
               {/* Table titles */}
               <div className="space-y-1">
                 <h3 className="text-body-sm font-mono text-brand-500 font-bold uppercase tracking-wider">
-                  Bảng điều khiển
+                  {t("controlBoard")}
                 </h3>
                 <h2 className="font-display text-h1 text-text">
-                  Hành trình du lịch
+                  {t("journeyHeading")}
                 </h2>
               </div>
 
@@ -220,9 +221,9 @@ export function AccountPanel() {
                   href="/saved"
                   icon={<Heart size={20} className="text-rose-500 fill-rose-500/10 group-hover:fill-rose-500/30 transition-colors" />}
                   iconBg="bg-rose-500/10 dark:bg-rose-950/30"
-                  title="Đã lưu"
-                  description="Địa điểm bạn yêu thích — lưu bằng trái tim ♡"
-                  countText={!hydrated ? undefined : `${saved.length} địa điểm`}
+                  title={t("savedTitle")}
+                  description={t("savedDesc")}
+                  countText={!hydrated ? undefined : t("savedCount", { count: saved.length })}
                   ticksCount={!hydrated ? undefined : saved.length}
                   tickColor="bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.35)]"
                   catColorVar="var(--cat-food)"
@@ -232,9 +233,9 @@ export function AccountPanel() {
                   href="/trip"
                   icon={<Briefcase size={20} className="text-cyan-500" />}
                   iconBg="bg-cyan-500/10 dark:bg-cyan-950/30"
-                  title="Chuyến đi"
-                  description="Lộ trình đã dựng — sửa, thêm địa điểm theo ngày"
-                  countText={!hydrated ? undefined : `${trips.length} lộ trình`}
+                  title={t("tripsTitle")}
+                  description={t("tripsDesc")}
+                  countText={!hydrated ? undefined : t("tripsCount", { count: trips.length })}
                   ticksCount={!hydrated ? undefined : trips.length}
                   tickColor="bg-cyan-500 shadow-[0_0_6px_rgba(6,182,212,0.35)]"
                   catColorVar="var(--cat-beach)"
@@ -244,9 +245,9 @@ export function AccountPanel() {
                   href="/submit"
                   icon={<MapPin size={20} className="text-amber-500" />}
                   iconBg="bg-amber-500/10 dark:bg-amber-950/30"
-                  title="Đóng góp"
-                  description="Đề xuất địa điểm mới cho cộng đồng"
-                  countText="Bản đồ VN"
+                  title={t("submitTitle")}
+                  description={t("submitDesc")}
+                  countText={t("submitBadge")}
                   catColorVar="var(--cat-heritage)"
                 />
 
@@ -254,9 +255,9 @@ export function AccountPanel() {
                   href="/explore"
                   icon={<Sparkles size={20} className="text-indigo-500" />}
                   iconBg="bg-indigo-500/10 dark:bg-indigo-950/30"
-                  title="Khám phá"
-                  description="Mở bản đồ và tìm trải nghiệm mới"
-                  countText="Khám phá"
+                  title={t("exploreTitle")}
+                  description={t("exploreDesc")}
+                  countText={t("exploreBadge")}
                   catColorVar="var(--cat-experience)"
                 />
               </div>
@@ -343,9 +344,13 @@ function Tile({
 }
 
 // Display Name Parsing Utility
-function displayName(email: string | undefined, meta: Record<string, unknown> | undefined): string {
+function displayName(
+  email: string | undefined,
+  meta: Record<string, unknown> | undefined,
+  fallback: string,
+): string {
   const fromMeta = meta?.["display_name"] as string | undefined;
   if (fromMeta) return fromMeta;
-  if (!email) return "Người dùng";
+  if (!email) return fallback;
   return email.split("@")[0]!;
 }

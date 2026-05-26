@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { m, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { ArrowUpRight, MapPin } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { spring, duration, easing } from "@/lib/motion";
 
@@ -25,6 +26,7 @@ export interface CityCardProps {
 }
 
 export function CityCard({ city, priority, size = "md", className }: CityCardProps) {
+  const t = useTranslations("CityCard");
   const mx = useMotionValue(0.5);
   const my = useMotionValue(0.5);
   const rx = useSpring(useTransform(my, [0, 1], [4, -4]), { stiffness: 220, damping: 22 });
@@ -111,7 +113,7 @@ export function CityCard({ city, priority, size = "md", className }: CityCardPro
 
             <div className="flex items-end justify-between gap-3">
               <div className="text-body-sm/relaxed text-white/85">
-                {city.tagline ?? `${city.placeCount}+ địa điểm để khám phá`}
+                {city.tagline ?? t("placesToExplore", { count: city.placeCount })}
               </div>
               <m.div
                 initial={false}
@@ -133,7 +135,7 @@ export function CityCard({ city, priority, size = "md", className }: CityCardPro
               className="overflow-hidden text-body-sm text-white/80"
             >
               <div className="h-px w-12 bg-white/30 mb-2" />
-              {city.placeCount}+ địa điểm
+              {t("placesShort", { count: city.placeCount })}
             </m.div>
           </div>
         </m.div>

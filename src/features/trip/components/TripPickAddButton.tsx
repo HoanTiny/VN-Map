@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Check, Plus } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { transition } from "@/lib/motion";
 import { Button } from "@/ui/button";
@@ -25,6 +26,7 @@ export function TripPickAddButton({
   dayIndex,
   className,
 }: TripPickAddButtonProps) {
+  const t = useTranslations("TripPickAdd");
   const { trip, addPlace } = useTrip(tripId);
   const [justAdded, setJustAdded] = useState(false);
 
@@ -55,7 +57,7 @@ export function TripPickAddButton({
             transition={transition.fast}
             className="inline-flex items-center gap-2"
           >
-            <Check size={14} /> Đã thêm vào Ngày {dayIndex + 1}
+            <Check size={14} /> {t("added", { day: dayIndex + 1 })}
           </m.span>
         ) : (
           <m.span
@@ -66,7 +68,7 @@ export function TripPickAddButton({
             transition={transition.fast}
             className="inline-flex items-center gap-2"
           >
-            <Plus size={14} /> Thêm vào Ngày {dayIndex + 1}
+            <Plus size={14} /> {t("add", { day: dayIndex + 1 })}
           </m.span>
         )}
       </AnimatePresence>

@@ -4,6 +4,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import Image from "next/image";
 import { m, AnimatePresence } from "framer-motion";
 import { X, ImagePlus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { transition, spring } from "@/lib/motion";
 import { Button } from "@/ui/button";
@@ -32,6 +33,7 @@ export function ReviewForm({
   onOpenChange,
   onSubmitted,
 }: ReviewFormProps) {
+  const t = useTranslations("Review");
   const titleId = useId();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { add } = useReviews(placeSlug);
@@ -77,7 +79,7 @@ export function ReviewForm({
     setError(null);
     for (const file of toRead) {
       if (file.size > MAX_PHOTO_BYTES) {
-        setError(`Ảnh "${file.name}" quá lớn (≤ 1.5 MB)`);
+        setError(t("photoTooLarge", { name: file.name }));
         continue;
       }
       const dataUrl = await readAsDataURL(file);
@@ -91,11 +93,11 @@ export function ReviewForm({
 
   const submit = async () => {
     setError(null);
-    if (rating === 0) return setError("Vui lòng chọn số sao");
-    if (body.trim().length < 30) return setError("Nội dung tối thiểu 30 ký tự");
-    if (body.length > 2000) return setError("Nội dung tối đa 2000 ký tự");
-    if (title.length > 80) return setError("Tiêu đề tối đa 80 ký tự");
-    if (authorName.trim().length < 2) return setError("Vui lòng nhập tên hiển thị");
+    if (rating === 0) return setError(t("pickRating"));
+    if (body.trim().length < 30) return setError(t("minBody"));
+    if (body.length > 2000) return setError(t("maxBody"));
+    if (title.length > 80) return setError(t("maxTitle"));
+    if (authorName.trim().length < 2) return setError(t("needName"));
 
     setSubmitting(true);
     try {
@@ -113,11 +115,11 @@ export function ReviewForm({
         visitedAt: visitedAt || undefined,
         authorName: authorName.trim(),
       });
-      showToast("Đã gửi review — cảm ơn bạn đã chia sẻ!", { variant: "success" });
+      showToast(t("submittedToast"), { variant: "success" });
       onSubmitted?.();
       onOpenChange(false);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Đã xảy ra lỗi");
+      setError(e instanceof Error ? e.message : t("genericError"));
     } finally {
       setSubmitting(false);
     }
@@ -155,21 +157,21 @@ export function ReviewForm({
                 )}
               >
                 <Dialog.Title className="sr-only">
-                  Viết review — {placeName}
+                  {t("formTitle", { place: placeName })}
                 </Dialog.Title>
                 <Dialog.Description className="sr-only">
-                  Chia sẻ trải nghiệm thực tế của bạn về {placeName}.
+                  {t("formSubtitle", { place: placeName })}
                 </Dialog.Description>
 
                 <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-4">
                   <div>
                     <h2 id={titleId} className="font-display text-h3 text-text">
-                      Viết review
+                      {t("writeReview")}
                     </h2>
                     <p className="text-body-sm text-text-muted">{placeName}</p>
                   </div>
                   <Dialog.Close
-                    aria-label="Đóng"
+                    aria-label={t("formClose")}
                     className="flex h-9 w-9 items-center justify-center rounded-full text-text-muted hover:bg-surface-2"
                   >
                     <X size={16} />
@@ -181,51 +183,51 @@ export function ReviewForm({
                   style={{ maxHeight: "calc(92dvh - 9rem)" }}
                 >
                   {/* Rating */}
-                  <Field label="Đánh giá" required>
+                  <Field label={t("fieldRating")} required>
                     <RatingStars value={rating} onChange={setRating} size={32} />
                   </Field>
 
                   {/* Title */}
-                  <Field label="Tiêu đề" hint="Tùy chọn — tối đa 80 ký tự">
+                  <Field label={t("fieldTitle")} hint={t("fieldTitleHint")}>
                     <input
                       type="text"
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                       maxLength={80}
-                      placeholder="Trải nghiệm của bạn thế nào?"
+                      placeholder={t("titlePlaceholder")}
                       className="w-full rounded-lg border border-border bg-bg px-3 py-2.5 text-body outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
                     />
                   </Field>
 
                   {/* Body */}
                   <Field
-                    label="Nội dung"
+                    label={t("fieldBody")}
                     required
-                    hint={`${body.length}/2000 ký tự (tối thiểu 30)`}
+                    hint={t("bodyHint", { count: body.length })}
                   >
                     <textarea
                       value={body}
                       onChange={(e) => setBody(e.target.value)}
                       maxLength={2000}
                       rows={5}
-                      placeholder="Mô tả trải nghiệm thực tế — món ngon, view, atmosphere, mẹo cho người sau…"
+                      placeholder={t("bodyPlaceholder")}
                       className="w-full resize-y rounded-lg border border-border bg-bg px-3 py-2.5 text-body outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
                     />
                   </Field>
 
                   {/* Photos */}
-                  <Field label="Ảnh" hint={`Tối đa ${MAX_PHOTOS} ảnh, ≤ 1.5 MB mỗi ảnh`}>
+                  <Field label={t("fieldPhotos")} hint={t("photosHint", { max: MAX_PHOTOS })}>
                     <div className="grid grid-cols-3 gap-3">
                       {photos.map((src, i) => (
                         <div
                           key={i}
                           className="relative aspect-square overflow-hidden rounded-lg border border-border"
                         >
-                          <Image src={src} alt={`Ảnh ${i + 1}`} fill className="object-cover" sizes="120px" unoptimized />
+                          <Image src={src} alt={t("photoAlt", { n: i + 1 })} fill className="object-cover" sizes="120px" unoptimized />
                           <button
                             type="button"
                             onClick={() => removePhoto(i)}
-                            aria-label="Xoá ảnh"
+                            aria-label={t("removePhoto")}
                             className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/70 text-white hover:bg-black/90"
                           >
                             <X size={12} />
@@ -239,7 +241,7 @@ export function ReviewForm({
                           className="flex aspect-square flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-border text-text-muted hover:border-brand-500 hover:bg-brand-50/40 hover:text-brand-600"
                         >
                           <ImagePlus size={18} />
-                          <span className="text-caption">Thêm ảnh</span>
+                          <span className="text-caption">{t("addPhoto")}</span>
                         </button>
                       )}
                     </div>
@@ -254,7 +256,7 @@ export function ReviewForm({
                   </Field>
 
                   {/* Companion */}
-                  <Field label="Đi cùng">
+                  <Field label={t("fieldCompanion")}>
                     <div className="flex flex-wrap gap-2">
                       {(Object.keys(companionLabels) as Companion[]).map((c) => {
                         const active = companion === c;
@@ -279,7 +281,7 @@ export function ReviewForm({
                   </Field>
 
                   {/* Visited at */}
-                  <Field label="Thời điểm đi" hint="Giúp người sau biết khi nào bạn ghé">
+                  <Field label={t("fieldVisitedAt")} hint={t("fieldVisitedAtHint")}>
                     <input
                       type="month"
                       value={visitedAt}
@@ -289,13 +291,13 @@ export function ReviewForm({
                   </Field>
 
                   {/* Author */}
-                  <Field label="Tên hiển thị" required>
+                  <Field label={t("fieldName")} required>
                     <input
                       type="text"
                       value={authorName}
                       onChange={(e) => setAuthorName(e.target.value)}
                       maxLength={40}
-                      placeholder="Tên của bạn (sẽ hiển thị công khai)"
+                      placeholder={t("namePlaceholder")}
                       className="w-full rounded-lg border border-border bg-bg px-3 py-2.5 text-body outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
                     />
                   </Field>
@@ -309,10 +311,10 @@ export function ReviewForm({
 
                 <div className="flex shrink-0 items-center justify-end gap-2 border-t border-border bg-surface-2/30 px-6 py-3">
                   <Dialog.Close asChild>
-                    <Button variant="ghost">Huỷ</Button>
+                    <Button variant="ghost">{t("cancel")}</Button>
                   </Dialog.Close>
                   <Button onClick={submit} loading={submitting}>
-                    Gửi review
+                    {t("submit")}
                   </Button>
                 </div>
               </m.div>
@@ -353,7 +355,7 @@ function readAsDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result));
-    reader.onerror = () => reject(new Error("Lỗi đọc file"));
+    reader.onerror = () => reject(new Error("Failed to read file"));
     reader.readAsDataURL(file);
   });
 }

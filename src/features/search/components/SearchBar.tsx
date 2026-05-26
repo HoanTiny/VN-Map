@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { m, AnimatePresence } from "framer-motion";
 import { Search, MapPin, Tag, Layers, X, ArrowRight, Clock, TrendingUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { spring, transition } from "@/lib/motion";
 import { categories } from "@/config/categories";
@@ -18,10 +19,16 @@ interface Suggestion {
 
 const TRENDING = ["Hội An", "Đà Lạt", "Phú Quốc", "Sa Pa", "Ninh Bình"];
 
-const TYPE_META: Record<Suggestion["type"], { icon: typeof MapPin; label: string }> = {
-  place: { icon: MapPin, label: "Địa điểm" },
-  region: { icon: Layers, label: "Vùng miền" },
-  category: { icon: Tag, label: "Danh mục" },
+const TYPE_ICON: Record<Suggestion["type"], typeof MapPin> = {
+  place: MapPin,
+  region: Layers,
+  category: Tag,
+};
+
+const TYPE_LABEL_KEY: Record<Suggestion["type"], "typePlace" | "typeRegion" | "typeCategory"> = {
+  place: "typePlace",
+  region: "typeRegion",
+  category: "typeCategory",
 };
 
 // Staggered layout variants for dropdown items
@@ -54,8 +61,10 @@ export interface SearchBarProps {
 export function SearchBar({
   className,
   variant = "pill",
-  placeholder = "Tìm địa điểm, vùng miền, ẩm thực…",
+  placeholder,
 }: SearchBarProps) {
+  const t = useTranslations("Search");
+  const resolvedPlaceholder = placeholder ?? t("placeholder");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState<string | null>(null);
@@ -137,7 +146,7 @@ export function SearchBar({
       >
         {/* Animated Search Button */}
         <m.button
-          aria-label="Tìm kiếm"
+          aria-label={t("searchAria")}
           onClick={() => {
             setOpen(true);
             inputRef.current?.focus();
@@ -155,17 +164,17 @@ export function SearchBar({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           className="h-12 flex-1 bg-transparent text-body text-zinc-900 dark:text-white outline-none placeholder:text-zinc-500 dark:placeholder:text-white/45"
           enterKeyHint="search"
-          aria-label="Ô tìm kiếm"
+          aria-label={t("inputAria")}
         />
 
         {/* Pop-in Animate Clear Button */}
         <AnimatePresence>
           {query && (
             <m.button
-              aria-label="Xoá"
+              aria-label={t("clearAria")}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
@@ -227,7 +236,7 @@ export function SearchBar({
               <EmptyState />
             ) : loading && results.length === 0 ? (
               <div className="p-8 text-center text-body-sm text-zinc-500 dark:text-white/50">
-                Đang tìm…
+                {t("searching")}
               </div>
             ) : results.length === 0 ? (
               <NoResults q={debounced} />
@@ -238,15 +247,14 @@ export function SearchBar({
                 animate="show"
                 className="max-h-[60vh] overflow-y-auto p-2 "
               >
-                {(["place", "region", "category"] as const).map((t) => {
-                  const items = grouped[t];
+                {(["place", "region", "category"] as const).map((kind) => {
+                  const items = grouped[kind];
                   if (!items?.length) return null;
-                  const meta = TYPE_META[t];
-                  const Icon = meta.icon;
+                  const Icon = TYPE_ICON[kind];
                   return (
-                    <section key={t} className="px-1 py-1">
+                    <section key={kind} className="px-1 py-1">
                       <m.div variants={itemVariants} className="px-3 py-2 text-overline text-zinc-400 dark:text-white/40">
-                        {meta.label}
+                        {t(TYPE_LABEL_KEY[kind])}
                       </m.div>
                       <ul>
                         {items.slice(0, 4).map((s) => (
@@ -282,7 +290,7 @@ export function SearchBar({
                     onClick={() => setOpen(false)}
                     className="flex items-center justify-between rounded-lg px-3 py-2.5 text-body text-brand-600 dark:text-brand-400 hover:bg-zinc-100/80 dark:hover:bg-white/5 transition-colors duration-200 font-medium"
                   >
-                    <span>Xem tất cả kết quả cho “{debounced}”</span>
+                    <span>{t("viewAllResults", { q: debounced })}</span>
                     <ArrowRight size={16} />
                   </Link>
                 </m.div>
@@ -299,6 +307,7 @@ export function SearchBar({
 }
 
 function EmptyState() {
+  const t = useTranslations("Search");
   return (
     <m.div
       variants={containerVariants}
@@ -307,7 +316,7 @@ function EmptyState() {
       className="p-4"
     >
       <m.div variants={itemVariants} className="mb-3 flex items-center gap-2 px-2 text-overline text-[var(--brand-500)] text-[12px] font-bold dark:text-white/40">
-        <TrendingUp size={12} className="text-brand-500 animate-pulse" /> Đang được tìm nhiều
+        <TrendingUp size={12} className="text-brand-500 animate-pulse" /> {t("trending")}
       </m.div>
       <m.div variants={itemVariants} className="mb-4 flex flex-wrap gap-2 px-2">
         {TRENDING.map((t) => (
@@ -322,7 +331,7 @@ function EmptyState() {
       </m.div>
 
       <m.div variants={itemVariants} className="mb-2 flex items-center gap-2 px-2 text-overline text-[var(--brand-500)] dark:text-white/40">
-        <Clock size={12} /> Gợi ý cho bạn
+        <Clock size={12} /> {t("suggestionsForYou")}
       </m.div>
 
       <div className="grid grid-cols-2 gap-2 px-2 sm:grid-cols-3">
@@ -351,17 +360,18 @@ function EmptyState() {
 }
 
 function NoResults({ q }: { q: string }) {
+  const t = useTranslations("Search");
   return (
     <div className="p-8 text-center text-zinc-800 dark:text-white">
-      <div className="text-body font-medium">Không tìm thấy “{q}”</div>
+      <div className="text-body font-medium">{t("noResults", { q })}</div>
       <div className="mt-1 text-body-sm text-zinc-500 dark:text-white/50">
-        Thử từ khoá khác hoặc duyệt theo vùng miền.
+        {t("noResultsHint")}
       </div>
       <Link
         href="/explore"
         className="mt-4 inline-flex items-center gap-2 text-body-sm text-brand-600 dark:text-brand-400 hover:underline animate-bounce"
       >
-        Mở bản đồ <ArrowRight size={14} />
+        {t("openMap")} <ArrowRight size={14} />
       </Link>
     </div>
   );

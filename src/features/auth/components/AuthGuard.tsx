@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { LogIn } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/ui/button";
 import { Skeleton } from "@/ui/skeleton";
 import { useSession } from "../hooks/useSession";
@@ -27,8 +28,10 @@ export interface AuthGuardProps {
 export function AuthGuard({
   children,
   mode = "prompt",
-  message = "Đăng nhập để dùng tính năng này.",
+  message,
 }: AuthGuardProps) {
+  const t = useTranslations("AuthGuard");
+  const resolvedMessage = message ?? t("defaultMessage");
   const { user, hydrated, disabled } = useSession();
   const router = useRouter();
   const pathname = usePathname();
@@ -69,11 +72,11 @@ export function AuthGuard({
       <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-50 text-brand-700">
         <LogIn size={20} />
       </div>
-      <h1 className="mt-4 font-display text-display-lg text-text">Cần đăng nhập</h1>
-      <p className="mx-auto mt-2 max-w-md text-body-lg text-text-muted">{message}</p>
+      <h1 className="mt-4 font-display text-display-lg text-text">{t("title")}</h1>
+      <p className="mx-auto mt-2 max-w-md text-body-lg text-text-muted">{resolvedMessage}</p>
       <Button asChild className="mt-6">
         <Link href={`/sign-in?next=${encodeURIComponent(pathname)}`}>
-          <LogIn size={16} /> Đăng nhập 1-click
+          <LogIn size={16} /> {t("signInOneClick")}
         </Link>
       </Button>
     </div>

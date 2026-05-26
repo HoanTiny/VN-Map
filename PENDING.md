@@ -16,8 +16,10 @@
 - ✅ **SEO & Favicon hoàn tất** — Dynamic OG images `/api/og`, favicon từ logo MapVN, apple-icon.
 - ✅ **Production live** — Deployed Vercel, env vars set, Supabase migrations 0001–0003 chạy.
 - ✅ **Admin merger 01/07/2025** — Update 63 → 34 đơn vị hành chính theo Nghị quyết. Provinces config, places remap, search match legacy name, map polygon highlight đều hoàn tất.
-- ⏳ **Pending action** — (1) `git push` (đang ahead 2 commits) — (2) chạy migration `0002_admin_merger_2025.sql` trên Supabase production sau khi push.
-- ⏳ **Phase 3 chưa đụng** — 3D map, i18n, realtime, curated trips.
+- ✅ **Admin merger pushed + migrated** (2026-05-26) — branch `pharse3`, migration đã chạy production, smoke test pass.
+- ✅ **AI history-aware** (2026-05-26) — Gemini route dùng `startChat({history})`, client gửi 5 turn cuối, system prompt biết câu nối tiếp + tránh lặp.
+- ✅ **i18n Phase A foundation + Phase B (~95%)** (2026-05-26) — next-intl wired, full app/[locale] routing, 9 migration sessions covering ~50 components. Còn admin pages + editorial body copy + root error.tsx/not-found.tsx.
+- ⏳ **Phase 3 còn lại** — i18n Phase C (DB name_en/description_en) chưa làm, mock data 40→80, PWA screenshots refresh.
 
 Khi resume: chạy `pnpm dev` và smoke test các route chính. Nếu lỗi → đọc section [Known issues](#known-issues).
 
@@ -254,16 +256,110 @@ Theo plan §5:
   - `enable3D` state ở [map-store.ts](src/stores/map-store.ts), Box toggle button trong [MapControls.tsx](src/features/map/components/MapControls.tsx)
   - Khi bật: setStyle sang OpenFreeMap liberty/positron, easeTo pitch 45° bearing -17°, fill-extrusion layer ở zoom ≥ 14
   - Khi tắt: revert sang CartoCDN positron/dark-matter, pitch 0
-- [ ] **i18n** — VI/EN dictionaries, locale prefix `/en/...`, place names song ngữ (`name_vi` + `name_en` columns)
+- [~] **i18n** — Phase A foundation **DONE** (2026-05-26):
+  - `next-intl@4.12` installed, `src/i18n/{routing,navigation,request}.ts` setup với `localePrefix: "as-needed"` (`/` = VI, `/en/...` = EN)
+  - `messages/{vi,en}.json` skeleton (Common, Nav, Home, Footer)
+  - Route group `(admin)`, `(app)`, `(auth)`, `(marketing)` đã move vào `app/[locale]/`
+  - `app/[locale]/layout.tsx` wrap `NextIntlClientProvider` + `setRequestLocale`
+  - Middleware compose: `intlMiddleware` + `updateSession` (supabase cookie refresh), skip intl cho `/auth/*`, `/offline`, `/design`
+  - `app/layout.tsx` (root) giữ nguyên html/body/fonts/providers để non-localized routes vẫn render được
+  - `next.config.ts` wrap với `createNextIntlPlugin("./src/i18n/request.ts")`
+  - Build pass: routes hiện ra cả `/vi/...` và `/en/...`
+  - **Phase B partial DONE** (2026-05-26):
+    - [messages/vi.json](messages/vi.json) + [en.json](messages/en.json) namespaces: `Common`, `Nav`, `Home`, `Footer`
+    - [Footer.tsx](src/components/nav/Footer.tsx) — async server, `getTranslations("Footer")`
+    - [FloatingNavbar.tsx](src/components/nav/FloatingNavbar.tsx) — `useTranslations("Nav")` + `useTranslations("Common")`
+    - [TopBar.tsx](src/components/nav/TopBar.tsx) — async server với `getTranslations`
+    - [BottomTabBar.tsx](src/components/nav/BottomTabBar.tsx) — `useTranslations("Nav")`
+    - [nav.ts](src/config/nav.ts) — refactor `NavItem.label` → `NavItem.key` (i18n key)
+    - [(marketing)/page.tsx](app/[locale]/(marketing)/page.tsx) — landing all sections (hero, cities, places, activity, curated, collections, mapCTA, stats) dùng `getTranslations`
+    - `/design` move vào `[locale]/` vì dùng FloatingNavbar
+    - **(2026-05-26 session 2)**:
+    - [SearchBar.tsx](src/features/search/components/SearchBar.tsx) — `useTranslations("Search")` cho placeholder, aria, type labels, trending, empty state, no results
+    - [search/page.tsx](app/[locale]/(app)/search/page.tsx) — `getTranslations("SearchPage")` cho metadata + tất cả strings, empty state
+    - [saved/page.tsx](app/[locale]/(app)/saved/page.tsx) + [me/page.tsx](app/[locale]/(app)/me/page.tsx) — metadata async qua `generateMetadata`
+    - [sign-in/page.tsx](app/[locale]/(auth)/sign-in/page.tsx) — toàn bộ headlines, badges, terms agreement (rich text), roadtrip section
+    - [PlaceCard.tsx](src/features/place/components/PlaceCard.tsx) — `useTranslations("Place")` cho aria-label, perPerson; `useLocale()` để pick `cat.labelVi` vs `cat.label` (EN từ config sẵn có)
+    - Thêm namespaces: `Search`, `SearchPage`, `SavedPage`, `MePage`, `SignInPage`, `Place`
+    - [LanguageSwitcher.tsx](src/components/nav/LanguageSwitcher.tsx) — pill VI/EN dùng `useRouter`+`usePathname` từ `@/i18n/navigation`. Wired vào [FloatingNavbar](src/components/nav/FloatingNavbar.tsx) (desktop cạnh ThemeToggle + mobile menu drawer)
+    - **(2026-05-26 session 3)** — core content pages migrated:
+    - [/place/[slug]/page.tsx](app/[locale]/(app)/place/[slug]/page.tsx) — metadata async với getTranslations + getLocale (pick `cat.label` vs `cat.labelVi`)
+    - [PlaceFullPage.tsx](src/features/place/components/PlaceFullPage.tsx) — `useTranslations("PlaceDetail")` cho directions/viewOnMap/report/viewers/intro/location/submittedBy (rich text với `<b>`). CategoryTipsCard dùng `t.raw()` để đọc array tips theo category. SidebarNearbyPlaces dùng `useLocale()` cho category label
+    - [/category/[slug]/page.tsx](app/[locale]/(app)/category/[slug]/page.tsx) — full migration (metadata + heading + CTA + results count). Category label pick theo locale
+    - [/region/page.tsx](app/[locale]/(app)/region/page.tsx) — landing 3 vùng
+    - [/region/[region]/page.tsx](app/[locale]/(app)/region/[region]/page.tsx) — detail vùng + ProvinceCard nhận `placeCountLabel` prop từ parent
+    - [/region/[region]/[province]/page.tsx](app/[locale]/(app)/region/[region]/[province]/page.tsx) — province detail với category chips, results count, contribute CTA. CatChip nhận pre-translated label
+    - Namespaces mới: `PlaceDetail`, `CategoryPage`, `RegionPage`
+    - **(2026-05-26 session 4)** — explore + map shell:
+    - [/explore/page.tsx](app/[locale]/(app)/explore/page.tsx) — metadata async
+    - [MapExperience.tsx](src/features/map/components/MapExperience.tsx) — contributeHere fab, pickPrompt banner + cancel aria, TripPickBanner (default name, day, hint, done, focus label, all)
+    - [MapPlaceCard.tsx](src/features/map/components/MapPlaceCard.tsx) — close/share aria, save/saved label, viewDetails, explore CTA. CategoryChip dùng useLocale
+    - [MapControls.tsx](src/features/map/components/MapControls.tsx) — style picker labels (auto/light/dark/satellite), 3D hint + toggle, locate, zoomIn/Out
+    - [MapSearchBar.tsx](src/features/map/components/MapSearchBar.tsx) — placeholder, clear, group labels (places/provinces/categories), merged-into, filter hint, viewAllResults, empty state (quickFilters/nearYou/inViewport/expandTo/trending), noResults. EmptyState + NoResults dùng useTranslations riêng
+    - [MapFilterChips.tsx](src/features/map/components/MapFilterChips.tsx) — clear aria, category labels via useLocale
+    - Namespaces mới: `Explore`, `Map`
+    - **(2026-05-26 session 5)** — trip + submit + auth components:
+    - [/trip/page.tsx](app/[locale]/(app)/trip/page.tsx) + [/trip/[id]/page.tsx](app/[locale]/(app)/trip/[id]/page.tsx) + [/submit/page.tsx](app/[locale]/(app)/submit/page.tsx) — async metadata
+    - [/trips/[slug]/page.tsx](app/[locale]/(app)/trips/[slug]/page.tsx) — curated trip detail (home link, duration, season label via Season namespace, empty-day fallback)
+    - [CuratedTripCard.tsx](src/features/trip-template/components/CuratedTripCard.tsx) — converted to async server component dùng `getTranslations` (season + duration + viewItinerary + multi-destination)
+    - [SubmitLanding.tsx](src/features/submit/components/SubmitLanding.tsx) — toàn bộ hero + 3 steps + new category card + submissions section
+    - [TripList.tsx](src/features/trip/components/TripList.tsx) — heading + empty state + CTA
+    - [AccountPanel.tsx](src/features/auth/components/AccountPanel.tsx) — profile (statuses, guest name, sync notes rich text, sign in/out CTAs), control board tiles (saved/trips/submit/explore với count messages)
+    - [SignInForm.tsx](src/features/auth/components/SignInForm.tsx) — 3 OAuth buttons, magic link flow, sent notice rich text
+    - [AuthGuard.tsx](src/features/auth/components/AuthGuard.tsx) — defaultMessage qua hook, title + CTA
+    - Namespaces mới: `TripPage`, `SubmitPage`, `CuratedTrip`, `Season`, `AuthGuard`, `SignInForm` (+ mở rộng `MePage`)
+    - **(2026-05-26 session 6)** — reviews + trip dialogs + nav misc:
+    - [ReviewList](src/features/review/components/ReviewList.tsx) — overline, title, write CTA, 4 sort tabs, new-reviews nudge, empty state
+    - [ReviewCard](src/features/review/components/ReviewCard.tsx) — visited-on, delete aria, read-more/collapse, photo alt, relative time formatter (vi/en-US toLocaleDateString)
+    - [ReviewForm](src/features/review/components/ReviewForm.tsx) — validation messages (rating/body/title/name), submitted toast, full dialog (title, fields rating/title/body/photos/companion/visited/name, photo add/remove, cancel/submit)
+    - [TripCard](src/features/trip/components/TripCard.tsx) — days/places counters, updated relative time
+    - [NewTripDialog](src/features/trip/components/NewTripDialog.tsx) — full form (name/desc/destinations/days +/-, validation, submit)
+    - [AddToTripButton](src/features/trip/components/AddToTripButton.tsx) — label, popover (empty/pick), trip list rows, added toast with day, create-new CTA
+    - [SavedHeartButton](src/components/nav/SavedHeartButton.tsx), [UserAvatarButton](src/components/nav/UserAvatarButton.tsx) — aria labels
+    - [SignOutButton](src/features/auth/components/SignOutButton.tsx) — toast messages + label (reuses MePage namespace)
+    - Namespaces mới: `Review`, `TripCard`, `NewTrip`, `AddToTrip`
+    - **(2026-05-26 session 7)** — SuggestPlaceForm + TripPlanner + small forms:
+    - [SuggestPlaceForm](src/features/submit/components/SuggestPlaceForm.tsx) — toàn bộ dialog đóng góp: 4 price options, geolocation errors, 8 validation messages, 12 fields (name/category/province/district/address/coords/desc/price/hours/tags/photos/contributor), submitted toast, moderation notice. Category select dùng locale-aware label
+    - [SubmissionsList](src/features/submit/components/SubmissionsList.tsx) — 3 status badges, empty state, delete confirm flow, locale-aware relative time + category label
+    - [ProvinceChipPicker](src/features/trip/components/ProvinceChipPicker.tsx) — placeholder, remove aria, region labels (Bắc/Trung/Nam → North/Central/South)
+    - [TripPlanner](src/features/trip/components/TripPlanner.tsx) — loading/notFound states, breadcrumb, header desc placeholder, delete confirm flow, day/place counts, destinations picker, day card (remove day, empty state, add from map), add day CTA. PlaceRow + AddPlaceToDay với scope toggle, search, no-suggestions
+    - Namespaces mới: `Suggest`, `Submissions`, `ProvincePicker`, `TripPlanner`
+    - **(2026-05-26 session 8)** — CategoriesBento + AI panel + utility metadata:
+    - [CategoriesBento](src/components/CategoriesBento.tsx) — section overline/title/subtitle + 2 group tabs (lifestyle/travel) + BentoCatCard locale-aware label. Per-category metadata (tagline/highlights/counts) giữ VI vì cần editorial review
+    - [ProvinceFilterChips](src/features/place/components/ProvinceFilterChips.tsx) — "Tất cả tỉnh" → all-provinces
+    - [AISuggestPanel](src/features/ai/components/AISuggestPanel.tsx) — label, prompt, 3 examples, thinking state, input placeholder, unknownError, SuggestionCard view button
+    - About page: full metadata + headline + badge + 2 CTAs (body copy giữ VI cho editorial pass)
+    - Help / Privacy / Terms: metadata async qua `generateMetadata` (body copy giữ VI)
+    - Namespaces mới: `CategoriesBento`, `ProvinceFilter`, `AISuggest`, `About`, `Help`, `Privacy`, `Terms`, `Error`, `NotFound`
+    - **(2026-05-26 session 9)** — minor components batch:
+    - [TripPickAddButton](src/features/trip/components/TripPickAddButton.tsx) — added/add to day label
+    - [MapSidePanel](src/features/map/components/MapSidePanel.tsx) — collapse, viewport header, locale-aware category, empty state
+    - [ActivityFeed](src/features/activity/components/ActivityFeed.tsx) — live badge, count, empty state, newlyApproved, fallback category, guest author, locale-aware `Intl.RelativeTimeFormat`
+    - [ForkTripButton](src/features/trip-template/components/ForkTripButton.tsx) — copying state + copied toast + CTA
+    - [RatingHistogram](src/features/review/components/RatingHistogram.tsx) — count label
+    - [PlaceMeta](src/features/place/components/PlaceMeta.tsx) — info title, 4 field labels, 4 price labels, review suffix, tags
+    - [PlaceHero](src/features/place/components/PlaceHero.tsx) — save/share/close aria + locale-aware category + lightbox prev/next/zoom
+    - [NearbyPlaces](src/features/place/components/NearbyPlaces.tsx) — converted to async server, overline/title
+    - [SearchFilters](src/features/search/components/SearchFilters.tsx) — all chip, 3 sort options, results count, locale-aware category labels
+    - [CityCard](src/features/region/components/CityCard.tsx) — placeCount fallback labels (2 variants)
+    - Namespaces mới: `TripPickAdd`, `Activity`, `ForkTrip`, `CityCard`
+  - **Phase B TODO còn lại (đều minor / editorial)**:
+    - `app/error.tsx` + `app/not-found.tsx` ở root layer ngoài NextIntlProvider — cần move xuống `[locale]/` hoặc workaround để dùng translations
+    - Body copy của About/Help/Privacy/Terms cần editorial pass cho EN
+    - Per-category metadata trong CategoriesBento (tagline/highlights/counts) cần editorial pass cho EN
+    - `companionLabels` constants trong `src/features/review/lib/types.ts` còn VI (used in ReviewForm + ReviewCard)
+    - Admin pages (`/admin/*`) — internal, low priority
+  - **Phase C (TODO)**: migration thêm `name_en`, `description_en` cho `places` + `place_submissions`, queries fallback VI khi EN thiếu, admin form song ngữ
+  - **Note**: nhiều component sâu (PlaceCard, CategoryCard, SearchBar, MapPlaceCard…) còn hard-code VI — sẽ migrate dần ở Phase B sau
 - [x] **Realtime** (partial):
   - ✅ `usePresence` — "X người đang xem" trên place detail (hiện khi ≥2 viewer cùng lúc)
   - ✅ `useRealtimeReviews` — review mới tự append vào list không cần reload
   - ✅ `useRealtimePlaces` — place mới được approve tự hiện marker trên map (wired 2026-05-22)
   - [x] Activity feed landing — `ActivityFeed` ([components/ActivityFeed.tsx](src/features/activity/components/ActivityFeed.tsx)) trên homepage, fetch initial 8 mixed places+reviews từ Supabase, prepend places mới qua `useRealtimePlaces` (Session 2026-05-22)
-- [x] **AI** (partial):
+- [x] **AI**:
   - ✅ Gemini API wired với rate-limit + cache
   - ✅ Viewport-aware: truyền bounds + GPS lên API, Gemini gợi ý địa điểm trong vùng đang xem (2026-05-22)
-  - [ ] History-aware: chưa truyền lịch sử conversation vào prompt
+  - ✅ **History-aware (2026-05-26)** — [route.ts](app/api/ai/suggest/route.ts) dùng `model.startChat({history})`, nhận `history: HistoryTurn[]` (max 5 turn), bypass cache khi có history. Client [AISuggestPanel.tsx](src/features/ai/components/AISuggestPanel.tsx) snapshot `turns` (chỉ turn đã có response) trước khi append pending turn. System prompt thêm 2 quy tắc: hiểu câu nối tiếp ("rẻ hơn", "khu khác"…) + không lặp lại suggestion cũ.
 - [x] **Curated trips** — `trip_templates` table + 4 templates seed + landing section "Sao chép — đi liền" + detail page `/trips/[slug]` + ForkTripButton (deep-copy template → user's trips) (Session 2026-05-22)
   - Migration `0005_trip_templates.sql`, seed `pnpm seed:trips`
   - [queries.ts](src/features/trip-template/lib/queries.ts), [actions.ts](src/features/trip-template/actions.ts)
@@ -274,12 +370,8 @@ Theo plan §5:
 
 ## 🐛 Known issues
 
-### Dark mode contrast (chưa fix triệt để)
-`brand-500/600/700` dùng giá trị light-mode-like, **brand-700 dark vẫn dim trên brand-50 dark wine**. Khi resume, cân nhắc:
-- Đổi brand-700 dark sang light salmon `#FFAFA4` (text-on-tint readable)
-- Hoặc refactor sao cho `text-brand-700` trong dark dùng token khác
-
-File: [src/styles/tokens.css](src/styles/tokens.css) line 62-72.
+### ~~Dark mode contrast~~ — FIXED (verified 2026-05-26)
+`--brand-700` dark đã là `#ff9e99` (light salmon) trên `--brand-50` dark `#2a0e0c` → contrast ratio **9.11:1** (WCAG AAA). File [tokens.css:70](src/styles/tokens.css#L70) comment cũng confirm. Note này từ session cũ, đã được fix trong commit `cd67ae3`.
 
 ### Mock data còn 40 places
 Plan target 80. Đủ demo nhưng `/category/checkin`, `/category/experience` chỉ có vài entry. Mở rộng khi có thời gian — thêm ~40 places (Hà Nội + HCM + Đà Nẵng).
@@ -344,12 +436,10 @@ Nếu thấy `WARNING: Unmapped province: ...` → báo lại, có tỉnh nào s
    - DevTools Network → fetch `*.supabase.co/rest/v1/places` (read path)
    - DB: `profiles` row tự tạo khi user mới signup
 
-### 5. **Hướng tiếp theo (Phase 3):**
-   - **3D buildings** — MapLibre extrusion, pitch/bearing controls
-   - **Hero stats dynamic** — query count từ Supabase thay hardcode
-   - **Mở rộng mock data** — thêm ~40 places (target 80)
-   - **Curated trips** — trip templates theo mùa
-   - **PWA screenshots** — chụp màn hình thật thay placeholder
+### 5. **Hướng tiếp theo (Phase 3 — còn lại):**
+   - **i18n VI/EN** (effort lớn) — dictionaries + locale prefix `/en/...` + DB columns `name_vi`/`name_en`
+   - **Mở rộng mock data 40 → 80** (effort trung) — thêm ~40 places HN/HCM/ĐN
+   - **PWA screenshots refresh** (effort nhỏ — cần manual) — chụp lại sau khi UI ổn định
 
 ---
 

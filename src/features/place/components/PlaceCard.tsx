@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { m } from "framer-motion";
 import { Heart, Star, MapPin } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/cn";
 import { spring, hoverLift, easing, duration } from "@/lib/motion";
 import { categoryByKey, type CategoryKey } from "@/config/categories";
@@ -32,6 +33,9 @@ export function PlaceCard({ place, priority, onToggleSave, className }: PlaceCar
   const { saved, toggle: toggleSaved } = useIsSaved(place.slug);
   const cat = categoryByKey[place.category];
   const CatIcon = cat.icon;
+  const t = useTranslations("Place");
+  const locale = useLocale();
+  const catLabel = locale === "en" ? cat.label : cat.labelVi;
 
   const toggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -72,7 +76,7 @@ export function PlaceCard({ place, priority, onToggleSave, className }: PlaceCar
           <button
             onClick={toggle}
             aria-pressed={saved}
-            aria-label={saved ? "Bỏ lưu" : "Lưu địa điểm"}
+            aria-label={saved ? t("unsave") : t("save")}
             className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full glass shadow-sm transition-transform active:scale-90"
           >
             <m.span
@@ -91,7 +95,7 @@ export function PlaceCard({ place, priority, onToggleSave, className }: PlaceCar
 
           <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full glass-subtle px-2.5 py-1 text-caption text-white">
             <CatIcon size={12} style={{ color: cat.color }} />
-            <span>{cat.labelVi}</span>
+            <span>{catLabel}</span>
           </div>
 
           {place.highlight && (
@@ -124,7 +128,7 @@ export function PlaceCard({ place, priority, onToggleSave, className }: PlaceCar
             <div className="mt-3 text-body text-text">
               <span className="font-semibold">{place.price}</span>
               {hasNumericPrice(place.price) && (
-                <span className="text-text-muted"> / người</span>
+                <span className="text-text-muted"> {t("perPerson")}</span>
               )}
             </div>
           )}

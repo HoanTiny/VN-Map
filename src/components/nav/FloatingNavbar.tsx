@@ -4,8 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { m, useScroll, useMotionValueEvent } from "framer-motion";
 import { Search, Menu } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { SavedHeartButton } from "./SavedHeartButton";
 import { UserAvatarButton } from "./UserAvatarButton";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 import { cn } from "@/lib/cn";
 import { spring, transition } from "@/lib/motion";
 import { IconButton } from "@/ui/icon-button";
@@ -16,6 +18,8 @@ import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export function FloatingNavbar() {
   const pathname = usePathname();
+  const t = useTranslations("Nav");
+  const tCommon = useTranslations("Common");
   const [compact, setCompact] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { scrollY } = useScroll();
@@ -80,7 +84,7 @@ export function FloatingNavbar() {
                       transition={spring.snappy}
                     />
                   )}
-                  {item.label}
+                  {t(item.key)}
                 </Link>
               </li>
             );
@@ -100,7 +104,7 @@ export function FloatingNavbar() {
           >
             <Search size={14} className="text-zinc-700 dark:text-zinc-500 transition-colors duration-300 group-hover:text-brand-500 group-hover:scale-105" />
             <span className="font-semibold tracking-wide text-[13px] transition-all duration-300 group-hover:translate-x-0.5">
-              Tìm địa điểm…
+              {tCommon("searchPlaces")}
             </span>
             <kbd className="ml-2.5 inline-flex h-5 w-5 items-center justify-center rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 font-sans text-[10px] font-bold text-zinc-400 dark:text-zinc-500 shadow-[0_1px_1.5px_rgba(0,0,0,0.04)] transition-all duration-300 group-hover:bg-zinc-50 dark:group-hover:bg-zinc-900">
               /
@@ -109,7 +113,7 @@ export function FloatingNavbar() {
 
           {/* Search icon button on md-lg */}
           <IconButton
-            label="Tìm kiếm"
+            label={tCommon("search")}
             variant="ghost"
             asChild
             className="hidden md:inline-flex xl:hidden text-zinc-800 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white"
@@ -119,18 +123,19 @@ export function FloatingNavbar() {
             </Link>
           </IconButton>
 
+          <LanguageSwitcher className="hidden sm:inline-flex" />
           <ThemeToggle />
           <SavedHeartButton className="hidden sm:inline-flex text-zinc-800 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white" />
           <UserAvatarButton className="hidden sm:inline-flex" />
 
           <Button size="sm" className="hidden xl:inline-flex bg-brand-500 hover:bg-brand-600 active:scale-[0.96] transition-all duration-300 shadow-md shadow-brand-500/10 hover:shadow-lg hover:shadow-brand-500/20 font-semibold" asChild>
             <Link href="/submit" className="whitespace-nowrap">
-              Đóng góp địa điểm
+              {t("submit")}
             </Link>
           </Button>
 
           <IconButton
-            label="Menu"
+            label={tCommon("menu")}
             variant="ghost"
             className="lg:hidden text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60 hover:text-zinc-950 dark:hover:text-white"
             onClick={() => setMobileOpen((v) => !v)}
@@ -155,11 +160,14 @@ export function FloatingNavbar() {
                   href={item.href}
                   className="flex rounded-lg px-3 py-3 text-body text-text hover:bg-surface-2"
                 >
-                  {item.label}
+                  {t(item.key)}
                 </Link>
               </li>
             ))}
           </ul>
+          <div className="mt-3 flex items-center justify-center border-t border-border/40 pt-3">
+            <LanguageSwitcher />
+          </div>
         </m.div>
       )}
     </m.header>

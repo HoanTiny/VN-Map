@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Trash2, MapPin, Clock, Tag } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
+import { useTranslations, useLocale } from "next-intl";
 import { Badge } from "@/ui/badge";
 import { IconButton } from "@/ui/icon-button";
 import { spring } from "@/lib/motion";
@@ -9,26 +10,28 @@ import { useSubmissions } from "../hooks/useSubmissions";
 import { categoryByKey } from "@/config/categories";
 import type { SubmissionStatus } from "../lib/types";
 
-const STATUS_META: Record<SubmissionStatus, { label: string; className: string }> = {
-  pending: { label: "Đang chờ duyệt", className: "bg-warning/15 text-warning" },
-  approved: { label: "Đã duyệt", className: "bg-success/15 text-success" },
-  rejected: { label: "Bị từ chối", className: "bg-danger/15 text-danger" },
-};
-
 export function SubmissionsList() {
+  const t = useTranslations("Submissions");
+  const locale = useLocale();
   const { submissions, hydrated, remove } = useSubmissions();
   const [confirmId, setConfirmId] = useState<string | null>(null);
 
+  const STATUS_META: Record<SubmissionStatus, { label: string; className: string }> = {
+    pending: { label: t("statusPending"), className: "bg-warning/15 text-warning" },
+    approved: { label: t("statusApproved"), className: "bg-success/15 text-success" },
+    rejected: { label: t("statusRejected"), className: "bg-danger/15 text-danger" },
+  };
+
   if (!hydrated) {
-    return <p className="text-body-sm text-text-muted">Đang tải…</p>;
+    return <p className="text-body-sm text-text-muted">{t("loading")}</p>;
   }
 
   if (submissions.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border p-8 text-center">
-        <p className="font-display text-h3 text-text">Chưa có đề xuất nào</p>
+        <p className="font-display text-h3 text-text">{t("emptyTitle")}</p>
         <p className="mx-auto mt-1 max-w-md text-body-sm text-text-muted">
-          Bạn chưa đóng góp địa điểm nào. Bắt đầu với quán cafe yêu thích?
+          {t("emptyBody")}
         </p>
       </div>
     );
@@ -39,6 +42,7 @@ export function SubmissionsList() {
       <AnimatePresence initial={false}>
         {submissions.map((s) => {
           const cat = categoryByKey[s.category];
+          const catLabel = locale === "en" ? cat.label : cat.labelVi;
           const meta = STATUS_META[s.status];
           return (
             <m.li
@@ -58,7 +62,7 @@ export function SubmissionsList() {
                       variant="outline"
                       style={{ borderColor: cat.color, color: cat.color }}
                     >
-                      {cat.labelVi}
+                      {catLabel}
                     </Badge>
                   </div>
                   <h3 className="font-display text-h3 text-text">{s.name}</h3>
@@ -71,7 +75,7 @@ export function SubmissionsList() {
                   <p className="mt-2 line-clamp-2 text-body text-text">{s.description}</p>
                   <div className="mt-3 flex flex-wrap items-center gap-3 text-caption text-text-muted">
                     <span className="inline-flex items-center gap-1">
-                      <Clock size={11} /> {formatDate(s.createdAt)}
+                      <Clock size={11} /> {formatRelative(s.createdAt, locale, t)}
                     </span>
                     {s.priceRange && (
                       <span className="font-mono">{s.priceRange}</span>
@@ -84,7 +88,7 @@ export function SubmissionsList() {
                   </div>
                 </div>
                 <IconButton
-                  label="Xoá đề xuất"
+                  label={t("deleteAria")}
                   variant="ghost"
                   size="sm"
                   onClick={() => setConfirmId(confirmId === s.id ? null : s.id)}
@@ -95,13 +99,13 @@ export function SubmissionsList() {
 
               {confirmId === s.id && (
                 <div className="mt-3 flex items-center justify-end gap-2 rounded-lg bg-danger/5 px-3 py-2 text-body-sm">
-                  <span className="text-text-muted">Xoá đề xuất này?</span>
+                  <span className="text-text-muted">{t("confirmDelete")}</span>
                   <button
                     type="button"
                     onClick={() => setConfirmId(null)}
                     className="rounded px-2 py-1 text-text-muted hover:bg-surface-2"
                   >
-                    Huỷ
+                    {t("cancel")}
                   </button>
                   <button
                     type="button"
@@ -111,7 +115,7 @@ export function SubmissionsList() {
                     }}
                     className="rounded bg-danger px-2 py-1 text-white hover:brightness-110"
                   >
-                    Xoá
+                    {t("delete")}
                   </button>
                 </div>
               )}
@@ -123,11 +127,19 @@ export function SubmissionsList() {
   );
 }
 
-function formatDate(ms: number): string {
+function formatRelative(
+  ms: number,
+  locale: string,
+  t: (k: "justNow" | "minutesAgo" | "hoursAgo" | "daysAgo", v?: Record<string, number>) => string,
+): string {
   const diff = (Date.now() - ms) / 1000;
-  if (diff < 60) return "vừa xong";
-  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
-  if (diff < 86400 * 7) return `${Math.floor(diff / 86400)} ngày trước`;
-  return new Date(ms).toLocaleDateString("vi-VN", { day: "2-digit", month: "short", year: "numeric" });
+  if (diff < 60) return t("justNow");
+  if (diff < 3600) return t("minutesAgo", { n: Math.floor(diff / 60) });
+  if (diff < 86400) return t("hoursAgo", { n: Math.floor(diff / 3600) });
+  if (diff < 86400 * 7) return t("daysAgo", { n: Math.floor(diff / 86400) });
+  return new Date(ms).toLocaleDateString(locale === "en" ? "en-US" : "vi-VN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }

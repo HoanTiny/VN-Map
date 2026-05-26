@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { Reveal } from "@/components/Reveal";
 import { categoriesByGroup, type Category } from "@/config/categories";
 
@@ -104,6 +105,8 @@ function BentoCatCard({
   index: number;
 }) {
   const Icon = c.icon;
+  const locale = useLocale();
+  const catLabel = locale === "en" ? c.label : c.labelVi;
   const meta = categoryMetadata[c.key] ?? { count: "50+ điểm", tagline: "Khám phá ngay" };
   const bentoClass = getBentoClasses(index);
 
@@ -175,7 +178,7 @@ function BentoCatCard({
         <span 
           className="font-display font-extrabold text-text group-hover:text-[var(--cat-color)] transition-colors duration-300 tracking-tight leading-none text-lg md:text-xl"
         >
-          {c.labelVi}
+          {catLabel}
         </span>
         
         <p 
@@ -208,6 +211,7 @@ function BentoCatCard({
 }
 
 export function CategoriesBento() {
+  const t = useTranslations("CategoriesBento");
   const [activeTab, setActiveTab] = useState<"lifestyle" | "travel">("lifestyle");
   const currentCategories = categoriesByGroup[activeTab];
 
@@ -225,13 +229,13 @@ export function CategoriesBento() {
           <Reveal>
             <div>
               <p className="text-xs font-bold tracking-[0.2em] text-brand-600 uppercase mb-2">
-                DANH MỤC TRẢI NGHIỆM
+                {t("overline")}
               </p>
               <h2 className="font-display text-3xl md:text-4xl font-extrabold tracking-tight text-text leading-tight">
-                Khám phá theo chủ đề
+                {t("title")}
               </h2>
               <p className="mt-2.5 max-w-xl text-body text-text-muted">
-                Bản đồ trải nghiệm Việt Nam được chia thành 2 thế giới đầy cảm hứng. Chọn một chủ đề để mở bản đồ ngay.
+                {t("subtitle")}
               </p>
             </div>
           </Reveal>
@@ -247,7 +251,7 @@ export function CategoriesBento() {
                     : "text-text-muted hover:text-text hover:bg-surface/50 scale-95"
                 }`}
               >
-                Lifestyle & Đêm muộn
+                {t("tabLifestyle")}
               </button>
               <button
                 onClick={() => setActiveTab("travel")}
@@ -257,7 +261,7 @@ export function CategoriesBento() {
                     : "text-text-muted hover:text-text hover:bg-surface/50 scale-95"
                 }`}
               >
-                Du lịch & Khám phá
+                {t("tabTravel")}
               </button>
             </div>
           </Reveal>

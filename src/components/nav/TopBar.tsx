@@ -1,12 +1,16 @@
 import Link from "next/link";
 import { Heart, Search, User } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Button } from "@/ui/button";
 import { IconButton } from "@/ui/icon-button";
 import { topNav } from "@/config/nav";
 import { siteConfig } from "@/config/site";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
-export function TopBar() {
+export async function TopBar() {
+  const t = await getTranslations("Nav");
+  const tCommon = await getTranslations("Common");
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60">
       <div className="container flex h-16 items-center gap-6">
@@ -22,7 +26,7 @@ export function TopBar() {
               href={item.href}
               className="rounded-lg px-3 py-2 text-body text-text-muted transition-colors hover:bg-surface-2 hover:text-text"
             >
-              {item.label}
+              {t(item.key)}
             </Link>
           ))}
         </nav>
@@ -31,16 +35,16 @@ export function TopBar() {
           <Button variant="secondary" size="sm" className="hidden md:inline-flex" asChild>
             <Link href="/search">
               <Search size={16} />
-              <span className="text-text-muted">Tìm địa điểm…</span>
+              <span className="text-text-muted">{tCommon("searchPlaces")}</span>
             </Link>
           </Button>
           <ThemeToggle />
-          <IconButton label="Đã lưu" variant="ghost" asChild>
+          <IconButton label={t("saved")} variant="ghost" asChild>
             <Link href="/saved">
               <Heart size={18} />
             </Link>
           </IconButton>
-          <IconButton label="Tài khoản" variant="ghost" asChild>
+          <IconButton label={t("account")} variant="ghost" asChild>
             <Link href="/me">
               <User size={18} />
             </Link>

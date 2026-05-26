@@ -3,6 +3,7 @@ import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { m } from "framer-motion";
 import { X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { pressScale } from "@/lib/motion";
 
@@ -19,6 +20,7 @@ export function ProvinceFilterChips({
   provinces,
   paramKey = "province",
 }: ProvinceFilterChipsProps) {
+  const t = useTranslations("ProvinceFilter");
   const router = useRouter();
   const pathname = usePathname();
   const sp = useSearchParams();
@@ -57,7 +59,7 @@ export function ProvinceFilterChips({
             : "border-border bg-surface text-text hover:bg-surface-2"
         )}
       >
-        Tất cả tỉnh
+        {t("allProvinces")}
       </m.button>
       {provinces.map((p) => {
         const selected = active === p.value;

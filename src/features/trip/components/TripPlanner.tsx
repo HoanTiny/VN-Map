@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, Plus, Trash2, ArrowLeftRight, MapPin, Map as MapIcon } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/ui/button";
 import { IconButton } from "@/ui/icon-button";
 import { Badge } from "@/ui/badge";
@@ -16,21 +17,22 @@ import { categoryByKey } from "@/config/categories";
 import { ProvinceChipPicker } from "./ProvinceChipPicker";
 
 export function TripPlanner({ tripId }: { tripId: string }) {
+  const t = useTranslations("TripPlanner");
   const router = useRouter();
   const { trip, hydrated, addPlace, removePlace, addDay, removeDay, update, remove } =
     useTrip(tripId);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   if (!hydrated) {
-    return <div className="container py-24 text-body-sm text-text-muted">Đang tải…</div>;
+    return <div className="container py-24 text-body-sm text-text-muted">{t("loading")}</div>;
   }
   if (!trip) {
     return (
       <div className="container py-24 text-center">
-        <p className="font-display text-h2 text-text">Không tìm thấy chuyến đi</p>
+        <p className="font-display text-h2 text-text">{t("notFound")}</p>
         <Button className="mt-4" asChild>
           <Link href="/trip">
-            <ChevronLeft size={16} /> Về danh sách
+            <ChevronLeft size={16} /> {t("backToList")}
           </Link>
         </Button>
       </div>
@@ -46,7 +48,7 @@ export function TripPlanner({ tripId }: { tripId: string }) {
     <article className="pb-24 pt-24 md:pt-28">
       <div className="container">
         <div className="flex items-center gap-1 text-body-sm text-text-muted">
-          <Link href="/trip" className="hover:text-text">Chuyến đi</Link>
+          <Link href="/trip" className="hover:text-text">{t("tripsCrumb")}</Link>
           <span>›</span>
           <span className="line-clamp-1">{trip.name}</span>
         </div>
@@ -63,7 +65,7 @@ export function TripPlanner({ tripId }: { tripId: string }) {
             <textarea
               value={trip.description ?? ""}
               onChange={(e) => update({ description: e.target.value || undefined })}
-              placeholder="Thêm mô tả ngắn…"
+              placeholder={t("descPlaceholder")}
               rows={1}
               className="mt-2 w-full resize-none bg-transparent text-body-lg text-text-muted outline-none focus:bg-surface-2/40 focus:ring-2 focus:ring-brand-500 rounded-md px-1 -ml-1"
               maxLength={300}
@@ -72,16 +74,16 @@ export function TripPlanner({ tripId }: { tripId: string }) {
           <div className="flex shrink-0 items-center gap-2">
             {!confirmDelete ? (
               <Button variant="ghost" onClick={() => setConfirmDelete(true)}>
-                <Trash2 size={14} /> Xoá chuyến đi
+                <Trash2 size={14} /> {t("deleteTrip")}
               </Button>
             ) : (
               <>
-                <span className="text-body-sm text-text-muted">Chắc chứ?</span>
+                <span className="text-body-sm text-text-muted">{t("confirmDelete")}</span>
                 <Button variant="ghost" onClick={() => setConfirmDelete(false)}>
-                  Huỷ
+                  {t("cancel")}
                 </Button>
                 <Button variant="destructive" onClick={deleteTripAndExit}>
-                  Xoá
+                  {t("delete")}
                 </Button>
               </>
             )}
@@ -89,24 +91,24 @@ export function TripPlanner({ tripId }: { tripId: string }) {
         </header>
 
         <div className="mt-6 flex flex-wrap items-center gap-3 text-body-sm text-text-muted">
-          <Badge variant="neutral">{trip.days.length} ngày</Badge>
+          <Badge variant="neutral">{t("daysCount", { count: trip.days.length })}</Badge>
           <Badge variant="neutral">
-            {trip.days.reduce((sum, d) => sum + d.placeSlugs.length, 0)} địa điểm
+            {t("placesCount", { count: trip.days.reduce((sum, d) => sum + d.placeSlugs.length, 0) })}
           </Badge>
         </div>
 
         {/* Destinations picker */}
         <div className="mt-6 rounded-2xl border border-border bg-surface p-5 md:p-6">
           <div className="mb-2 flex items-baseline justify-between gap-2">
-            <h3 className="font-display text-h3 text-text">Điểm đến</h3>
+            <h3 className="font-display text-h3 text-text">{t("destinationsTitle")}</h3>
             <span className="text-caption text-text-muted">
-              Gợi ý địa điểm sẽ ưu tiên các tỉnh dưới đây
+              {t("destinationsHint")}
             </span>
           </div>
           <ProvinceChipPicker
             value={trip.destinations}
             onChange={(next) => update({ destinations: next })}
-            placeholder="VD: Hà Nội, Đà Nẵng, Hội An…"
+            placeholder={t("destinationsPlaceholder")}
           />
         </div>
 
@@ -126,11 +128,11 @@ export function TripPlanner({ tripId }: { tripId: string }) {
                   <h3 className="font-display text-h3 text-text">{day.label}</h3>
                   <div className="flex items-center gap-2">
                     <span className="text-body-sm text-text-muted">
-                      {day.placeSlugs.length} địa điểm
+                      {t("placesCount", { count: day.placeSlugs.length })}
                     </span>
                     {trip.days.length > 1 && (
                       <IconButton
-                        label="Xoá ngày"
+                        label={t("removeDay")}
                         variant="ghost"
                         size="sm"
                         onClick={() => removeDay(dayIndex)}
@@ -143,7 +145,7 @@ export function TripPlanner({ tripId }: { tripId: string }) {
 
                 {day.placeSlugs.length === 0 ? (
                   <p className="rounded-lg bg-surface-2/60 p-4 text-center text-body-sm text-text-muted">
-                    Chưa có địa điểm — thêm bên dưới.
+                    {t("emptyDay")}
                   </p>
                 ) : (
                   <ul className="space-y-2">
@@ -177,7 +179,7 @@ export function TripPlanner({ tripId }: { tripId: string }) {
                   href={`/explore?pickTrip=${trip.id}&pickDay=${dayIndex}`}
                   className="mt-2 flex items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2 text-body-sm font-medium text-text-muted hover:border-brand-500 hover:bg-brand-50/30 hover:text-brand-700"
                 >
-                  <MapIcon size={14} /> Thêm từ bản đồ
+                  <MapIcon size={14} /> {t("addFromMap")}
                 </Link>
               </m.section>
             ))}
@@ -188,7 +190,7 @@ export function TripPlanner({ tripId }: { tripId: string }) {
             onClick={addDay}
             className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-border bg-surface p-5 text-body text-text-muted transition-colors hover:border-brand-500 hover:bg-brand-50/30 hover:text-brand-700"
           >
-            <Plus size={16} /> Thêm ngày {trip.days.length + 1}
+            <Plus size={16} /> {t("addDay", { n: trip.days.length + 1 })}
           </button>
         </div>
       </div>
@@ -211,7 +213,10 @@ function PlaceRow({
   onRemove: () => void;
   onMove: (targetDay: number) => void;
 }) {
+  const t = useTranslations("TripPlanner");
+  const locale = useLocale();
   const cat = categoryByKey[place.category];
+  const catLabel = locale === "en" ? cat.label : cat.labelVi;
   const [moveOpen, setMoveOpen] = useState(false);
   return (
     <li className="flex items-center gap-3 rounded-xl border border-border bg-bg p-3">
@@ -223,7 +228,7 @@ function PlaceRow({
           {place.name}
         </Link>
         <div className="mt-0.5 flex items-center gap-1.5 text-body-sm text-text-muted">
-          <span style={{ color: cat.color }}>{cat.labelVi}</span>
+          <span style={{ color: cat.color }}>{catLabel}</span>
           <span>·</span>
           <MapPin size={11} />
           <span className="truncate">{place.province}</span>
@@ -232,7 +237,7 @@ function PlaceRow({
       {dayCount > 1 && (
         <div className="relative">
           <IconButton
-            label="Đổi ngày"
+            label={t("moveDay")}
             variant="ghost"
             size="sm"
             onClick={() => setMoveOpen((v) => !v)}
@@ -253,14 +258,14 @@ function PlaceRow({
                     }}
                     className="block w-full px-3 py-2 text-left text-body-sm text-text hover:bg-surface-2"
                   >
-                    → Ngày {i + 1}
+                    {t("moveToDay", { n: i + 1 })}
                   </button>
                 ))}
             </div>
           )}
         </div>
       )}
-      <IconButton label="Xoá khỏi ngày" variant="ghost" size="sm" onClick={onRemove}>
+      <IconButton label={t("removeFromDay")} variant="ghost" size="sm" onClick={onRemove}>
         <Trash2 size={14} />
       </IconButton>
     </li>
@@ -278,6 +283,8 @@ function AddPlaceToDay({
   destinations?: string[];
   onAdd: (slug: string) => void;
 }) {
+  const t = useTranslations("TripPlanner");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const { saved } = useSaved();
   const [query, setQuery] = useState("");
@@ -290,7 +297,7 @@ function AddPlaceToDay({
         onClick={() => setOpen(true)}
         className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-border py-2 text-body-sm font-medium text-text-muted hover:border-brand-500 hover:bg-brand-50/30 hover:text-brand-700"
       >
-        <Plus size={14} /> Thêm địa điểm
+        <Plus size={14} /> {t("addPlace")}
       </button>
     );
   }
@@ -348,11 +355,11 @@ function AddPlaceToDay({
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Tìm địa điểm để thêm…"
+          placeholder={t("searchPlaceholder")}
           className="flex-1 rounded-lg border border-border bg-bg px-3 py-2 text-body outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/20"
         />
         <Button variant="ghost" size="sm" onClick={() => setOpen(false)}>
-          Đóng
+          {t("close")}
         </Button>
       </div>
 
@@ -368,7 +375,7 @@ function AddPlaceToDay({
                 : "rounded-full px-2.5 py-1 text-text-muted hover:bg-surface-2"
             }
           >
-            Trong điểm đến
+            {t("scopeDestination")}
           </button>
           <button
             type="button"
@@ -380,7 +387,7 @@ function AddPlaceToDay({
                 : "rounded-full px-2.5 py-1 text-text-muted hover:bg-surface-2"
             }
           >
-            Tất cả VN
+            {t("scopeAll")}
           </button>
         </div>
       )}
@@ -409,7 +416,7 @@ function AddPlaceToDay({
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-body text-text">{p.name}</span>
                   <span className="block truncate text-body-sm text-text-muted">
-                    {cat.labelVi} · {p.province}
+                    {locale === "en" ? cat.label : cat.labelVi} · {p.province}
                   </span>
                 </span>
                 <Plus size={14} className="text-text-muted" />
@@ -419,7 +426,7 @@ function AddPlaceToDay({
         })}
         {filtered.length === 0 && (
           <li className="px-2 py-4 text-center text-body-sm text-text-muted">
-            Không có gợi ý
+            {t("noSuggestions")}
           </li>
         )}
       </ul>

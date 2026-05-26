@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Flag, MapPin, Navigation, Eye, Star } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/ui/button";
 import { Reveal } from "@/components/motion";
 import { AddToTripButton } from "@/features/trip/components/AddToTripButton";
@@ -20,6 +21,9 @@ export interface PlaceFullPageProps {
 export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
   const cat = categoryByKey[place.category];
   const viewers = usePresence(`place:${place.slug}`);
+  const t = useTranslations("PlaceDetail");
+  const locale = useLocale();
+  const catLabel = locale === "en" ? cat.label : cat.labelVi;
 
   return (
     <article className="pb-24">
@@ -32,20 +36,20 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
           <Reveal>
             <div className="flex flex-wrap gap-2">
               <Button size="md">
-                <Navigation size={16} /> Chỉ đường
+                <Navigation size={16} /> {t("directions")}
               </Button>
               <AddToTripButton slug={place.slug} variant="secondary" size="md" />
               <Link
                 href={`/explore?place=${place.slug}`}
                 className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-surface px-5 text-body text-text hover:bg-surface-2"
               >
-                <MapPin size={16} /> Xem trên bản đồ
+                <MapPin size={16} /> {t("viewOnMap")}
               </Link>
               <button
                 type="button"
                 className="ml-auto inline-flex h-10 items-center gap-2 rounded-lg px-4 text-body-sm text-text-muted hover:bg-surface-2"
               >
-                <Flag size={14} /> Báo cáo
+                <Flag size={14} /> {t("report")}
               </button>
 
               {viewers > 1 && (
@@ -54,7 +58,7 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
                     <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-500 opacity-60" />
                     <span className="relative inline-flex h-2 w-2 rounded-full bg-brand-500" />
                   </span>
-                  {viewers} người đang xem
+                  {t("viewersWatching", { count: viewers })}
                 </span>
               )}
             </div>
@@ -63,18 +67,18 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
           {/* Overview */}
           <Reveal>
             <section>
-              <h2 className="font-display text-h2 text-text">Giới thiệu</h2>
+              <h2 className="font-display text-h2 text-text">{t("intro")}</h2>
               <p className="mt-4 text-body-lg leading-relaxed text-text-muted">
                 {place.highlight ? `${place.highlight}. ` : ""}
-                {place.name} là một địa điểm {cat.labelVi.toLowerCase()} nổi bật tại{" "}
-                {place.district ? `${place.district}, ` : ""}
-                {place.province}. {cat.description}.
+                {t("introBody", {
+                  place: place.name,
+                  category: catLabel.toLowerCase(),
+                  location: [place.district, place.province].filter(Boolean).join(", "),
+                  description: cat.description,
+                })}
               </p>
               <p className="mt-3 text-body-lg leading-relaxed text-text-muted">
-                Đây là phần mô tả mẫu — sẽ thay bằng nội dung do biên tập viên / cộng đồng
-                đóng góp ở phase tiếp theo. Nội dung có thể bao gồm lịch sử, mẹo ghé thăm,
-                lưu ý mùa vụ, gợi ý món đặc trưng (với food/cafe), thời điểm đẹp nhất để
-                chụp ảnh (với check-in), và những trải nghiệm liên quan.
+                {t("placeholderDesc")}
               </p>
             </section>
           </Reveal>
@@ -115,7 +119,7 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
                 </div>
               </div>
               <div className="space-y-3 p-5">
-                <h3 className="font-display text-h3 text-text">Vị trí</h3>
+                <h3 className="font-display text-h3 text-text">{t("location")}</h3>
                 <p className="text-body-sm text-text-muted">
                   {[place.address, place.district, place.province].filter(Boolean).join(", ")}
                 </p>
@@ -123,7 +127,7 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
                   href={`/explore?place=${place.slug}`}
                   className="inline-flex items-center gap-1 text-body-sm text-brand-600 hover:underline"
                 >
-                  Mở trong bản đồ lớn <ArrowRight size={14} />
+                  {t("openInLargeMap")} <ArrowRight size={14} />
                 </Link>
               </div>
             </div>
@@ -132,10 +136,12 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
           {place.source === "community" && (
             <Reveal>
               <div className="rounded-2xl border border-gold-500/40 bg-gold-50 p-5 text-gold-700">
-                <p className="text-overline">CỘNG ĐỒNG ĐÓNG GÓP</p>
+                <p className="text-overline">{t("communityContrib")}</p>
                 <p className="mt-1 text-body">
-                  Được đề xuất bởi{" "}
-                  <span className="font-medium">{place.submittedBy ?? "ẩn danh"}</span>
+                  {t.rich("submittedBy", {
+                    name: place.submittedBy ?? t("anonymous"),
+                    b: (chunks) => <span className="font-medium">{chunks}</span>,
+                  })}
                 </p>
               </div>
             </Reveal>
@@ -166,63 +172,42 @@ function formatReviewCount(n: number) {
 }
 
 function CategoryTipsCard({ category }: { category: string }) {
-  let tips: string[] = [];
-  let title = "Lưu ý hữu ích";
+  const t = useTranslations("PlaceDetail");
+  let titleKey: "tipsHeading" | "tipsHeritage" | "tipsNightlife" | "tipsNature" | "tipsCafe" | "tipsFood" = "tipsHeading";
+  let tipsKey: "heritageTips" | "nightlifeTips" | "natureTips" | "cafeTips" | "foodTips" | "defaultTips" = "defaultTips";
+
   switch (category) {
     case "heritage":
-      title = "Lưu ý văn hóa";
-      tips = [
-        "Lựa chọn trang phục lịch sự, kín đáo khi tham quan di tích lịch sử.",
-        "Nên đi nhẹ nói khẽ, giữ gìn trật tự và tôn trọng không gian tôn nghiêm.",
-        "Chuẩn bị sẵn tiền mặt nhỏ để mua vé tham quan hoặc đóng góp.",
-      ];
+      titleKey = "tipsHeritage";
+      tipsKey = "heritageTips";
       break;
     case "nightlife":
     case "rooftop":
-      title = "Mẹo trải nghiệm";
-      tips = [
-        "Nên liên hệ đặt bàn trước vào cuối tuần để có vị trí ngồi đẹp nhất.",
-        "Mang theo giấy tờ tùy thân (CCCD/Hộ chiếu) để kiểm tra độ tuổi.",
-        "Quy định trang phục (dress code) thường là lịch thiệp, tránh đi dép lê.",
-      ];
+      titleKey = "tipsNightlife";
+      tipsKey = "nightlifeTips";
       break;
     case "nature":
     case "mountain":
-      title = "Mẹo an toàn & Chuẩn bị";
-      tips = [
-        "Chuẩn bị giày đi bộ dã ngoại chuyên dụng có độ bám tốt.",
-        "Mang theo bình nước cá nhân, kem chống nắng và thuốc xịt côn trùng.",
-        "Luôn chú ý theo dõi dự báo thời tiết trước khi khởi hành.",
-      ];
+      titleKey = "tipsNature";
+      tipsKey = "natureTips";
       break;
     case "cafe":
-      title = "Mẹo ghé quán";
-      tips = [
-        "Khung giờ hoàng hôn hoặc sáng sớm thường có ánh sáng đẹp nhất để chụp ảnh.",
-        "Nên thử món đặc trưng (signature) được gợi ý bởi menu.",
-        "Nhiều quán trong ngõ hẻm sẽ có chỗ gửi xe máy giới hạn, vui lòng hỏi nhân viên.",
-      ];
+      titleKey = "tipsCafe";
+      tipsKey = "cafeTips";
       break;
     case "food":
-      title = "Mẹo thưởng thức";
-      tips = [
-        "Nên ghé sớm trước giờ cao điểm để tránh phải xếp hàng chờ đợi lâu.",
-        "Hầu hết các quán ăn địa phương ưu tiên thanh toán bằng tiền mặt hoặc chuyển khoản nhanh.",
-        "Thử trải nghiệm hương vị nguyên bản trước khi thêm các gia vị ăn kèm.",
-      ];
+      titleKey = "tipsFood";
+      tipsKey = "foodTips";
       break;
-    default:
-      tips = [
-        "Nên chuẩn bị sẵn bản đồ offline hoặc định vị GPS khi di chuyển.",
-        "Bảo vệ môi trường, không xả rác bừa bãi tại điểm đến.",
-        "Tham khảo ý kiến người dân bản địa nếu bạn cần hỗ trợ tìm đường.",
-      ];
   }
+
+  // tipsKey points to a JSON array — read raw to keep array shape
+  const tips = (t.raw(tipsKey) as string[]) ?? [];
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-sm">
       <h3 className="font-display text-h3 text-text flex items-center gap-2">
-        💡 {title}
+        💡 {t(titleKey)}
       </h3>
       <ul className="space-y-3">
         {tips.map((tip, idx) => (
@@ -237,13 +222,15 @@ function CategoryTipsCard({ category }: { category: string }) {
 }
 
 function SidebarNearbyPlaces({ places }: { places: PlaceItem[] }) {
+  const t = useTranslations("PlaceDetail");
+  const locale = useLocale();
   if (places.length === 0) return null;
   const sidebarPlaces = places.slice(0, 3);
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-5 space-y-4 shadow-sm">
       <h3 className="font-display text-h3 text-text flex items-center gap-2">
-        📍 Khám phá gần đây
+        {t("nearbyTitle")}
       </h3>
       <div className="space-y-3">
         {sidebarPlaces.map((p) => {
@@ -267,7 +254,7 @@ function SidebarNearbyPlaces({ places }: { places: PlaceItem[] }) {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1 text-caption font-medium" style={{ color: cat.color }}>
                   <CatIcon size={10} />
-                  <span>{cat.labelVi}</span>
+                  <span>{locale === "en" ? cat.label : cat.labelVi}</span>
                 </div>
                 <h4 className="font-display text-body-sm font-bold text-text truncate mt-0.5 group-hover:text-brand-600 transition-colors">
                   {p.name}
@@ -292,7 +279,7 @@ function SidebarNearbyPlaces({ places }: { places: PlaceItem[] }) {
           href="/explore"
           className="inline-flex items-center gap-1 text-body-sm font-semibold text-brand-600 hover:underline"
         >
-          Xem tất cả trên bản đồ <ArrowRight size={12} />
+          {t("viewAllOnMap")} <ArrowRight size={12} />
         </Link>
       </div>
     </div>
