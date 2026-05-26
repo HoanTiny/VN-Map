@@ -9,6 +9,7 @@
  * pages can swap without changing call sites.
  */
 
+import { getLocale } from "next-intl/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient as createServerClient } from "@/lib/supabase/server";
 import {
@@ -21,6 +22,24 @@ import {
 } from "@/features/map/lib/places-data";
 import type { CategoryKey } from "@/config/categories";
 
+/**
+ * Resolve VI/EN columns based on caller-supplied locale. EN columns are
+ * optional in the database (added in migration 0006); when null, we fall
+ * back to the Vietnamese source. We pass `locale` explicitly through the
+ * read path rather than calling `getLocale()` deep inside to keep these
+ * functions usable from non-RSC contexts (e.g. server actions, seed scripts).
+ */
+type Locale = "vi" | "en";
+
+async function currentLocale(): Promise<Locale> {
+  try {
+    const l = await getLocale();
+    return l === "en" ? "en" : "vi";
+  } catch {
+    return "vi";
+  }
+}
+
 /* --------------------------------------------------------------------------- */
 /*                              Row → PlaceItem map                            */
 /* --------------------------------------------------------------------------- */
@@ -29,6 +48,7 @@ interface PlaceRow {
   id: string;
   slug: string;
   name: string;
+  name_en: string | null;
   province: string;
   province_slug: string;
   district: string | null;
@@ -38,6 +58,8 @@ interface PlaceRow {
   rating: number;
   review_count: number;
   highlight: string | null;
+  highlight_en: string | null;
+  description_en: string | null;
   price_range: "$" | "$$" | "$$$" | "$$$$" | null;
   opening_hours: string | null;
   tags: string[] | null;
@@ -47,11 +69,18 @@ interface PlaceRow {
   lat: number;
 }
 
-function rowToPlace(row: PlaceRow): PlaceItem {
+/**
+ * Map a DB row to PlaceItem with locale-aware name/highlight. Falls back to VI
+ * when the EN column is null. `descriptionEn` is preserved on the item so
+ * detail page components can decide what to render.
+ */
+function rowToPlace(row: PlaceRow, locale: Locale = "vi"): PlaceItem {
+  const useEn = locale === "en";
   return {
     id: row.id,
     slug: row.slug,
-    name: row.name,
+    name: useEn ? row.name_en ?? row.name : row.name,
+    nameEn: row.name_en ?? undefined,
     province: row.province,
     district: row.district ?? undefined,
     address: row.address ?? undefined,
@@ -59,7 +88,11 @@ function rowToPlace(row: PlaceRow): PlaceItem {
     cover: row.cover,
     rating: Number(row.rating),
     reviewCount: row.review_count,
-    highlight: row.highlight ?? undefined,
+    highlight: useEn
+      ? row.highlight_en ?? row.highlight ?? undefined
+      : row.highlight ?? undefined,
+    highlightEn: row.highlight_en ?? undefined,
+    descriptionEn: row.description_en ?? undefined,
     priceRange: row.price_range ?? undefined,
     openingHours: row.opening_hours ?? undefined,
     tags: row.tags ?? undefined,
@@ -78,7 +111,7 @@ function rowToPlace(row: PlaceRow): PlaceItem {
 /** All places — used by listings + map source. */
 export async function listAllPlaces(): Promise<PlaceItem[]> {
   if (!isSupabaseConfigured()) return mockAllPlaces;
-  const supabase = await createServerClient();
+  const [supabase, locale] = await Promise.all([createServerClient(), currentLocale()]);
   const { data, error } = await supabase
     .from("places")
     .select("*")
@@ -87,13 +120,13 @@ export async function listAllPlaces(): Promise<PlaceItem[]> {
     console.error("listAllPlaces failed:", error.message);
     return mockAllPlaces;
   }
-  return (data as PlaceRow[]).map(rowToPlace);
+  return (data as PlaceRow[]).map((row) => rowToPlace(row, locale));
 }
 
 /** Single place by slug. */
 export async function getPlaceBySlug(slug: string): Promise<PlaceItem | undefined> {
   if (!isSupabaseConfigured()) return mockGetPlaceBySlug(slug);
-  const supabase = await createServerClient();
+  const [supabase, locale] = await Promise.all([createServerClient(), currentLocale()]);
   const { data, error } = await supabase
     .from("places")
     .select("*")
@@ -103,7 +136,7 @@ export async function getPlaceBySlug(slug: string): Promise<PlaceItem | undefine
     console.error("getPlaceBySlug failed:", error.message);
     return mockGetPlaceBySlug(slug);
   }
-  return data ? rowToPlace(data as PlaceRow) : undefined;
+  return data ? rowToPlace(data as PlaceRow, locale) : undefined;
 }
 
 /** Places filtered by category. */
@@ -113,7 +146,7 @@ export async function listPlacesByCategory(
   if (!isSupabaseConfigured()) {
     return mockAllPlaces.filter((p) => p.category === category);
   }
-  const supabase = await createServerClient();
+  const [supabase, locale] = await Promise.all([createServerClient(), currentLocale()]);
   const { data, error } = await supabase
     .from("places")
     .select("*")
@@ -123,7 +156,7 @@ export async function listPlacesByCategory(
     console.error("listPlacesByCategory failed:", error.message);
     return mockAllPlaces.filter((p) => p.category === category);
   }
-  return (data as PlaceRow[]).map(rowToPlace);
+  return (data as PlaceRow[]).map((row) => rowToPlace(row, locale));
 }
 
 /** Places filtered by province display name. */
@@ -131,7 +164,7 @@ export async function listPlacesByProvince(provinceName: string): Promise<PlaceI
   if (!isSupabaseConfigured()) {
     return mockAllPlaces.filter((p) => p.province === provinceName);
   }
-  const supabase = await createServerClient();
+  const [supabase, locale] = await Promise.all([createServerClient(), currentLocale()]);
   const { data, error } = await supabase
     .from("places")
     .select("*")
@@ -141,7 +174,7 @@ export async function listPlacesByProvince(provinceName: string): Promise<PlaceI
     console.error("listPlacesByProvince failed:", error.message);
     return mockAllPlaces.filter((p) => p.province === provinceName);
   }
-  return (data as PlaceRow[]).map(rowToPlace);
+  return (data as PlaceRow[]).map((row) => rowToPlace(row, locale));
 }
 
 /** Nearby places (haversine) — keep mock impl, DB version can use ST_Distance later. */

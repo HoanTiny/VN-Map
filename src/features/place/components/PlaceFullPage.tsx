@@ -77,8 +77,13 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
                   description: cat.description,
                 })}
               </p>
-              <p className="mt-3 text-body-lg leading-relaxed text-text-muted">
-                {t("placeholderDesc")}
+              {/* Editorial / contributor-supplied long description. Phase C added
+                 `descriptionEn`; we pick it for EN viewers, else fall back to the
+                 placeholder copy from messages. */}
+              <p className="mt-3 text-body-lg leading-relaxed text-text-muted whitespace-pre-line">
+                {locale === "en" && place.descriptionEn
+                  ? place.descriptionEn
+                  : t("placeholderDesc")}
               </p>
             </section>
           </Reveal>

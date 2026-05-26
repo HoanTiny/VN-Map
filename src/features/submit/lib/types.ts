@@ -5,12 +5,16 @@ export type SubmissionStatus = "pending" | "approved" | "rejected";
 export interface PlaceSubmission {
   id: string;
   name: string;
+  /** Optional English name supplied by bilingual contributors. */
+  nameEn?: string;
   category: CategoryKey;
   province: string;       // display name
   provinceSlug: string;
   district?: string;
   address?: string;
   description: string;
+  /** Optional English description. */
+  descriptionEn?: string;
   lng: number;
   lat: number;
   priceRange?: "$" | "$$" | "$$$" | "$$$$";

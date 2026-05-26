@@ -60,11 +60,13 @@ export function SuggestPlaceForm({
   const { show: showToast } = useToast();
 
   const [name, setName] = useState("");
+  const [nameEn, setNameEn] = useState("");
   const [category, setCategory] = useState<CategoryKey | "">(initialCategory ?? "");
   const [provinceSlug, setProvinceSlug] = useState(initialProvinceSlug ?? "");
   const [district, setDistrict] = useState("");
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
+  const [descriptionEn, setDescriptionEn] = useState("");
   const [lng, setLng] = useState<string>("");
   const [lat, setLat] = useState<string>("");
   const [priceRange, setPriceRange] = useState<"" | "$" | "$$" | "$$$" | "$$$$">("");
@@ -121,11 +123,13 @@ export function SuggestPlaceForm({
     if (open) return;
     setTimeout(() => {
       setName("");
+      setNameEn("");
       setCategory(initialCategory ?? "");
       setProvinceSlug(initialProvinceSlug ?? "");
       setDistrict("");
       setAddress("");
       setDescription("");
+      setDescriptionEn("");
       setLng("");
       setLat("");
       setPriceRange("");
@@ -198,12 +202,14 @@ export function SuggestPlaceForm({
         : photos;
       await add({
         name: name.trim(),
+        nameEn: nameEn.trim() || undefined,
         category: category as CategoryKey,
         province: prov.name,
         provinceSlug,
         district: district.trim() || undefined,
         address: address.trim() || undefined,
         description: description.trim(),
+        descriptionEn: descriptionEn.trim() || undefined,
         lng: lngNum,
         lat: latNum,
         priceRange: priceRange || undefined,
@@ -444,6 +450,36 @@ export function SuggestPlaceForm({
                       className={inputCls}
                     />
                   </Field>
+
+                  {/* English version — optional bilingual content (Phase C) */}
+                  <div className="mb-5 rounded-xl border border-dashed border-border bg-surface-2/30 p-4">
+                    <p className="mb-1 text-body-sm font-semibold text-text">
+                      🌐 {t("i18nSectionTitle")}
+                    </p>
+                    <p className="mb-3 text-caption text-text-muted">
+                      {t("i18nSectionHint")}
+                    </p>
+                    <Field label={t("fieldNameEn")} hint={t("optional")}>
+                      <input
+                        type="text"
+                        value={nameEn}
+                        onChange={(e) => setNameEn(e.target.value)}
+                        maxLength={80}
+                        placeholder={t("nameEnPlaceholder")}
+                        className={inputCls}
+                      />
+                    </Field>
+                    <Field label={t("fieldDescEn")} hint={t("optional")}>
+                      <textarea
+                        value={descriptionEn}
+                        onChange={(e) => setDescriptionEn(e.target.value)}
+                        maxLength={1000}
+                        rows={3}
+                        placeholder={t("descEnPlaceholder")}
+                        className={cn(inputCls, "resize-y")}
+                      />
+                    </Field>
+                  </div>
 
                   <Field label={t("fieldPhotos")} hint={t("photosHint", { max: MAX_PHOTOS })}>
                     <div className="grid grid-cols-3 gap-3">

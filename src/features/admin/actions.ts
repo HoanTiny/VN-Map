@@ -30,8 +30,10 @@ export async function approveSubmission(id: string) {
   if (fetchErr || !sub) throw new Error("Không tìm thấy đề xuất");
 
   type Sub = {
-    name: string; province: string; province_slug: string; district?: string;
+    name: string; name_en?: string | null;
+    province: string; province_slug: string; district?: string;
     address?: string; category: string; photos?: string[]; description?: string;
+    description_en?: string | null;
     price_range?: string; opening_hours?: string; tags?: string[];
     submitted_by?: string; lng: number; lat: number;
   };
@@ -41,6 +43,7 @@ export async function approveSubmission(id: string) {
   const { error: insertErr } = await supabase.from("places").insert({
     slug,
     name: s.name,
+    name_en: s.name_en ?? null,
     province: s.province,
     province_slug: s.province_slug,
     district: s.district,
@@ -48,6 +51,7 @@ export async function approveSubmission(id: string) {
     category: s.category,
     cover: s.photos?.[0] ?? "/covers/placeholder.jpg",
     highlight: s.description,
+    description_en: s.description_en ?? null,
     price_range: s.price_range,
     opening_hours: s.opening_hours,
     tags: s.tags,

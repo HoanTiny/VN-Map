@@ -7,6 +7,8 @@ export interface PlaceFeatureProps {
   id: string;
   slug: string;
   name: string;
+  /** Optional English name — falls back to `name` when absent. Resolved by query layer. */
+  nameEn?: string;
   province: string;
   district?: string;
   address?: string;
@@ -15,6 +17,10 @@ export interface PlaceFeatureProps {
   rating: number;
   reviewCount: number;
   highlight?: string;
+  /** Optional English highlight — falls back to `highlight`. */
+  highlightEn?: string;
+  /** Optional English long description. */
+  descriptionEn?: string;
   priceRange?: PriceRange;
   openingHours?: string;
   tags?: string[];
