@@ -131,7 +131,6 @@ export function DynamicHeroBackground({
     const matchAgainst = (city: string, regionName: string): string | null => {
       const c = normalizeForMatch(city).replace(/-/g, " ");
       const r = normalizeForMatch(regionName).replace(/-/g, " ");
-      console.log("[hero-bg] matching normalized inputs:", { c, r });
       for (const preset of index.byRegion.values()) {
         if (preset.is_default) continue;
         const hit = preset.match_keywords.some((rawKw) => {
@@ -144,119 +143,77 @@ export function DynamicHeroBackground({
     };
 
     const applyGeo = (city: string, regionName: string) => {
-      console.log("[hero-bg] applying geo:", { city, region: regionName });
       const matched = matchAgainst(city, regionName);
-      if (matched) {
-        console.log("[hero-bg] matched preset region:", matched);
-        setRegion(matched);
-      } else {
-        console.warn("[hero-bg] no preset matched. Defaulting to:", index.defaultRegion);
-      }
+      if (matched) setRegion(matched);
     };
 
     const detectRegion = async () => {
-      // 1. Try HTML5 Geolocation first if available
+      // 1. Try HTML5 Geolocation first
       if (typeof window !== "undefined" && navigator.geolocation) {
-        console.log("[hero-bg] attempting HTML5 Geolocation...");
-        const getGPSLocation = (): Promise<GeolocationPosition> => {
-          return new Promise((resolve, reject) => {
+        const getGPSLocation = (): Promise<GeolocationPosition> =>
+          new Promise((resolve, reject) =>
             navigator.geolocation.getCurrentPosition(resolve, reject, {
               enableHighAccuracy: false,
-              timeout: 3000,             // 3 seconds timeout
-              maximumAge: 10 * 60 * 1000 // 10 minutes cache
-            });
-          });
-        };
-
+              timeout: 3000,
+              maximumAge: 10 * 60 * 1000,
+            })
+          );
         try {
           const position = await getGPSLocation();
           const { latitude, longitude } = position.coords;
-          console.log("[hero-bg] GPS coordinates resolved:", { latitude, longitude });
           const province = closestProvince([longitude, latitude]);
-          console.log("[hero-bg] closest province resolved:", province.name, province.slug);
           applyGeo(province.slug, province.name);
-          return; // Geolocation succeeded, exit.
-        } catch (err) {
-          console.warn("[hero-bg] GPS failed or timed out, checking fallback:", err);
+          return;
+        } catch {
+          // GPS unavailable or denied — fall through to IP geo
         }
       }
 
-      // 2. Chain of free IP geolocation providers fallback (Second priority)
+      // 2. Chain of free IP geolocation providers
       const providers: Array<{
-        name: string;
         url: string;
         parse: (j: Record<string, unknown>) => { city: string; region: string };
       }> = [
-          {
-            name: "ipwho.is",
-            url: "https://ipwho.is/",
-            parse: (j) => ({ city: String(j.city ?? ""), region: String(j.region ?? "") }),
-          },
-          {
-            name: "freeipapi",
-            url: "https://freeipapi.com/api/json",
-            parse: (j) => ({
-              city: String(j.cityName ?? ""),
-              region: String(j.regionName ?? ""),
-            }),
-          },
-          {
-            name: "geojs",
-            url: "https://get.geojs.io/v1/ip/geo.json",
-            parse: (j) => ({
-              city: String(j.city ?? ""),
-              region: String(j.region ?? ""),
-            }),
-          },
-        ];
+        {
+          url: "https://ipwho.is/",
+          parse: (j) => ({ city: String(j.city ?? ""), region: String(j.region ?? "") }),
+        },
+        {
+          url: "https://freeipapi.com/api/json",
+          parse: (j) => ({ city: String(j.cityName ?? ""), region: String(j.regionName ?? "") }),
+        },
+        {
+          url: "https://get.geojs.io/v1/ip/geo.json",
+          parse: (j) => ({ city: String(j.city ?? ""), region: String(j.region ?? "") }),
+        },
+      ];
 
       for (const provider of providers) {
         try {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 1500);
-          console.log(`[hero-bg] fetching client IP geo from ${provider.name}...`);
           const res = await fetch(provider.url, { signal: controller.signal });
-
-          console.log('provider res', { res })
           clearTimeout(timeoutId);
-
-          if (!res.ok) {
-            console.warn(`[hero-bg] ${provider.name} failed with status: ${res.status}`);
-            continue;
-          }
+          if (!res.ok) continue;
           const data = (await res.json()) as Record<string, unknown>;
-
-          console.log('provider data', { data })
           const { city: rawCity, region: rawRegion } = provider.parse(data);
           const city = normalizeForMatch(rawCity);
           const regionName = normalizeForMatch(rawRegion);
-
-          if (!city && !regionName) {
-            console.warn(`[hero-bg] ${provider.name} returned empty city/region`);
-            continue;
-          }
-
+          if (!city && !regionName) continue;
           const matched = matchAgainst(city, regionName);
           if (matched) {
-            console.log(`[hero-bg] successfully resolved and matched via ${provider.name}:`, matched);
             setRegion(matched);
-            return; // Matched, exit detectRegion.
-          } else {
-            console.warn(`[hero-bg] ${provider.name} resolved to ${city}/${regionName} but did not match any preset.`);
+            return;
           }
-        } catch (err) {
-          console.error(`[hero-bg] ${provider.name} error:`, err);
+        } catch {
+          // try next provider
         }
       }
 
-      // 3. If GPS and client IP providers failed or didn't match, fall back to server-resolved initialRegion (Third priority)
+      // 3. Fall back to server-resolved initialRegion
       if (initialRegion && index.byRegion.has(initialRegion)) {
-        console.log("[hero-bg] GPS and IP APIs failed/did not match. Falling back to server-resolved initialRegion:", initialRegion);
         setRegion(initialRegion);
-        return;
       }
-
-      console.warn("[hero-bg] all geo options failed, using default preset:", index.defaultRegion);
     };
 
     detectRegion();
@@ -331,13 +288,15 @@ export function DynamicHeroBackground({
               <button
                 key={idx}
                 onClick={() => setImageIndex(idx)}
-                className={`transition-all duration-500 ease-out ${idx === imageIndex
-                  ? "w-4 h-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(218,37,29,0.7)] scale-110"
-                  : "w-1.5 h-1.5 rounded-full bg-white/45 hover:bg-white/75 hover:scale-125"
-                  }`}
+                className="p-2.5 -m-2.5"
                 title={`Ảnh ${idx + 1}`}
                 aria-label={`Chuyển đến ảnh ${idx + 1}`}
-              />
+              >
+                <span className={`block transition-all duration-500 ease-out ${idx === imageIndex
+                  ? "w-4 h-1.5 rounded-full bg-brand-500 shadow-[0_0_8px_rgba(218,37,29,0.7)] scale-110"
+                  : "w-1.5 h-1.5 rounded-full bg-white/45 hover:bg-white/75 hover:scale-125"
+                }`} />
+              </button>
             ))}
           </div>
         </div>

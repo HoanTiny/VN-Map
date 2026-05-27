@@ -418,7 +418,7 @@ Sau khi i18n core đã ship (Phase A + B + C), 3 hướng nâng cấp theo thứ
 | → Gemini batch script translate VI → EN | Trung (1 script) | | ✅ [scripts/translate-places.ts](scripts/translate-places.ts) (`pnpm translate:places`) |
 | Body copy EN cho About/Help/Privacy/Terms (hiện chỉ metadata) | Trung | Trung | ⏳ |
 | CategoriesBento per-category EN metadata (12 taglines + highlights + counts) | Nhỏ | Thấp | ⏳ |
-| Mock data 40 → 80 places (HN/HCM/ĐN) — giảm gaps `/category/checkin`, `/category/experience` | Lớn | Trung | ⏳ |
+| Mock data 40 → 80 places (HN/HCM/ĐN) — giảm gaps `/category/checkin`, `/category/experience` | Lớn | Trung | ✅ (2026-05-27) |
 | Admin per-place bilingual editor (hiện chỉ có approve/reject) | Trung | Trung | ✅ [PlacesEditor.tsx](src/features/admin/components/PlacesEditor.tsx) |
 
 **Backfill EN content — cách chạy:**
@@ -438,7 +438,7 @@ Sau khi i18n core đã ship (Phase A + B + C), 3 hướng nâng cấp theo thứ
 | → Có thể có bundle bloat từ `useTranslations` (~24KB next-intl client) | | | |
 | → Check ảnh hưởng LCP ở landing (rất nhiều Reveal + framer-motion) | | | |
 | **Accessibility audit** — keyboard nav, screen reader labels, focus traps trong dialogs | Trung | Trung | ⏳ |
-| **Map marker labels theo locale** — hiện tại VI cứng trên symbol layer | Nhỏ | Trung — bilingual UX nhất quán | ⏳ |
+| **Map marker labels theo locale** — hiện tại VI cứng trên symbol layer | Nhỏ | Trung — bilingual UX nhất quán | ✅ (2026-05-27) |
 | **PWA screenshots refresh** — chụp lại sau khi UI ổn định (cần manual) | Nhỏ | Thấp | ⏳ |
 | **Realtime EN broadcast** — `useRealtimePlaces` payload thiếu `name_en` | Nhỏ | Thấp | ✅ (2026-05-27) |
 
@@ -457,12 +457,31 @@ Sau khi i18n core đã ship (Phase A + B + C), 3 hướng nâng cấp theo thứ
    - **Build pass 22s, 356 trang.** Shared baseline **103 kB** (tốt). `/explore` chỉ **116 kB** (map lazy-load đúng). Landing `/[locale]` **246 kB**, `/place/[slug]` **263 kB** (nặng nhất — lightbox + reviews eager). Middleware **102 kB** (intl + supabase, chạy mọi request).
    - **Đã fix:** server-geo không còn log `DYNAMIC_SERVER_USAGE` như lỗi lúc prerender landing (landing giữ static, client geolocation lo phần geo); dọn ~10 import/biến thừa (typecheck + lint sạch các warning đó).
    - **Bỏ qua (theo yêu cầu):** convert 5 chỗ `<img>` → `next/Image` (TopBar/FloatingNavbar/Footer/AccountPanel/sign-in) — vẫn là LCP win nếu sau này muốn làm.
-   - **Còn lại:** Lighthouse runtime (LCP/CLS/TBT) trên `next start` — cần lighthouse CLI; `readCache`/`writeCache` ở server-geo đang tạm tắt để debug.
+   - **Còn lại:** Lighthouse runtime (LCP/CLS/TBT) trên `next start` — cần lighthouse CLI.
+   - **Fix (2026-05-27):** `readCache`/`writeCache` ở server-geo đã re-enable, debug logs dọn sạch.
    - **Đã verify (2026-05-27):** exhaustive-deps `user` ở 4 hook (useReviews/Saved/Submissions/Trips) **KHÔNG phải bug** — deps dùng `user?.id` nên re-run đúng khi đăng nhập/xuất; chỉ là false positive của lint rule.
 3. ✅ **Editorial EN body copy** — DONE (2026-05-27): About + Help + Privacy + Terms, toàn bộ body chuyển từ hardcode VI sang messages, render `t.rich` (b/link/code/email chunks). Ngày "Cập nhật" ở Privacy/Terms giờ locale-aware (`en-US`/`vi-VN`). typecheck pass.
    - ⚠️ **Privacy + Terms là legal copy** — bản EN do mình dịch máy, **org nên review/sở hữu wording chính thức** (đặc biệt phần trách nhiệm/liability + GDPR).
    - Namespaces mở rộng: `About` (intro/philosophy×4/roadmap×3), `Help` (badge/title/subtitle/q1–q6/a1–a6), `Privacy` (badge/title/updated/s1–s4/contact), `Terms` (badge/title/updated/intro/s1/s2+ban1–4/note/s3/contact).
-4. **Mở rộng data 40 → 80 places** — giảm gaps `/category/checkin`, `/category/experience`. Effort lớn (cần content).
+4. ✅ **Mở rộng data 70 → 80 places** (2026-05-27) — thêm 10 places: checkin (Hồ Hoàn Kiếm, Bưu điện SG, Nguyễn Huệ, Cầu Vàng Ba Nà), experience (Bát Tràng, Food Tour HN, Cooking SG, Trà Quế), nightlife (Bùi Viện), hidden (The Bookworm). Seed production xong.
+5. ✅ **server-geo cache re-enable** (2026-05-27) — bỏ comment `readCache`/`writeCache`, dọn debug logs.
+6. ✅ **Lighthouse + a11y pass** (2026-05-27):
+   - Performance 63 / Accessibility 93–96 baseline trên localhost.
+   - Preload hint hero image (`ReactDOM.preload` wsrv.nl URL) → browser fetch sớm hơn.
+   - `text-text-subtle` contrast: `#9a9890` → `#706e6b` (light) / `#6e6c67` → `#807e7a` (dark) → WCAG AA ≥4.5:1.
+   - Hero dot buttons: `p-2.5 -m-2.5` padding → touch target ≥24px.
+   - DynamicHeroBackground: dọn 10 debug console.log.
+
+7. ✅ **Map marker labels theo locale** (2026-05-27):
+   - `PROVINCE_EN_NAMES` export trong [src/config/regions.ts](src/config/regions.ts) — 36 entries (34 tỉnh + 2 quần đảo VI→EN).
+   - Helper `provinceNameExpr(locale)` trong [MapCanvas.tsx](src/features/map/components/MapCanvas.tsx) — trả về `["get", "name"]` (VI) hoặc MapLibre `match` expression (EN).
+   - `installProvinceLayers` nhận `locale` param, dùng expression đúng từ lần render đầu.
+   - `useEffect([locale])` — gọi `setLayoutProperty` trên `LAYER_PROVINCE_LABELS` + `LAYER_ISLAND_LABELS` khi user toggle VI/EN.
+   - typecheck pass.
+
+**Kế tiếp (2026-05-28):**
+- **Lighthouse runtime** — chạy `lighthouse http://localhost:3000 --view` sau khi cài `npm i -g lighthouse`, lấy số LCP/CLS/TBT thực tế
+- **Accessibility audit sâu** — keyboard nav, focus traps trong dialogs (score hiện 93–96)
 
 ---
 
@@ -471,8 +490,8 @@ Sau khi i18n core đã ship (Phase A + B + C), 3 hướng nâng cấp theo thứ
 ### ~~Dark mode contrast~~ — FIXED (verified 2026-05-26)
 `--brand-700` dark đã là `#ff9e99` (light salmon) trên `--brand-50` dark `#2a0e0c` → contrast ratio **9.11:1** (WCAG AAA). File [tokens.css:70](src/styles/tokens.css#L70) comment cũng confirm. Note này từ session cũ, đã được fix trong commit `cd67ae3`.
 
-### Mock data còn 40 places
-Plan target 80. Đủ demo nhưng `/category/checkin`, `/category/experience` chỉ có vài entry. Mở rộng khi có thời gian — thêm ~40 places (Hà Nội + HCM + Đà Nẵng).
+### ~~Mock data còn 40 places~~ — FIXED (2026-05-27)
+Data đã **80 places** (IDs 1–80). Thêm 10 places mới: Hồ Hoàn Kiếm, Bát Tràng, Food Tour HN, The Bookworm, Bưu điện SG, Nguyễn Huệ, Bùi Viện, Cooking class SG, Cầu Vàng Ba Nà, Làng rau Trà Quế. Đã seed production.
 
 ### Mapbox token cũ trong code
 [src/lib/env.ts](src/lib/env.ts) còn schema check `NEXT_PUBLIC_MAPBOX_TOKEN` optional — không xài vì swap sang MapLibre. Có thể clean up sau.

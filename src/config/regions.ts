@@ -224,6 +224,17 @@ export const provinces: Province[] = [
     center: [108.4583, 11.9404], cover: UNSPLASH_HERITAGE,
     tagline: "Đà Lạt, Mũi Né, thác Dray Sap — sương mù & cát bay.",
   },
+  // Quần đảo — huyện đảo thuộc đơn vị hành chính Miền Trung
+  {
+    slug: "hoang-sa", name: "Hoàng Sa (Việt Nam)", region: "trung",
+    center: [112.0, 16.5], cover: UNSPLASH_BEACH,
+    tagline: "Quần đảo Hoàng Sa — lãnh thổ thiêng liêng trên Biển Đông.",
+  },
+  {
+    slug: "truong-sa", name: "Trường Sa (Việt Nam)", region: "trung",
+    center: [114.42, 9.25], cover: UNSPLASH_BEACH,
+    tagline: "Quần đảo Trường Sa — lãnh thổ thiêng liêng của Việt Nam giữa Biển Đông.",
+  },
 
   // ═════════════════════ Miền Nam (8 đơn vị) ═════════════════════
 
@@ -282,6 +293,46 @@ export const provinces: Province[] = [
 
 export const provinceBySlug = Object.fromEntries(provinces.map((p) => [p.slug, p]));
 export const provinceByName = Object.fromEntries(provinces.map((p) => [p.name, p]));
+
+/** English names for map labels — keyed by province slug. */
+export const PROVINCE_EN_NAMES: Record<string, string> = {
+  "ha-noi":      "Hanoi",
+  "hai-phong":   "Hai Phong",
+  "lai-chau":    "Lai Chau",
+  "dien-bien":   "Dien Bien",
+  "son-la":      "Son La",
+  "lao-cai":     "Lao Cai",
+  "tuyen-quang": "Tuyen Quang",
+  "cao-bang":    "Cao Bang",
+  "lang-son":    "Lang Son",
+  "thai-nguyen": "Thai Nguyen",
+  "phu-tho":     "Phu Tho",
+  "bac-ninh":    "Bac Ninh",
+  "hung-yen":    "Hung Yen",
+  "quang-ninh":  "Quang Ninh",
+  "ninh-binh":   "Ninh Binh",
+  "hue":         "Hue",
+  "da-nang":     "Da Nang",
+  "thanh-hoa":   "Thanh Hoa",
+  "nghe-an":     "Nghe An",
+  "ha-tinh":     "Ha Tinh",
+  "quang-tri":   "Quang Tri",
+  "quang-ngai":  "Quang Ngai",
+  "gia-lai":     "Gia Lai",
+  "dak-lak":     "Dak Lak",
+  "khanh-hoa":   "Khanh Hoa",
+  "lam-dong":    "Lam Dong",
+  "tp-hcm":      "Ho Chi Minh City",
+  "can-tho":     "Can Tho",
+  "tay-ninh":    "Tay Ninh",
+  "dong-nai":    "Dong Nai",
+  "vinh-long":   "Vinh Long",
+  "dong-thap":   "Dong Thap",
+  "an-giang":    "An Giang",
+  "ca-mau":      "Ca Mau",
+  "hoang-sa":    "Paracel Islands (Vietnam)",
+  "truong-sa":   "Spratly Islands (Vietnam)",
+};
 
 export const provincesByRegion = Object.fromEntries(
   regions.map((r) => [r.key, provinces.filter((p) => p.region === r.key)])
@@ -367,6 +418,10 @@ export const legacyProvinceMap: Record<string, string> = {
   "Sóc Trăng": "can-tho",
   "Hậu Giang": "can-tho",
   "Bạc Liêu": "ca-mau",
+  "Hoàng Sa": "hoang-sa",
+  "Hoàng Sa (Việt Nam)": "hoang-sa",
+  "Trường Sa": "truong-sa",
+  "Trường Sa (Việt Nam)": "truong-sa",
 };
 
 /**

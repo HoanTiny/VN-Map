@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { preload } from "react-dom";
 import Link from "next/link";
 import { ArrowRight, Compass, Map, Sparkles, Star, Users } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -18,7 +19,7 @@ import { getFeaturedPlaces } from "@/features/place/data";
 import { getSiteStats, type SiteStats } from "@/features/place/lib/queries";
 import { getRecentActivity } from "@/features/activity/lib/queries";
 import { ActivityFeed } from "@/features/activity/components/ActivityFeed";
-import { getHeroPresets, resolveRegionKey } from "@/features/admin/lib/hero-presets-queries";
+import { getHeroPresets, resolveRegionKey, getInitialHeroImageUrl } from "@/features/admin/lib/hero-presets-queries";
 import { detectServerGeo } from "@/lib/server-geo";
 import { listCuratedTrips } from "@/features/trip-template/lib/queries";
 import { CuratedTripCard } from "@/features/trip-template/components/CuratedTripCard";
@@ -59,7 +60,8 @@ export default async function LandingPage() {
     getTranslations("Common"),
   ]);
   const initialHeroRegion = resolveRegionKey(heroPresets, geo.city, geo.region);
-  console.log("[LandingPage server log] resolved client geo:", geo, "-> initialHeroRegion:", initialHeroRegion);
+  const heroImgUrl = getInitialHeroImageUrl(heroPresets, initialHeroRegion);
+  if (heroImgUrl) preload(heroImgUrl, { as: "image", fetchPriority: "high" });
   return (
     <>
       <HeroSection stats={stats} heroPresets={heroPresets} initialRegion={initialHeroRegion} t={t} />

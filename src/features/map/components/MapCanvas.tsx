@@ -20,7 +20,7 @@ import { useMapData } from "../context/MapDataContext";
 import { resolveStyleUrl, categoryColorExpression } from "../lib/style-helpers";
 import { useRealtimePlaces, type NewPlacePayload } from "@/features/realtime/hooks/useRealtimePlaces";
 import type { CategoryKey } from "@/config/categories";
-import { provinces } from "@/config/regions";
+import { provinces, PROVINCE_EN_NAMES } from "@/config/regions";
 
 const SRC = "places";
 const SRC_PROVINCES = "provinces";        // point centers — labels
@@ -33,7 +33,9 @@ const LAYER_LABELS = "places-labels";
 const LAYER_PROVINCE_LABELS = "province-labels";
 const LAYER_PROVINCE_FILL = "province-fill";
 const LAYER_PROVINCE_LINE = "province-line";
+const LAYER_ISLAND_LABELS = "island-labels";
 const LAYER_BUILDINGS_3D = "buildings-3d";
+const ISLAND_SLUGS = ["hoang-sa", "truong-sa"] as const;
 const VN34_URL = "/json/VN34.geojson";
 // OpenMapTiles schema source layer name for buildings (used by OpenFreeMap).
 const OMT_SOURCE = "openmaptiles";
@@ -104,7 +106,7 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
       // belt-and-suspenders trigger).
       const installAndRestore = () => {
         installPlacesLayers(map, placesData);
-        installProvinceLayers(map);
+        installProvinceLayers(map, locale);
         const { filter, selectedPlaceId, enable3D, styleKey } = useMapStore.getState();
         const isDark = styleKey === "dark" || (styleKey == null && resolved === "dark");
         if (enable3D) install3DBuildings(map, isDark);
@@ -469,6 +471,16 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
     return unsub;
   }, [reduceMotion]);
 
+  // Update province label language when locale changes (e.g. VI ↔ EN toggle).
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const expr = provinceNameExpr(locale);
+    for (const layerId of [LAYER_PROVINCE_LABELS, LAYER_ISLAND_LABELS]) {
+      if (map.getLayer(layerId)) map.setLayoutProperty(layerId, "text-field", expr);
+    }
+  }, [locale]);
+
   return <div ref={containerRef} className="h-full w-full" aria-label="Bản đồ Việt Nam" />;
 }
 
@@ -596,8 +608,19 @@ function installPlacesLayers(map: MapLibreMap, placesData: PlacesFC) {
   });
 }
 
-function installProvinceLayers(map: MapLibreMap) {
+function provinceNameExpr(locale: string): ExpressionSpecification {
+  if (locale !== "en") return ["get", "name"];
+  const pairs: (string | ExpressionSpecification)[] = [];
+  for (const [slug, nameEn] of Object.entries(PROVINCE_EN_NAMES)) {
+    pairs.push(slug, nameEn);
+  }
+  return ["match", ["get", "slug"], ...pairs, ["get", "name"]] as unknown as ExpressionSpecification;
+}
+
+function installProvinceLayers(map: MapLibreMap, locale: string) {
   if (map.getSource(SRC_PROVINCES)) return;
+
+  const beforeHalo = map.getLayer(LAYER_POINT_HALO) ? LAYER_POINT_HALO : undefined;
 
   // Point source for labels (uses center coords from regions.ts — always available)
   map.addSource(SRC_PROVINCES, {
@@ -613,6 +636,7 @@ function installProvinceLayers(map: MapLibreMap) {
           slug: p.slug,
           name: p.name,
           isCity: !!p.isCity,
+          isIsland: (ISLAND_SLUGS as readonly string[]).includes(p.slug),
         },
       })),
     },
@@ -625,12 +649,14 @@ function installProvinceLayers(map: MapLibreMap) {
     data: VN34_URL,
   });
 
-  // Subtle fill — invisible by default, brand color when active
+  // Subtle fill — invisible by default, brand color when active.
+  // Islands always carry a permanent patriotic tint.
   map.addLayer(
     {
       id: LAYER_PROVINCE_FILL,
       type: "fill",
       source: SRC_PROVINCES_POLY,
+      filter: ["!", ["in", ["get", "slug"], ["literal", [...ISLAND_SLUGS]]]],
       paint: {
         "fill-color": "#DA251D",
         "fill-opacity": [
@@ -640,8 +666,7 @@ function installProvinceLayers(map: MapLibreMap) {
         ],
       },
     },
-    // Insert below cluster/point layers so markers stay on top
-    map.getLayer(LAYER_POINT_HALO) ? LAYER_POINT_HALO : undefined
+    beforeHalo
   );
 
   // Province boundary lines — always faintly visible, thicker when active
@@ -650,6 +675,7 @@ function installProvinceLayers(map: MapLibreMap) {
       id: LAYER_PROVINCE_LINE,
       type: "line",
       source: SRC_PROVINCES_POLY,
+      filter: ["!", ["in", ["get", "slug"], ["literal", [...ISLAND_SLUGS]]]],
       paint: {
         "line-color": [
           "case",
@@ -670,18 +696,20 @@ function installProvinceLayers(map: MapLibreMap) {
         ],
       },
     },
-    map.getLayer(LAYER_POINT_HALO) ? LAYER_POINT_HALO : undefined
+    beforeHalo
   );
 
   // Province name labels — visible at low/medium zoom, hidden when zoomed in.
+  // Excludes islands (they have their own always-on layer below).
   map.addLayer({
     id: LAYER_PROVINCE_LABELS,
     type: "symbol",
     source: SRC_PROVINCES,
+    filter: ["!", ["boolean", ["get", "isIsland"], false]],
     minzoom: 4.5,
     maxzoom: 9,
     layout: {
-      "text-field": ["get", "name"],
+      "text-field": provinceNameExpr(locale),
       "text-font": ["Open Sans Bold"],
       "text-size": [
         "interpolate", ["linear"], ["zoom"],
@@ -710,6 +738,81 @@ function installProvinceLayers(map: MapLibreMap) {
         8.5, 1,
         9, 0,
       ],
+    },
+  });
+
+  // ── Island star markers (Hoàng Sa & Trường Sa) ──────────────────────────────
+  // Draw a 5-pointed star on a canvas and register it as a map icon so we can
+  // use a symbol layer — no external image files needed.
+  const STAR_PX = 32; // canvas size; pixelRatio:2 → renders at 16 logical px
+
+  const drawStar = (color: string): ImageData => {
+    const canvas = document.createElement("canvas");
+    canvas.width = STAR_PX;
+    canvas.height = STAR_PX;
+    const ctx = canvas.getContext("2d")!;
+    const cx = STAR_PX / 2;
+    const cy = STAR_PX / 2;
+    const outerR = STAR_PX / 2 - 2;
+    const innerR = outerR * 0.42;
+    ctx.beginPath();
+    for (let i = 0; i < 10; i++) {
+      const r = i % 2 === 0 ? outerR : innerR;
+      const angle = (i * Math.PI) / 5 - Math.PI / 2;
+      const x = cx + r * Math.cos(angle);
+      const y = cy + r * Math.sin(angle);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = "#FFFFFF";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    return ctx.getImageData(0, 0, STAR_PX, STAR_PX);
+  };
+
+  if (!map.hasImage("island-star-hoang-sa"))
+    map.addImage("island-star-hoang-sa", drawStar("#DA251D"), { pixelRatio: 2 });
+  if (!map.hasImage("island-star-truong-sa"))
+    map.addImage("island-star-truong-sa", drawStar("#DA251D"), { pixelRatio: 2 });
+
+  // Single symbol layer: star icon + name label to the right, always visible
+  map.addLayer({
+    id: LAYER_ISLAND_LABELS,
+    type: "symbol",
+    source: SRC_PROVINCES,
+    filter: ["boolean", ["get", "isIsland"], false],
+    minzoom: 3,
+    layout: {
+      "icon-image": ["concat", "island-star-", ["get", "slug"]],
+      "icon-size": [
+        "interpolate", ["linear"], ["zoom"],
+        3, 0.55,
+        6, 0.80,
+        10, 1.00,
+      ],
+      "icon-allow-overlap": true,
+      "icon-anchor": "center",
+      "text-field": provinceNameExpr(locale),
+      "text-font": ["Open Sans Bold"],
+      "text-size": [
+        "interpolate", ["linear"], ["zoom"],
+        3, 9,
+        5, 11,
+        8, 13,
+      ],
+      "text-anchor": "left",
+      "text-offset": [1.1, 0],
+      "text-allow-overlap": true,
+      "text-optional": true,
+      "text-letter-spacing": 0.02,
+    },
+    paint: {
+      "text-color": "#DA251D",
+      "text-halo-color": "#FFFFFF",
+      "text-halo-width": 2,
+      "text-halo-blur": 0.3,
     },
   });
 }
