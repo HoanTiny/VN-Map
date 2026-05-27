@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { RatingStars } from "./RatingStars";
-import { companionLabels, type Review } from "../lib/types";
+import { type Review } from "../lib/types";
 import { Badge } from "@/ui/badge";
 import { IconButton } from "@/ui/icon-button";
 
@@ -15,6 +15,7 @@ export interface ReviewCardProps {
 
 export function ReviewCard({ review, onDelete }: ReviewCardProps) {
   const t = useTranslations("Review");
+  const tc = useTranslations("Companion");
   const locale = useLocale();
   const [expanded, setExpanded] = useState(false);
   const longBody = review.body.length > 280;
@@ -55,7 +56,7 @@ export function ReviewCard({ review, onDelete }: ReviewCardProps) {
       <div className="mt-3 flex items-center gap-2">
         <RatingStars value={review.rating} size={16} readOnly />
         {review.companion && (
-          <Badge variant="neutral">{companionLabels[review.companion]}</Badge>
+          <Badge variant="neutral">{tc(review.companion)}</Badge>
         )}
       </div>
 

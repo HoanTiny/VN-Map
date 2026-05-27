@@ -12,6 +12,7 @@
     "seed:places": "tsx --env-file=.env.local scripts/seed-places.ts",
     "seed:hero": "tsx --env-file=.env.local scripts/seed-hero-presets.ts",
     "seed:trips": "tsx --env-file=.env.local scripts/seed-trip-templates.ts",
+    "translate:places": "tsx --env-file=.env.local scripts/translate-places.ts",
     "build:vn34": "tsx scripts/build-vn34-geojson.ts"
   },
   "dependencies": {

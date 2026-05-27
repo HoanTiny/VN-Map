@@ -10,7 +10,7 @@ import { transition, spring } from "@/lib/motion";
 import { Button } from "@/ui/button";
 import { useToast } from "@/ui/toast";
 import { RatingStars } from "./RatingStars";
-import { companionLabels, type Companion } from "../lib/types";
+import { companionKeys, type Companion } from "../lib/types";
 import { useReviews } from "../hooks/useReviews";
 import { useSession } from "@/features/auth/hooks/useSession";
 import { uploadPhotos } from "@/lib/upload";
@@ -34,6 +34,7 @@ export function ReviewForm({
   onSubmitted,
 }: ReviewFormProps) {
   const t = useTranslations("Review");
+  const tc = useTranslations("Companion");
   const titleId = useId();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const { add } = useReviews(placeSlug);
@@ -258,7 +259,7 @@ export function ReviewForm({
                   {/* Companion */}
                   <Field label={t("fieldCompanion")}>
                     <div className="flex flex-wrap gap-2">
-                      {(Object.keys(companionLabels) as Companion[]).map((c) => {
+                      {companionKeys.map((c) => {
                         const active = companion === c;
                         return (
                           <button
@@ -273,7 +274,7 @@ export function ReviewForm({
                                 : "border-border bg-surface text-text hover:bg-surface-2"
                             )}
                           >
-                            {companionLabels[c]}
+                            {tc(c)}
                           </button>
                         );
                       })}

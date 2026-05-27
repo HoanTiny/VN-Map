@@ -423,20 +423,74 @@
     "metaDesc": "Map-VN — bản đồ trải nghiệm Việt Nam do cộng đồng đóng góp. Khám phá quán ăn, cafe, hidden gems theo cách chân thực.",
     "badge": "VỀ CHÚNG TÔI",
     "headline": "Bản đồ trải nghiệm Việt Nam.",
+    "intro": "{name} là <b>Google Maps cho trải nghiệm ăn chơi tại Việt Nam</b> — nơi cộng đồng người Việt và khách du lịch quốc tế cùng đóng góp địa điểm đáng trải nghiệm: quán ăn, cafe đẹp, bar, rooftop, check-in nổi tiếng, hidden gems, làng nghề, workshop…",
+    "philosophyTitle": "Triết lý",
+    "ph1": "<b>Map-first</b> — bản đồ là trục chính, không phải feed/listing. Khám phá theo địa lý + chủ đề song song.",
+    "ph2": "<b>Cộng đồng đóng góp</b> — nội dung do người dùng tạo ra, biên tập viên duyệt. Luôn mới, luôn địa phương hoá.",
+    "ph3": "<b>Lifestyle > landmark</b> — tập trung vào trải nghiệm thực: phở vỉa hè, bar phố cổ, rooftop bí mật — không phải điểm chụp ảnh sáo rỗng.",
+    "ph4": "<b>Premium nhưng thân thuộc</b> — design Airbnb-grade kết hợp đỏ cờ vàng sao Việt Nam.",
+    "roadmapTitle": "Lộ trình",
+    "road1": "<b>Phase 1 (hiện tại)</b> — MVP demo với mock data + community contribution flow + reviews + trip planner. Lưu localStorage.",
+    "road2": "<b>Phase 2</b> — Backend Supabase + auth + moderation queue + đồng bộ thiết bị.",
+    "road3": "<b>Phase 3</b> — Bản đồ 3D buildings, đa ngôn ngữ VI/EN, realtime updates, AI gợi ý cá nhân hoá.",
     "ctaOpenMap": "Mở bản đồ",
     "ctaContribute": "Đóng góp địa điểm"
   },
   "Help": {
     "metaTitle": "Trợ giúp · Map-VN",
-    "metaDesc": "Câu hỏi thường gặp về Map-VN — cách dùng, đóng góp, tài khoản."
+    "metaDesc": "Câu hỏi thường gặp về Map-VN — cách dùng, đóng góp, tài khoản.",
+    "badge": "FAQ",
+    "title": "Trợ giúp",
+    "subtitle": "Câu hỏi thường gặp về cách dùng Map-VN.",
+    "q1": "Làm sao lưu địa điểm yêu thích?",
+    "a1": "Bấm trái tim ♡ trên bất kỳ thẻ địa điểm nào (trên bản đồ, landing, hoặc trang chi tiết). Danh sách lưu xem ở <saved>/saved</saved>.",
+    "q2": "Tạo chuyến đi như thế nào?",
+    "a2": "Vào <trip>Chuyến đi</trip> → bấm \"Tạo chuyến đi\". Đặt tên, chọn số ngày, chọn điểm đến (1 hoặc nhiều tỉnh). Sau đó thêm địa điểm vào từng ngày — qua search hoặc click \"Thêm từ bản đồ\" để pick trực tiếp trên map.",
+    "q3": "Đóng góp địa điểm cho cộng đồng?",
+    "a3": "Có 2 cách: (1) Vào <submit>/submit</submit> và điền form, hoặc (2) Trên <explore>bản đồ</explore>, bấm nút \"Đóng góp ở đây\" rồi click vào vị trí trên map — toạ độ + tỉnh sẽ tự điền.",
+    "q4": "Review của tôi có public ngay không?",
+    "a4": "Trong bản beta hiện tại, review của bạn auto-public ngay sau khi gửi (do dùng localStorage demo). Ở Phase 2 với backend thật, review sẽ qua duyệt 24-72 giờ.",
+    "q5": "Dữ liệu của tôi lưu ở đâu?",
+    "a5": "Hiện tại tất cả (saved, trips, reviews, submissions) lưu trong <code>localStorage</code> của trình duyệt này — không sync giữa các thiết bị. Phase 2 sẽ wire backend Supabase.",
+    "q6": "Tại sao có địa điểm hiện trên map mà không có ở danh mục?",
+    "a6": "Toàn bộ data demo trong Phase 1 chỉ có ~40 địa điểm trên VN — chưa đầy đủ. Phase 2 sẽ có hàng ngàn địa điểm thật do cộng đồng đóng góp."
   },
   "Privacy": {
     "metaTitle": "Chính sách bảo mật · Map-VN",
-    "metaDesc": "Cách Map-VN xử lý dữ liệu của bạn."
+    "metaDesc": "Cách Map-VN xử lý dữ liệu của bạn.",
+    "badge": "PHIÊN BẢN BETA",
+    "title": "Chính sách bảo mật",
+    "updated": "Cập nhật: {date}",
+    "s1Title": "Dữ liệu chúng tôi thu thập",
+    "s1Body": "Trong bản beta Phase 1, Map-VN <b>không gửi dữ liệu lên server</b>. Tất cả thông tin bạn tạo (saved, trips, reviews, submissions) được lưu trong localStorage của trình duyệt — không rời khỏi máy bạn.",
+    "s2Title": "Vị trí địa lý",
+    "s2Body": "Khi bạn bấm nút \"Vị trí của tôi\" hoặc \"GPS\" trong form đóng góp, trình duyệt sẽ hỏi quyền truy cập vị trí. Toạ độ được dùng tức thời cho map fly-to và không lưu lại đâu cả.",
+    "s3Title": "Bản đồ & tile",
+    "s3Body": "Tile bản đồ được fetch từ CartoCDN (basemaps.cartocdn.com) — đối tác bên thứ ba có chính sách bảo mật riêng. Map-VN không chia sẻ định danh người dùng với họ.",
+    "s4Title": "Phase 2 trở đi",
+    "s4Body": "Khi launch backend chính thức, chúng tôi sẽ cập nhật chính sách rõ ràng về lưu trữ user account, OAuth provider, moderation queue, và tuân thủ GDPR tương đương cho user Châu Âu.",
+    "contactTitle": "Liên hệ",
+    "contactBody": "Có thắc mắc? Email <email>hello@map-vn.vn</email>."
   },
   "Terms": {
     "metaTitle": "Điều khoản dịch vụ · Map-VN",
-    "metaDesc": "Điều khoản sử dụng Map-VN."
+    "metaDesc": "Điều khoản sử dụng Map-VN.",
+    "badge": "PHIÊN BẢN BETA",
+    "title": "Điều khoản sử dụng",
+    "updated": "Cập nhật: {date}",
+    "intro": "Bằng việc sử dụng Map-VN, bạn đồng ý với các điều khoản dưới đây. Phiên bản chính thức sẽ ra mắt cùng Phase 2 — bản hiện tại là khung demo cho cộng đồng beta.",
+    "s1Title": "Nội dung đóng góp",
+    "s1Body": "Khi bạn đóng góp địa điểm hoặc viết review, bạn xác nhận nội dung do bạn tạo ra, không vi phạm bản quyền bên thứ ba, và cho phép Map-VN hiển thị công khai trên nền tảng. Ảnh upload phải do bạn chụp hoặc có quyền dùng.",
+    "s2Title": "Nội dung cấm",
+    "ban1": "Spam, quảng cáo trá hình.",
+    "ban2": "Nội dung 18+, bạo lực, kỳ thị.",
+    "ban3": "Thông tin sai sự thật về địa điểm (giá, giờ mở…).",
+    "ban4": "Ảnh không phù hợp văn hoá Việt Nam.",
+    "s2Note": "Biên tập viên có quyền xoá / từ chối duyệt nội dung vi phạm.",
+    "s3Title": "Trách nhiệm",
+    "s3Body": "Map-VN cố gắng cung cấp thông tin chính xác nhưng không đảm bảo tuyệt đối — thông tin có thể thay đổi (quán đóng cửa, giá lên, giờ thay đổi). Vui lòng xác nhận trước khi ghé.",
+    "contactTitle": "Liên hệ",
+    "contactBody": "Báo cáo nội dung vi phạm, khiếu nại, hoặc thắc mắc: <email>hello@map-vn.vn</email>."
   },
   "Error": {
     "title": "Đã có lỗi xảy ra",
@@ -447,7 +501,15 @@
   "NotFound": {
     "title": "Không tìm thấy trang",
     "subtitle": "Trang bạn tìm có thể đã bị xoá hoặc chuyển đi.",
-    "home": "Về trang chủ"
+    "home": "Về trang chủ",
+    "explore": "Mở bản đồ"
+  },
+  "Companion": {
+    "family": "Gia đình",
+    "friends": "Bạn bè",
+    "couple": "Cặp đôi",
+    "solo": "Một mình",
+    "work": "Công tác"
   },
   "CategoriesBento": {
     "overline": "DANH MỤC TRẢI NGHIỆM",

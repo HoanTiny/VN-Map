@@ -11,7 +11,7 @@ import { RatingHistogram } from "./RatingHistogram";
 import { ReviewForm } from "./ReviewForm";
 import { useReviews } from "../hooks/useReviews";
 import { useRealtimeReviews } from "@/features/realtime/hooks/useRealtimeReviews";
-import type { Review, ReviewSort } from "../lib/types";
+import type { ReviewSort } from "../lib/types";
 
 export interface ReviewListProps {
   placeSlug: string;
@@ -34,7 +34,7 @@ export function ReviewList({ placeSlug, placeName, baseline }: ReviewListProps) 
 
   useRealtimeReviews(
     placeSlug,
-    useCallback((row) => {
+    useCallback(() => {
       setNewCount((n) => n + 1);
       // Optimistically prepend so the review appears without refetch
       // (useReviews will deduplicate on next load)

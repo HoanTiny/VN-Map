@@ -7,6 +7,7 @@ import type {
   MapLayerMouseEvent,
   ExpressionSpecification,
 } from "maplibre-gl";
+import { useLocale } from "next-intl";
 import { useMapStore } from "@/stores/map-store";
 import { useUIStore } from "@/stores/ui-store";
 import { useTheme } from "@/components/theme/ThemeProvider";
@@ -52,6 +53,7 @@ type RealtimeFeature = {
 
 export function MapCanvas({ data }: MapCanvasProps = {}) {
   const placesData = data ?? mockPlacesData;
+  const locale = useLocale();
   const { placesById } = useMapData();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
@@ -379,7 +381,13 @@ export function MapCanvas({ data }: MapCanvasProps = {}) {
         type: "Feature",
         id: place.id,
         geometry: { type: "Point", coordinates: [place.lng, place.lat] },
-        properties: { id: place.id, slug: place.slug, name: place.name, category: place.category as CategoryKey, province: place.province },
+        properties: {
+          id: place.id,
+          slug: place.slug,
+          name: locale === "en" ? place.name_en ?? place.name : place.name,
+          category: place.category as CategoryKey,
+          province: place.province,
+        },
       },
     ];
 

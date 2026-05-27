@@ -1,13 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Reveal } from "@/components/motion";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import {
-  regions,
   regionByKey,
   provinces,
   provinceBySlug,

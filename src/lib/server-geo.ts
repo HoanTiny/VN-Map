@@ -178,7 +178,13 @@ export async function detectServerGeo(): Promise<ServerGeo> {
     console.warn("[server-geo] all server-side geolocators failed. Returning EMPTY.");
     return EMPTY;
   } catch (err) {
-    console.error("[server-geo] detectServerGeo outer catch error:", err);
+    // During static prerender (`generateStaticParams`) `headers()` throws a
+    // DYNAMIC_SERVER_USAGE signal. That's expected: the landing stays static
+    // and degrades to no server-geo (client-side geolocation takes over).
+    // Don't log it as an error — only log genuine failures.
+    if ((err as { digest?: string })?.digest !== "DYNAMIC_SERVER_USAGE") {
+      console.error("[server-geo] detectServerGeo outer catch error:", err);
+    }
     return EMPTY;
   }
 }

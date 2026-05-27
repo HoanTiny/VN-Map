@@ -17,6 +17,7 @@ export async function generateMetadata() {
 
 export default async function AboutPage() {
   const t = await getTranslations("About");
+  const bold = (chunks: React.ReactNode) => <strong className="text-text">{chunks}</strong>;
   return (
     <article className="pb-24 pt-32 md:pt-40">
       <div className="container max-w-3xl">
@@ -28,52 +29,25 @@ export default async function AboutPage() {
         </Reveal>
         <Reveal delay={0.05}>
           <p className="mt-6 text-body-lg leading-relaxed text-text-muted">
-            {siteConfig.name} là <strong className="text-text">Google Maps cho trải nghiệm
-            ăn chơi tại Việt Nam</strong> — nơi cộng đồng người Việt và khách du lịch quốc
-            tế cùng đóng góp địa điểm đáng trải nghiệm: quán ăn, cafe đẹp, bar, rooftop,
-            check-in nổi tiếng, hidden gems, làng nghề, workshop…
+            {t.rich("intro", { name: siteConfig.name, b: bold })}
           </p>
         </Reveal>
 
         <Reveal delay={0.1}>
-          <h2 className="mt-12 font-display text-h2 text-text">Triết lý</h2>
+          <h2 className="mt-12 font-display text-h2 text-text">{t("philosophyTitle")}</h2>
           <ul className="mt-4 space-y-3 text-body-lg text-text-muted">
-            <li>
-              <strong className="text-text">Map-first</strong> — bản đồ là trục chính, không
-              phải feed/listing. Khám phá theo địa lý + chủ đề song song.
-            </li>
-            <li>
-              <strong className="text-text">Cộng đồng đóng góp</strong> — nội dung do người
-              dùng tạo ra, biên tập viên duyệt. Luôn mới, luôn địa phương hoá.
-            </li>
-            <li>
-              <strong className="text-text">Lifestyle &gt; landmark</strong> — tập trung
-              vào trải nghiệm thực: phở vỉa hè, bar phố cổ, rooftop bí mật — không phải
-              điểm chụp ảnh sáo rỗng.
-            </li>
-            <li>
-              <strong className="text-text">Premium nhưng thân thuộc</strong> — design
-              Airbnb-grade kết hợp đỏ cờ vàng sao Việt Nam.
-            </li>
+            {(["ph1", "ph2", "ph3", "ph4"] as const).map((k) => (
+              <li key={k}>{t.rich(k, { b: bold })}</li>
+            ))}
           </ul>
         </Reveal>
 
         <Reveal delay={0.15}>
-          <h2 className="mt-12 font-display text-h2 text-text">Lộ trình</h2>
+          <h2 className="mt-12 font-display text-h2 text-text">{t("roadmapTitle")}</h2>
           <ol className="mt-4 space-y-3 text-body-lg text-text-muted">
-            <li>
-              <strong className="text-text">Phase 1 (hiện tại)</strong> — MVP demo với
-              mock data + community contribution flow + reviews + trip planner. Lưu
-              localStorage.
-            </li>
-            <li>
-              <strong className="text-text">Phase 2</strong> — Backend Supabase + auth +
-              moderation queue + đồng bộ thiết bị.
-            </li>
-            <li>
-              <strong className="text-text">Phase 3</strong> — Bản đồ 3D buildings, đa
-              ngôn ngữ VI/EN, realtime updates, AI gợi ý cá nhân hoá.
-            </li>
+            {(["road1", "road2", "road3"] as const).map((k) => (
+              <li key={k}>{t.rich(k, { b: bold })}</li>
+            ))}
           </ol>
         </Reveal>
 

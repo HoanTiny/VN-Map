@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Flag, MapPin, Navigation, Eye, Star } from "lucide-react";
+import { ArrowRight, Flag, MapPin, Navigation, Star } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/ui/button";
 import { Reveal } from "@/components/motion";

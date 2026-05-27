@@ -1,12 +1,7 @@
 export type Companion = "family" | "friends" | "couple" | "solo" | "work";
 
-export const companionLabels: Record<Companion, string> = {
-  family: "Gia đình",
-  friends: "Bạn bè",
-  couple: "Cặp đôi",
-  solo: "Một mình",
-  work: "Công tác",
-};
+// Display labels live in messages under the `Companion` namespace.
+export const companionKeys: Companion[] = ["family", "friends", "couple", "solo", "work"];
 
 export type ReviewStatus = "pending" | "approved" | "rejected";
 

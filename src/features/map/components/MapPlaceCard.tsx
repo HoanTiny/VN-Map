@@ -8,7 +8,6 @@ import { cn } from "@/lib/cn";
 import { floatingCard } from "@/lib/motion";
 import { IconButton } from "@/ui/icon-button";
 import { Button } from "@/ui/button";
-import { Badge } from "@/ui/badge";
 import { categoryByKey } from "@/config/categories";
 import { useMapStore } from "@/stores/map-store";
 import { useUIStore } from "@/stores/ui-store";

@@ -390,13 +390,18 @@ Sau khi i18n core đã ship (Phase A + B + C), 3 hướng nâng cấp theo thứ
 
 ### 🅰️ Hướng A — Hoàn thiện i18n technical (quick wins)
 
+> **✅ SEO i18n core DONE (2026-05-27)** — hreflang + sitemap + OG locale-aware đã ship.
+> Helper [src/i18n/metadata.ts](src/i18n/metadata.ts) (`localizedAlternates`, `localizedHref`) dùng ở **20 files**
+> (root layout + mọi page có `generateMetadata`). Sitemap emit cả `/vi` + `/en` + `x-default`
+> ([app/sitemap.ts](app/sitemap.ts)). OG nhận `?locale=en` ([app/api/og/route.tsx](app/api/og/route.tsx#L9)).
+
 | Mục | Effort | Impact | Status |
 |---|---|---|---|
-| **hreflang tags** trong root metadata (`<link rel="alternate" hreflang="vi/en/x-default">`) | Nhỏ | Cao — SEO i18n chuẩn cho Google | ⏳ |
-| **Sitemap include EN routes** + `<xhtml:link rel="alternate">` alternates | Nhỏ | Cao — Google index EN | ⏳ |
-| **OG metadata** locale-aware (hiện tại description tiếng VI cho cả /en) | Nhỏ | Trung — social share đúng ngôn ngữ | ⏳ |
-| Move `app/error.tsx` + `not-found.tsx` vào `[locale]/` để dùng `useTranslations` | Nhỏ | Thấp | ⏳ |
-| `companionLabels` constants ([src/features/review/lib/types.ts](src/features/review/lib/types.ts)) migrate sang messages | Nhỏ | Thấp | ⏳ |
+| **hreflang tags** trong root metadata (`<link rel="alternate" hreflang="vi/en/x-default">`) | Nhỏ | Cao — SEO i18n chuẩn cho Google | ✅ |
+| **Sitemap include EN routes** + `<xhtml:link rel="alternate">` alternates | Nhỏ | Cao — Google index EN | ✅ |
+| **OG metadata** locale-aware (hiện tại description tiếng VI cho cả /en) | Nhỏ | Trung — social share đúng ngôn ngữ | ✅ |
+| Move `app/error.tsx` + `not-found.tsx` vào `[locale]/` để dùng `useTranslations` | Nhỏ | Thấp | ✅ (thêm bản `[locale]/`, root giữ làm fallback) |
+| `companionLabels` constants ([src/features/review/lib/types.ts](src/features/review/lib/types.ts)) migrate sang messages | Nhỏ | Thấp | ✅ (namespace `Companion`) |
 | Admin pages (`/admin/*`) translate UI | Trung | Thấp (internal) | ⏳ |
 
 **File cần đụng:**
@@ -409,16 +414,20 @@ Sau khi i18n core đã ship (Phase A + B + C), 3 hướng nâng cấp theo thứ
 
 | Mục | Effort | Impact | Status |
 |---|---|---|---|
-| **Backfill 40 places EN** (name_en/description_en/highlight_en) | Lớn (content) | Cao — EN users thấy ngay | ⏳ |
-| → Option: dùng Gemini batch script translate VI → EN | Trung (1 script) | | ⏳ |
+| **Backfill places EN** (name_en/highlight_en) | Lớn (content) | Cao — EN users thấy ngay | 🔄 script sẵn sàng, chưa chạy production |
+| → Gemini batch script translate VI → EN | Trung (1 script) | | ✅ [scripts/translate-places.ts](scripts/translate-places.ts) (`pnpm translate:places`) |
 | Body copy EN cho About/Help/Privacy/Terms (hiện chỉ metadata) | Trung | Trung | ⏳ |
 | CategoriesBento per-category EN metadata (12 taglines + highlights + counts) | Nhỏ | Thấp | ⏳ |
 | Mock data 40 → 80 places (HN/HCM/ĐN) — giảm gaps `/category/checkin`, `/category/experience` | Lớn | Trung | ⏳ |
-| Admin per-place bilingual editor (hiện chỉ có approve/reject) | Trung | Trung — workaround edit Supabase studio | ⏳ |
+| Admin per-place bilingual editor (hiện chỉ có approve/reject) | Trung | Trung | ✅ [PlacesEditor.tsx](src/features/admin/components/PlacesEditor.tsx) |
 
-**File cần tạo:**
-- `scripts/translate-places.ts` — batch dịch VI → EN qua Gemini, write vào `places.name_en`/`description_en`
-- `src/features/admin/components/PlacesEditor.tsx` + `/admin/places/list/page.tsx` — table edit per-place
+**Backfill EN content — cách chạy:**
+- `pnpm translate:places --dry-run` — xem trước bản dịch (không ghi DB). Đã verify 2026-05-27: 17/40 places thiếu EN, chất lượng dịch tốt (giữ proper noun, dịch highlight tự nhiên).
+- `pnpm translate:places` — backfill các row thiếu `name_en`/`highlight_en`.
+- `pnpm translate:places --force` — dịch lại toàn bộ (ghi đè EN cũ).
+- Lưu ý: bảng `places` không có cột VI `description`, nên script chỉ dịch `name` + `highlight`. `description_en` để null.
+
+**File còn cần làm:**
 - Editorial pass cho `app/[locale]/(marketing)/about/page.tsx`, `help/page.tsx`, `privacy/page.tsx`, `terms/page.tsx`
 
 ### 🅲 Hướng C — Sản phẩm & performance
@@ -431,14 +440,29 @@ Sau khi i18n core đã ship (Phase A + B + C), 3 hướng nâng cấp theo thứ
 | **Accessibility audit** — keyboard nav, screen reader labels, focus traps trong dialogs | Trung | Trung | ⏳ |
 | **Map marker labels theo locale** — hiện tại VI cứng trên symbol layer | Nhỏ | Trung — bilingual UX nhất quán | ⏳ |
 | **PWA screenshots refresh** — chụp lại sau khi UI ổn định (cần manual) | Nhỏ | Thấp | ⏳ |
-| **Realtime EN broadcast** — `useRealtimePlaces` payload thiếu `name_en` | Nhỏ | Thấp | ⏳ |
+| **Realtime EN broadcast** — `useRealtimePlaces` payload thiếu `name_en` | Nhỏ | Thấp | ✅ (2026-05-27) |
 
 ### 🌟 Khuyến nghị thứ tự ship
 
-1. **Hướng A (SEO i18n)** trước — small effort, foundational. Không có hreflang → Google đang penalize duplicate content.
-2. **Performance audit (Hướng C)** — đo ngay khi user-facing UI vừa ổn định để bắt regression sớm.
-3. **AI-backfill 40 places EN (Hướng B)** — dùng Gemini script (đã có API key), `name`/`description` qua prompt batch, write vào DB. Sau đó EN users mới thực sự thấy giá trị.
-4. Còn lại làm rải rác khi rảnh.
+- ✅ **Hướng A (SEO i18n)** — DONE (hreflang + sitemap + OG locale-aware).
+- ✅ **AI-backfill places EN (Hướng B)** — DONE 2026-05-27, `pnpm translate:places` đã chạy production (17 row updated, `name_en` + `highlight_en`).
+
+**Đang làm / kế tiếp (2026-05-27):**
+1. ✅ **Quick i18n cleanups** — DONE 2026-05-27:
+   - [app/[locale]/error.tsx](app/[locale]/error.tsx) + [app/[locale]/not-found.tsx](app/[locale]/not-found.tsx) — bản localized dùng `useTranslations("Error"/"NotFound")` (bắt mọi route trong `[locale]`). Root `app/error.tsx`/`not-found.tsx` giữ làm fallback VI cho route non-localized (`/auth`, `/offline`, `/design`).
+   - `companionLabels` → namespace `Companion` trong messages; `types.ts` export `companionKeys`; ReviewForm + ReviewCard dùng `useTranslations("Companion")`.
+   - `useRealtimePlaces` payload thêm `name_en`; MapCanvas chọn tên marker theo `useLocale()` (place mới approve hiện đúng ngôn ngữ).
+   - typecheck pass.
+2. **Performance + bundle audit (Hướng C)** — 🔄 bundle audit DONE (2026-05-27), Lighthouse runtime chưa chạy.
+   - **Build pass 22s, 356 trang.** Shared baseline **103 kB** (tốt). `/explore` chỉ **116 kB** (map lazy-load đúng). Landing `/[locale]` **246 kB**, `/place/[slug]` **263 kB** (nặng nhất — lightbox + reviews eager). Middleware **102 kB** (intl + supabase, chạy mọi request).
+   - **Đã fix:** server-geo không còn log `DYNAMIC_SERVER_USAGE` như lỗi lúc prerender landing (landing giữ static, client geolocation lo phần geo); dọn ~10 import/biến thừa (typecheck + lint sạch các warning đó).
+   - **Bỏ qua (theo yêu cầu):** convert 5 chỗ `<img>` → `next/Image` (TopBar/FloatingNavbar/Footer/AccountPanel/sign-in) — vẫn là LCP win nếu sau này muốn làm.
+   - **Còn lại:** Lighthouse runtime (LCP/CLS/TBT) trên `next start` — cần lighthouse CLI; `readCache`/`writeCache` ở server-geo đang tạm tắt để debug.
+   - **Đã verify (2026-05-27):** exhaustive-deps `user` ở 4 hook (useReviews/Saved/Submissions/Trips) **KHÔNG phải bug** — deps dùng `user?.id` nên re-run đúng khi đăng nhập/xuất; chỉ là false positive của lint rule.
+3. ✅ **Editorial EN body copy** — DONE (2026-05-27): About + Help + Privacy + Terms, toàn bộ body chuyển từ hardcode VI sang messages, render `t.rich` (b/link/code/email chunks). Ngày "Cập nhật" ở Privacy/Terms giờ locale-aware (`en-US`/`vi-VN`). typecheck pass.
+   - ⚠️ **Privacy + Terms là legal copy** — bản EN do mình dịch máy, **org nên review/sở hữu wording chính thức** (đặc biệt phần trách nhiệm/liability + GDPR).
+   - Namespaces mở rộng: `About` (intro/philosophy×4/roadmap×3), `Help` (badge/title/subtitle/q1–q6/a1–a6), `Privacy` (badge/title/updated/s1–s4/contact), `Terms` (badge/title/updated/intro/s1/s2+ban1–4/note/s3/contact).
+4. **Mở rộng data 40 → 80 places** — giảm gaps `/category/checkin`, `/category/experience`. Effort lớn (cần content).
 
 ---
 
@@ -466,22 +490,16 @@ Hai search bars khác mục đích nhưng UX có thể confuse — navbar search
 
 ## 🔧 Resume checklist (phiên sau)
 
-### 0. **Push & migrate** (ưu tiên cao — đang pending từ session trước):
-```powershell
-cd f:/VTVLive/Map-VN
-git status              # xác nhận 2 commits ahead of origin/main
-git push                # push c6ff458 + 53eadbc lên origin
-```
-Sau khi push → vào **Supabase Dashboard → SQL Editor → New query** → paste toàn bộ
-[supabase/migrations/0002_admin_merger_2025.sql](supabase/migrations/0002_admin_merger_2025.sql) → Run.
+### 0. ~~Push & migrate~~ — ✅ DONE (2026-05-26/27)
+Branch `pharse3` đã sync với `origin/pharse3`, working tree sạch. Admin-merger migration
+(`0002_admin_merger_2025.sql`) + i18n migration (`0006`) đã chạy production. Không còn pending push.
 
-Kỳ vọng output (panel "Messages"):
+### 0b. **Backfill EN content** (ưu tiên cao — script đã sẵn sàng):
+```powershell
+pnpm translate:places --dry-run   # xem trước
+pnpm translate:places             # backfill 17 row thiếu EN vào production
 ```
-NOTICE:  places: N rows  (Quảng Nam → Đà Nẵng)
-NOTICE:  places: N rows  (Hòa Bình → Phú Thọ)
-...
-```
-Nếu thấy `WARNING: Unmapped province: ...` → báo lại, có tỉnh nào sót.
+Ghi thẳng vào Supabase production qua service-role key. Idempotent — chỉ đụng row thiếu `name_en`/`highlight_en`.
 
 ### 1. **Smoke test mới (sau merger):**
    ```powershell

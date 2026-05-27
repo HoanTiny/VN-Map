@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 import Link from "next/link";
-import { Compass, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { m } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { SignInForm } from "@/features/auth/components/SignInForm";

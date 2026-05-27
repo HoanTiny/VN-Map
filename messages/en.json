@@ -423,20 +423,74 @@
     "metaDesc": "Map-VN — a community-built experience map of Vietnam. Discover real food, cafés, and hidden gems.",
     "badge": "ABOUT US",
     "headline": "Vietnam's experience map.",
+    "intro": "{name} is <b>Google Maps for things to do in Vietnam</b> — where locals and international travellers contribute places worth experiencing: eateries, beautiful cafés, bars, rooftops, famous check-in spots, hidden gems, craft villages, workshops…",
+    "philosophyTitle": "Philosophy",
+    "ph1": "<b>Map-first</b> — the map is the backbone, not a feed or listing. Explore by geography and theme in parallel.",
+    "ph2": "<b>Community-contributed</b> — content is created by users and reviewed by editors. Always fresh, always local.",
+    "ph3": "<b>Lifestyle > landmarks</b> — focused on real experiences: street-side phở, old-quarter bars, secret rooftops — not hollow photo spots.",
+    "ph4": "<b>Premium yet familiar</b> — Airbnb-grade design paired with Vietnam's flag-red and star-gold.",
+    "roadmapTitle": "Roadmap",
+    "road1": "<b>Phase 1 (current)</b> — an MVP demo with mock data plus a community contribution flow, reviews, and a trip planner. Stored in localStorage.",
+    "road2": "<b>Phase 2</b> — Supabase backend + auth + moderation queue + cross-device sync.",
+    "road3": "<b>Phase 3</b> — 3D building maps, VI/EN bilingual support, realtime updates, and personalised AI suggestions.",
     "ctaOpenMap": "Open the map",
     "ctaContribute": "Contribute a place"
   },
   "Help": {
     "metaTitle": "Help · Map-VN",
-    "metaDesc": "Frequently asked questions about Map-VN — how to use, contribute, account."
+    "metaDesc": "Frequently asked questions about Map-VN — how to use, contribute, account.",
+    "badge": "FAQ",
+    "title": "Help",
+    "subtitle": "Frequently asked questions about using Map-VN.",
+    "q1": "How do I save favourite places?",
+    "a1": "Tap the heart ♡ on any place card (on the map, the landing page, or a detail page). View your saved list at <saved>/saved</saved>.",
+    "q2": "How do I create a trip?",
+    "a2": "Go to <trip>Trips</trip> → tap \"Create trip\". Name it, pick the number of days, and choose destinations (one or several provinces). Then add places to each day — via search or by tapping \"Add from map\" to pick directly on the map.",
+    "q3": "How do I contribute a place to the community?",
+    "a3": "Two ways: (1) go to <submit>/submit</submit> and fill in the form, or (2) on the <explore>map</explore>, tap \"Contribute here\" then click a spot on the map — the coordinates and province fill in automatically.",
+    "q4": "Is my review public right away?",
+    "a4": "In the current beta, your review goes public immediately after you submit it (it uses a localStorage demo). In Phase 2, with a real backend, reviews will go through 24–72h moderation.",
+    "q5": "Where is my data stored?",
+    "a5": "Right now everything (saved, trips, reviews, submissions) is stored in this browser's <code>localStorage</code> — it doesn't sync across devices. Phase 2 will wire up a Supabase backend.",
+    "q6": "Why do some places show on the map but not in a category?",
+    "a6": "All Phase 1 demo data has only ~40 places across Vietnam — it's not complete yet. Phase 2 will have thousands of real community-contributed places."
   },
   "Privacy": {
     "metaTitle": "Privacy Policy · Map-VN",
-    "metaDesc": "How Map-VN handles your data."
+    "metaDesc": "How Map-VN handles your data.",
+    "badge": "BETA",
+    "title": "Privacy Policy",
+    "updated": "Updated: {date}",
+    "s1Title": "Data we collect",
+    "s1Body": "In the Phase 1 beta, Map-VN <b>does not send any data to a server</b>. Everything you create (saved, trips, reviews, submissions) is stored in your browser's localStorage — it never leaves your device.",
+    "s2Title": "Geolocation",
+    "s2Body": "When you tap \"My location\" or \"GPS\" in the contribution form, your browser asks for location permission. Coordinates are used instantly to fly the map and are not stored anywhere.",
+    "s3Title": "Maps & tiles",
+    "s3Body": "Map tiles are fetched from CartoCDN (basemaps.cartocdn.com) — a third-party partner with its own privacy policy. Map-VN does not share user identifiers with them.",
+    "s4Title": "Phase 2 onward",
+    "s4Body": "When the official backend launches, we will update this policy with clear terms on user account storage, OAuth providers, the moderation queue, and GDPR-equivalent compliance for European users.",
+    "contactTitle": "Contact",
+    "contactBody": "Questions? Email <email>hello@map-vn.vn</email>."
   },
   "Terms": {
     "metaTitle": "Terms of Service · Map-VN",
-    "metaDesc": "Terms for using Map-VN."
+    "metaDesc": "Terms for using Map-VN.",
+    "badge": "BETA",
+    "title": "Terms of Service",
+    "updated": "Updated: {date}",
+    "intro": "By using Map-VN, you agree to the terms below. The official version will launch with Phase 2 — the current one is a demo framework for the beta community.",
+    "s1Title": "Contributed content",
+    "s1Body": "When you contribute a place or write a review, you confirm the content is your own, does not infringe third-party copyright, and grant Map-VN permission to display it publicly on the platform. Uploaded photos must be taken by you or used with permission.",
+    "s2Title": "Prohibited content",
+    "ban1": "Spam or disguised advertising.",
+    "ban2": "18+, violent, or discriminatory content.",
+    "ban3": "False information about places (prices, opening hours…).",
+    "ban4": "Photos inappropriate for Vietnamese culture.",
+    "s2Note": "Editors reserve the right to remove or reject content that violates these terms.",
+    "s3Title": "Liability",
+    "s3Body": "Map-VN strives to provide accurate information but makes no absolute guarantee — details can change (a venue closes, prices rise, hours change). Please confirm before you visit.",
+    "contactTitle": "Contact",
+    "contactBody": "Report violating content, complaints, or questions: <email>hello@map-vn.vn</email>."
   },
   "Error": {
     "title": "Something went wrong",
@@ -447,7 +501,15 @@
   "NotFound": {
     "title": "Page not found",
     "subtitle": "The page you're looking for may have been removed or moved.",
-    "home": "Back home"
+    "home": "Back home",
+    "explore": "Open map"
+  },
+  "Companion": {
+    "family": "Family",
+    "friends": "Friends",
+    "couple": "Couple",
+    "solo": "Solo",
+    "work": "Work"
   },
   "CategoriesBento": {
     "overline": "EXPERIENCE CATEGORIES",
