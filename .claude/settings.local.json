@@ -9,7 +9,8 @@
       "Bash(npx lighthouse *)",
       "Bash(pnpm build *)",
       "Bash(cp /tmp/lh-landing2.json d:/Work/VN-Map/lh-landing2.json)",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(pnpm add *)"
     ]
   }
 }

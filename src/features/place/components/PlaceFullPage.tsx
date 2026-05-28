@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Flag, MapPin, Navigation, Star } from "lucide-react";
+import { ArrowRight, Flag, MapPin, Navigation, Share2, Star } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/ui/button";
 import { Reveal } from "@/components/motion";
@@ -11,6 +11,8 @@ import { PlaceMeta } from "./PlaceMeta";
 import { ReviewList } from "@/features/review/components/ReviewList";
 import { categoryByKey } from "@/config/categories";
 import { usePresence } from "@/features/realtime/hooks/usePresence";
+import { useToast } from "@/ui/toast";
+import { MiniMapEmbed } from "@/features/map/components/MiniMapEmbed";
 import type { PlaceItem } from "@/features/map/lib/places-data";
 
 export interface PlaceFullPageProps {
@@ -24,6 +26,23 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
   const t = useTranslations("PlaceDetail");
   const locale = useLocale();
   const catLabel = locale === "en" ? cat.label : cat.labelVi;
+  const toast = useToast();
+
+  const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}&destination_place_name=${encodeURIComponent(place.name)}`;
+
+  async function handleShare() {
+    const url = window.location.href;
+    if (navigator.share) {
+      await navigator.share({ title: place.name, url }).catch(() => null);
+    } else {
+      await navigator.clipboard.writeText(url);
+      toast.show(t("linkCopied"), { variant: "success" });
+    }
+  }
+
+  function handleReport() {
+    toast.show(t("reportSent"), { variant: "info" });
+  }
 
   return (
     <article className="pb-24">
@@ -35,8 +54,10 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
           {/* Quick actions sticky on desktop */}
           <Reveal>
             <div className="flex flex-wrap gap-2">
-              <Button size="md">
-                <Navigation size={16} /> {t("directions")}
+              <Button size="md" asChild>
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer">
+                  <Navigation size={16} /> {t("directions")}
+                </a>
               </Button>
               <AddToTripButton slug={place.slug} variant="secondary" size="md" />
               <Link
@@ -47,6 +68,14 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
               </Link>
               <button
                 type="button"
+                onClick={handleShare}
+                className="inline-flex h-10 items-center gap-2 rounded-lg border border-border bg-surface px-5 text-body text-text hover:bg-surface-2"
+              >
+                <Share2 size={16} /> {t("share")}
+              </button>
+              <button
+                type="button"
+                onClick={handleReport}
                 className="ml-auto inline-flex h-10 items-center gap-2 rounded-lg px-4 text-body-sm text-text-muted hover:bg-surface-2"
               >
                 <Flag size={14} /> {t("report")}
@@ -107,22 +136,12 @@ export function PlaceFullPage({ place, nearby }: PlaceFullPageProps) {
         <aside className="space-y-6 lg:col-span-4">
           <Reveal>
             <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-              <div className="relative aspect-[4/3] bg-surface-2">
-                {/* Mini map placeholder — open full explore */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div
-                      className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full text-white shadow-md"
-                      style={{ backgroundColor: cat.color }}
-                    >
-                      <MapPin size={20} />
-                    </div>
-                    <p className="text-body-sm text-text-muted">
-                      {place.coordinates[1].toFixed(4)}°, {place.coordinates[0].toFixed(4)}°
-                    </p>
-                  </div>
-                </div>
-              </div>
+              <MiniMapEmbed
+                lat={place.lat}
+                lng={place.lng}
+                name={place.name}
+                className="aspect-[4/3]"
+              />
               <div className="space-y-3 p-5">
                 <h3 className="font-display text-h3 text-text">{t("location")}</h3>
                 <p className="text-body-sm text-text-muted">

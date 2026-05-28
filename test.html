@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A1 English Booster Hub - Output-First Edition</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans h-full flex flex-col overflow-hidden">
+
+    <!-- App Header -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between flex-shrink-0 z-10">
+        <div class="flex items-center space-x-3">
+            <div class="bg-gradient-to-tr from-indigo-600 to-violet-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
+                <i class="fa-solid fa-bolt text-xl text-white"></i>
+            </div>
+            <div>
+                <h1 class="font-extrabold text-lg leading-tight text-white flex items-center gap-2">
+                    A1 English Booster 
+                    <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-500/30 font-semibold tracking-wide">OUTPUT-FIRST</span>
+                </h1>
+                <p class="text-xs text-slate-400">Ứng dụng sửa lỗi "Hiểu nhưng không nói được" dựa trên POC English</p>
+            </div>
+        </div>
+        
+        <!-- Controls & Keys -->
+        <div class="flex items-center space-x-4">
+            <div class="hidden md:flex items-center bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800 text-xs">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2"></span>
+                <span class="text-slate-400 mr-1">Tiến độ hôm nay:</span>
+                <span id="header-progress" class="text-indigo-400 font-bold">0 / 120 phút</span>
+            </div>
+            <button onclick="toggleApiKeyModal()" class="text-slate-400 hover:text-indigo-400 transition p-2.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-xl" title="Cấu hình API Key Gemini">
+                <i class="fa-solid fa-key"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar Menu -->
+        <aside class="w-20 md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between p-3 flex-shrink-0">
+            <nav class="space-y-1.5">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex flex-col md:flex-row items-center md:space-x-3 p-3 rounded-xl transition font-semibold text-xs md:text-sm text-indigo-400 bg-indigo-600/10 border-l-4 border-indigo-500">
+                    <i class="fa-solid fa-gauge-high text-lg mb-1 md:mb-0"></i>
+                    <span class="md:block">Tổng Quan & Đo Lường</span>
+                </button>
+                <button onclick="switchTab('pronunciation')" id="nav-pronunciation" class="w-full flex flex-col md:flex-row items-center md:space-x-3 p-3 rounded-xl transition font-semibold text-xs md:text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-100 border-l-4 border-transparent">
+                    <i class="fa-solid fa-lips text-lg mb-1 md:mb-0">👄</i>
+                    <span class="md:block">Phát Âm & Cơ Miệng <span class="hidden md:inline text-xs text-slate-500 ml-1">(20m)</span></span>
+                </button>
+                <button onclick="switchTab('writing')" id="nav-writing" class="w-full flex flex-col md:flex-row items-center md:space-x-3 p-3 rounded-xl transition font-semibold text-xs md:text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-100 border-l-4 border-transparent">
+                    <i class="fa-solid fa-pen-nib text-lg mb-1 md:mb-0"></i>
+                    <span class="md:block">Viết 4 Cấp Độ <span class="hidden md:inline text-xs text-slate-500 ml-1">(40m)</span></span>
+                </button>
+                <button onclick="switchTab('listening')" id="nav-listening" class="w-full flex flex-col md:flex-row items-center md:space-x-3 p-3 rounded-xl transition font-semibold text-xs md:text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-100 border-l-4 border-transparent">
+                    <i class="fa-solid fa-headphones text-lg mb-1 md:mb-0"></i>
+                    <span class="md:block">Nghe Chủ Động <span class="hidden md:inline text-xs text-slate-500 ml-1">(30m)</span></span>
+                </button>
+                <button onclick="switchTab('selftalk')" id="nav-selftalk" class="w-full flex flex-col md:flex-row items-center md:space-x-3 p-3 rounded-xl transition font-semibold text-xs md:text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-100 border-l-4 border-transparent">
+                    <i class="fa-solid fa-comments text-lg mb-1 md:mb-0"></i>
+                    <span class="md:block">Nói Phản Xạ AI <span class="hidden md:inline text-xs text-slate-500 ml-1">(30m)</span></span>
+                </button>
+                <button onclick="switchTab('notebook')" id="nav-notebook" class="w-full flex flex-col md:flex-row items-center md:space-x-3 p-3 rounded-xl transition font-semibold text-xs md:text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-100 border-l-4 border-transparent">
+                    <i class="fa-solid fa-book-bookmark text-lg mb-1 md:mb-0">📖</i>
+                    <span class="md:block">Sổ Ghi Chú <span class="hidden md:inline text-xs text-slate-500 ml-1">(Cá nhân)</span></span>
+                </button>
+            </nav>
+
+            <!-- Progress & Stats Widget -->
+            <div class="hidden md:block bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3.5">
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="text-slate-400 text-xs">Cân Bằng Input vs Output:</span>
+                        <span id="io-ratio-text" class="font-bold text-xs text-indigo-400">0% / 0%</span>
+                    </div>
+                    <!-- Double progress bar -->
+                    <div class="w-full bg-slate-900 h-3.5 rounded-full overflow-hidden flex border border-slate-800">
+                        <div id="bar-input" class="bg-blue-500 h-full transition-all duration-500" style="width: 0%" title="Input (Nghe/Đọc)"></div>
+                        <div id="bar-output" class="bg-emerald-500 h-full transition-all duration-500" style="width: 0%" title="Output (Viết/Nói)"></div>
+                    </div>
+                </div>
+                <div class="border-t border-slate-850 pt-3">
+                    <div class="flex justify-between text-[11px] text-slate-400">
+                        <span>Mục tiêu ngày:</span>
+                        <strong class="text-white">120 Phút</strong>
+                    </div>
+                    <div class="w-full bg-slate-900 h-1.5 rounded-full mt-1.5 overflow-hidden">
+                        <div id="sidebar-progress-bar" class="bg-indigo-500 h-full w-0 transition-all duration-500"></div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Dynamic Canvas -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 bg-slate-950">
+            <!-- Toast notification -->
+            <div id="toast" class="fixed top-4 right-4 bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2 transition-transform duration-300 transform translate-x-[150%] z-50 text-sm font-medium border border-emerald-500/20">
+                <i id="toast-icon" class="fa-solid fa-circle-check"></i>
+                <span id="toast-message">Lưu tiến độ thành công!</span>
+            </div>
+
+            <!-- DASHBOARD TAB -->
+            <section id="tab-dashboard" class="space-y-6">
+                <div class="bg-gradient-to-r from-indigo-900/40 via-purple-950/20 to-slate-950 border border-indigo-500/20 rounded-2xl p-6 relative overflow-hidden">
+                    <div class="absolute -right-10 -bottom-10 opacity-10 text-9xl text-indigo-500"><i class="fa-solid fa-brain"></i></div>
+                    <div class="max-w-3xl">
+                        <span class="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold border border-indigo-500/20 tracking-wider">PHƯƠNG PHÁP CHỮA "ĐƠ" TIẾNG ANH</span>
+                        <h2 class="text-2xl md:text-3xl font-extrabold mt-3 mb-2 text-white">Khắc phục: "Hiểu Nhưng Không Nói Được"</h2>
+                        <p class="text-slate-300 text-sm leading-relaxed">
+                            Vấn đề của bạn là <strong class="text-blue-400">Input (Đọc & Nghe)</strong> đang cực kỳ tốt nhưng <strong class="text-emerald-400">Output (Viết & Nói)</strong> lại rất yếu do thiếu rèn luyện cơ miệng và phản xạ viết tự do. Ứng dụng này tập trung ép buộc não bộ kích hoạt vùng sản sinh ngôn ngữ để chuyển từ tiếng Anh "Thụ động" sang tiếng Anh "Chủ động".
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Input/Output explanation cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-extrabold text-blue-400 text-sm flex items-center gap-2"><i class="fa-solid fa-arrow-right-to-bracket"></i> INPUT (Đọc & Nghe)</h3>
+                            <span class="text-xs text-slate-500">Mục tiêu: Nạp chuẩn xác</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">Nhận thức âm thanh chuẩn và tăng vốn từ vựng ngữ cảnh. Thực hành ở Tab <strong>Phát Âm</strong> & <strong>Nghe Chủ Động</strong>.</p>
+                        <div class="bg-slate-950 rounded-xl p-3 border border-slate-850 flex items-center justify-between">
+                            <span class="text-xs text-slate-300">Tích lũy Input hôm nay:</span>
+                            <span id="stats-input" class="text-sm font-bold text-blue-400">0 phút</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-extrabold text-emerald-400 text-sm flex items-center gap-2"><i class="fa-solid fa-arrow-right-from-bracket"></i> OUTPUT (Nói & Viết)</h3>
+                            <span class="text-xs text-slate-500">Mục tiêu: Đột phá phản xạ</span>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed mb-4">Buộc cơ miệng hoạt động và kích hoạt phản xạ cấu trúc câu tự do. Thực hành ở Tab <strong>Viết 4 Cấp Độ</strong> & <strong>Nói Phản Xạ AI</strong>.</p>
+                        <div class="bg-slate-950 rounded-xl p-3 border border-slate-850 flex items-center justify-between">
+                            <span class="text-xs text-slate-300">Tích lũy Output hôm nay:</span>
+                            <span id="stats-output" class="text-sm font-bold text-emerald-400">0 phút</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timers Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Session Block 1 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="bg-blue-500/10 text-blue-400 px-2.5 py-1 rounded-lg text-xs font-semibold border border-blue-500/20">CA 1: NỀN TẢNG (60 Phút)</span>
+                                <i class="fa-solid fa-music text-slate-600"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">Luyện Phát Âm & Nghe Chủ Động</h3>
+                            <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Dành 20 phút tập khởi động cơ nói (vowels/consonants) và 40 phút nghe sâu, nhại lại các câu chuyện dễ từ cuộc sống.</p>
+                            
+                            <div class="mt-4 bg-slate-950 rounded-xl p-4 border border-slate-850 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center text-blue-400">
+                                        <i class="fa-solid fa-hourglass-start" id="timer-icon-1"></i>
+                                    </div>
+                                    <div>
+                                        <div id="timer-display-1" class="text-xl font-mono font-bold text-white">60:00</div>
+                                        <span class="text-[10px] text-slate-500 block">Thời gian đề xuất</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-1.5">
+                                    <button onclick="toggleTimer(1, 3600, 'input')" id="timer-btn-1" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-500 transition shadow-lg shadow-blue-500/10">Bắt đầu</button>
+                                    <button onclick="resetTimer(1, 3600)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition text-xs"><i class="fa-solid fa-rotate-left"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Session Block 2 -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="bg-emerald-500/10 text-emerald-400 px-2.5 py-1 rounded-lg text-xs font-semibold border border-emerald-500/20">CA 2: PHẢN XẠ ĐẦU RA (60 Phút)</span>
+                                <i class="fa-solid fa-pen-fancy text-slate-600"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-white">Luyện Viết Tự Do & Nói Phản Xạ AI</h3>
+                            <p class="text-slate-400 text-xs mt-1.5 leading-relaxed">Dành 30 phút luyện viết 4 cấp độ (từ nhật ký đến bài luận ngắn) và 30 phút rèn luyện phản xạ đối đáp cùng Gia sư AI sửa lỗi tức thì.</p>
+                            
+                            <div class="mt-4 bg-slate-950 rounded-xl p-4 border border-slate-850 flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400">
+                                        <i class="fa-solid fa-hourglass-start" id="timer-icon-2"></i>
+                                    </div>
+                                    <div>
+                                        <div id="timer-display-2" class="text-xl font-mono font-bold text-white">60:00</div>
+                                        <span class="text-[10px] text-slate-500 block">Thời gian đề xuất</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-1.5">
+                                    <button onclick="toggleTimer(2, 3600, 'output')" id="timer-btn-2" class="px-3 py-1.5 rounded-lg bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-500 transition shadow-lg shadow-emerald-500/10">Bắt đầu</button>
+                                    <button onclick="resetTimer(2, 3600)" class="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition text-xs"><i class="fa-solid fa-rotate-left"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PRONUNCIATION TAB -->
+            <section id="tab-pronunciation" class="hidden space-y-6">
+                <div>
+                    <span class="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold border border-indigo-500/20">KHỞI ĐỘNG CƠ NÓI (SPEAKING MUSCLE MEMORY)</span>
+                    <h2 class="text-xl font-extrabold text-white mt-2">👄 Phát Âm IPA & Phòng Đọc To (Read Aloud)</h2>
+                    <p class="text-slate-400 text-xs">Trước khi luyện nói tự do, bạn phải khởi động cơ miệng để xây dựng "trí nhớ cơ" của não bộ giống như thầy giáo gợi ý trong video.</p>
+                </div>
+
+                <!-- Read Aloud Workout Section -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                    <h3 class="font-extrabold text-white text-sm mb-3 flex items-center gap-2"><i class="fa-solid fa-book-open-reader text-indigo-400"></i> Bài Tập 1: Đọc To Thành Tiếng (Read Aloud Practice)</h3>
+                    <p class="text-xs text-slate-400 mb-4">Hãy chọn một đoạn văn dễ dưới đây, bấm nút nghe giọng mẫu, sau đó tập đọc to, rõ ràng và nhấn mạnh từng âm tiết bằng cơ miệng của bạn.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
+                            <span class="text-[10px] uppercase font-bold text-indigo-400 tracking-wider">Đoạn văn khởi động 1</span>
+                            <blockquote class="text-sm italic text-slate-200 font-medium leading-relaxed" id="ra-passage-1">
+                                "One of the best ways to improve your English is to practice everyday. Don't worry about grammar, just open your book and start reading loudly to warm up your muscles."
+                            </blockquote>
+                            <div class="flex items-center justify-between border-t border-slate-850 pt-2 text-xs">
+                                <button onclick="speakText(document.getElementById('ra-passage-1').innerText)" class="text-indigo-400 hover:text-indigo-300 font-semibold"><i class="fa-solid fa-volume-high"></i> Nghe đọc mẫu</button>
+                                <button onclick="setChallengeWord('practice')" class="text-slate-400 hover:text-white">Đặt làm thử thách đọc <i class="fa-solid fa-arrow-right text-[10px]"></i></button>
+                            </div>
+                        </div>
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3">
+                            <span class="text-[10px] uppercase font-bold text-indigo-400 tracking-wider">Đoạn văn khởi động 2</span>
+                            <blockquote class="text-sm italic text-slate-200 font-medium leading-relaxed" id="ra-passage-2">
+                                "Speaking English is like a sport. The more you train your mouth, the easier it becomes to find the words when you need to speak in real life conversations."
+                            </blockquote>
+                            <div class="flex items-center justify-between border-t border-slate-850 pt-2 text-xs">
+                                <button onclick="speakText(document.getElementById('ra-passage-2').innerText)" class="text-indigo-400 hover:text-indigo-300 font-semibold"><i class="fa-solid fa-volume-high"></i> Nghe đọc mẫu</button>
+                                <button onclick="setChallengeWord('conversations')" class="text-slate-400 hover:text-white">Đặt làm thử thách đọc <i class="fa-solid fa-arrow-right text-[10px]"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IPA Cards & Mic Evaluation -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 space-y-4">
+                        <div class="flex items-center justify-between bg-slate-900 px-4 py-2.5 rounded-xl border border-slate-800">
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-slate-300">Bảng Phiên Âm Quốc Tế (IPA)</h4>
+                            <div class="flex space-x-1.5 text-xs">
+                                <button onclick="filterIPAGroup('vowels')" id="btn-vowels" class="px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-medium">Nguyên âm</button>
+                                <button onclick="filterIPAGroup('consonants')" id="btn-consonants" class="px-2.5 py-1 rounded-lg text-slate-400 hover:text-white">Phụ âm</button>
+                            </div>
+                        </div>
+                        <div id="ipa-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Filled dynamically by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Mic check widget -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-extrabold text-white text-sm flex items-center gap-2"><i class="fa-solid fa-microphone text-red-500"></i> Phòng Đo Độ Chuẩn</h3>
+                            <p class="text-xs text-slate-400 mt-1 leading-relaxed">Bấm nút loa để nghe, bật micro và phát âm to rõ ràng từ mục tiêu.</p>
+                            
+                            <div class="bg-slate-950 rounded-xl p-4 border border-slate-850 text-center space-y-4 mt-4">
+                                <div class="inline-flex items-center justify-center space-x-2.5 bg-slate-900 px-4 py-2 rounded-xl border border-slate-850">
+                                    <span id="target-word-display" class="font-extrabold text-lg text-indigo-400">practice</span>
+                                    <button onclick="speakText(document.getElementById('target-word-display').innerText)" class="text-slate-500 hover:text-white text-xs"><i class="fa-solid fa-volume-high"></i></button>
+                                </div>
+                                <div class="flex justify-center">
+                                    <button id="mic-record-btn" onclick="toggleSpeechRecognition()" class="w-14 h-14 rounded-full bg-slate-800 border-4 border-slate-950 flex items-center justify-center text-slate-300 hover:scale-105 active:scale-95 transition">
+                                        <i class="fa-solid fa-microphone text-lg"></i>
+                                    </button>
+                                </div>
+                                <div id="mic-status" class="text-[11px] text-slate-500">Nhấn micro để bắt đầu phát âm</div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 pt-2 border-t border-slate-850">
+                            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-850 text-left">
+                                <div class="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Từ máy nghe được:</div>
+                                <div id="recognized-text" class="text-xs font-semibold text-slate-300 italic">-</div>
+                            </div>
+                            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-850 text-left">
+                                <div class="text-[9px] uppercase tracking-wider text-slate-500 font-bold">Đánh giá:</div>
+                                <div id="pronunciation-evaluation" class="text-xs font-semibold text-slate-400">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- WRITING TAB (The 4 Levels of Writing Output) -->
+            <section id="tab-writing" class="hidden space-y-6">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                        <span class="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold border border-indigo-500/20">LỘ TRÌNH 4 BẬC VIẾT OUTPUT</span>
+                        <h2 class="text-xl font-extrabold text-white mt-2">✍️ Luyện Viết Khơi Nguồn Phản Xạ</h2>
+                        <p class="text-slate-400 text-xs">Mở khóa phản xạ bằng cách viết trước khi nói. Nâng dần độ phức tạp theo đúng phương pháp video đề xuất.</p>
+                    </div>
+                    <!-- Level Selectors -->
+                    <div class="flex items-center space-x-1 bg-slate-900 p-1.5 rounded-xl border border-slate-800 text-xs">
+                        <button onclick="changeWritingLevel(1)" id="btn-wl-1" class="px-2.5 py-1.5 rounded-lg font-bold bg-indigo-600 text-white">L1: Ý kiến</button>
+                        <button onclick="changeWritingLevel(2)" id="btn-wl-2" class="px-2.5 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white">L2: Nhật ký</button>
+                        <button onclick="changeWritingLevel(3)" id="btn-wl-3" class="px-2.5 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white">L3: Đoạn văn</button>
+                        <button onclick="changeWritingLevel(4)" id="btn-wl-4" class="px-2.5 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white">L4: Bài luận</button>
+                    </div>
+                </div>
+
+                <!-- Writing Workspace Layout -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left Column: Guidelines & Prompt generation (5 cols) -->
+                    <div class="lg:col-span-5 space-y-4">
+                        <!-- Dynamic Instructions Panel based on selected level -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3.5">
+                            <h3 id="writing-level-title" class="text-base font-extrabold text-indigo-400">Level 1: Share Your Thoughts (Ý kiến ngắn)</h3>
+                            <p id="writing-level-desc" class="text-xs text-slate-400 leading-relaxed">
+                                Bước khởi động đơn giản nhất. Hãy viết 1-2 câu chia sẻ suy nghĩ bất kỳ về bài học hôm nay để cơ tay quen với việc xuất bản từ vựng.
+                            </p>
+                            <div class="bg-slate-950 p-3.5 rounded-xl border border-slate-850 space-y-2">
+                                <span class="text-[10px] text-indigo-400 font-extrabold tracking-wider uppercase block">Chủ đề gợi ý:</span>
+                                <p id="writing-suggested-topic" class="text-xs text-slate-200 font-semibold leading-relaxed">"What did you think about today's practice session?"</p>
+                            </div>
+                            <div class="space-y-1.5">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Gợi ý từ vựng / cấu trúc:</span>
+                                <ul id="writing-hints-list" class="text-xs text-slate-400 space-y-1">
+                                    <li>• "Today I learned about..."</li>
+                                    <li>• "The practice is very interesting/hard..."</li>
+                                    <li>• "I am going to practice writing every day."</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Mini score tracker from localStorage -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                            <h4 class="font-bold text-xs uppercase tracking-wider text-slate-300 mb-3">Lịch Sử Bài Viết Đã Chấm</h4>
+                            <div id="writing-history-list" class="space-y-2 text-xs">
+                                <p class="text-slate-500 italic text-center">Chưa có bài viết nào được lưu.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Text editor & AI evaluation results (7 cols) -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between h-[320px]">
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-3">
+                                <span class="text-xs font-bold text-slate-400">Trình viết phản xạ</span>
+                                <span id="writing-word-count" class="text-xs text-indigo-400 font-semibold">0 từ</span>
+                            </div>
+                            <textarea id="writing-textarea" oninput="updateWordCount()" placeholder="Bắt đầu viết những câu tiếng Anh đầu tiên của bạn tại đây..." class="flex-1 bg-slate-950 border border-slate-850 text-slate-100 rounded-xl p-4 text-xs focus:outline-none focus:border-indigo-500 resize-none"></textarea>
+                            <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-800">
+                                <span class="text-[10px] text-slate-500 italic">Mục tiêu: Đạt ít nhất <strong id="writing-target-words">10</strong> từ.</span>
+                                <button onclick="sendWritingToAI()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/10 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-microchip"></i> AI Chấm Điểm (Phần tích POC)
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Real-time Deep Feedback panel from AI (styled in compliance with Video POC) -->
+                        <div id="ai-evaluation-panel" class="bg-slate-900 border border-slate-850 rounded-2xl p-5 space-y-4 hidden">
+                            <h4 class="font-extrabold text-sm text-indigo-400 border-b border-slate-850 pb-2 flex items-center justify-between">
+                                <span>Phân Tích Chi Tiết Của Giáo Viên AI</span>
+                                <button onclick="closeEvaluation()" class="text-xs text-slate-500 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                            </h4>
+                            <!-- Scores grid from video methodology -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-850 text-center">
+                                    <div class="text-[9px] uppercase font-extrabold tracking-wider text-slate-500">Ngữ Pháp</div>
+                                    <div id="score-grammar" class="text-lg font-black text-indigo-400">-/10</div>
+                                </div>
+                                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-850 text-center">
+                                    <div class="text-[9px] uppercase font-extrabold tracking-wider text-slate-500">Từ Vựng</div>
+                                    <div id="score-vocab" class="text-lg font-black text-blue-400">-/10</div>
+                                </div>
+                                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-850 text-center">
+                                    <div class="text-[9px] uppercase font-extrabold tracking-wider text-slate-500">Mạch Lạc</div>
+                                    <div id="score-cohesion" class="text-lg font-black text-purple-400">-/10</div>
+                                </div>
+                                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-850 text-center bg-indigo-950/20">
+                                    <div class="text-[9px] uppercase font-extrabold tracking-wider text-indigo-400">TỔNG ĐIỂM</div>
+                                    <div id="score-overall" class="text-lg font-black text-emerald-400">-/10</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Detailed feedback -->
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-850 space-y-3 max-h-[250px] overflow-y-auto text-xs">
+                                <div>
+                                    <h5 class="font-extrabold text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-circle-check"></i> Bản viết đã chỉnh sửa:</h5>
+                                    <p id="eval-corrected" class="mt-1 text-slate-200 leading-relaxed italic"></p>
+                                </div>
+                                <div class="border-t border-slate-850 pt-2">
+                                    <h5 class="font-extrabold text-amber-500 flex items-center gap-1"><i class="fa-solid fa-magnifying-glass"></i> Phân tích lỗi cụ thể:</h5>
+                                    <div id="eval-errors" class="mt-1 text-slate-400 leading-relaxed space-y-1"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ACTIVE LISTENING TAB -->
+            <section id="tab-listening" class="hidden space-y-6">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div>
+                        <span class="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold border border-indigo-500/20">MỤC TIÊU 30 PHÚT MỖI NGÀY</span>
+                        <h2 class="text-xl font-extrabold text-white mt-2">🎧 Luyện Nghe Chủ Động & Nhại Âm (Shadowing)</h2>
+                        <p class="text-slate-400 text-xs">Nghe câu chuyện tiếng Anh đơn giản với tốc độ cực kì phù hợp cho trình độ A1.</p>
+                    </div>
+                    <!-- Story selector dropdown -->
+                    <div class="flex items-center gap-2">
+                        <select id="listening-story-select" onchange="changeStory()" class="bg-slate-900 border border-slate-800 text-slate-300 text-xs rounded-xl p-2.5 outline-none focus:border-indigo-500">
+                            <option value="story-busy-day">Câu chuyện 1: A Busy Day</option>
+                            <option value="story-my-hobby">Câu chuyện 2: Talking About Hobbies</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Interactive Listening Interface -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left: Control & Interactive Script -->
+                    <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-slate-850 pb-3 mb-4">
+                                <h3 class="font-bold text-slate-200 text-sm" id="listening-title">A Busy Day (Một Ngày Bận Rộn)</h3>
+                                <!-- Speed controls -->
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-[10px] text-slate-500">Tốc độ:</span>
+                                    <button onclick="setListeningSpeed(0.8)" id="speed-0-8" class="px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:text-white transition text-[10px]">Chậm (0.8x)</button>
+                                    <button onclick="setListeningSpeed(1.0)" id="speed-1-0" class="px-2 py-1 rounded bg-indigo-600 text-white transition text-[10px]">Bình thường</button>
+                                </div>
+                            </div>
+
+                            <!-- Interactive Content Container -->
+                            <div class="p-4 bg-slate-950 rounded-xl border border-slate-850 min-h-[160px] max-h-[250px] overflow-y-auto">
+                                <div id="interactive-script" class="text-slate-300 leading-relaxed text-sm tracking-wide md:text-base">
+                                    <!-- Story words dynamic -->
+                                </div>
+                            </div>
+                            <span class="text-[10px] text-slate-500 italic mt-2 block"><i class="fa-solid fa-circle-info"></i> Nhấn vào một từ bất kì để nghe phát âm và xem định nghĩa.</span>
+                        </div>
+
+                        <!-- Audio Playbar -->
+                        <div class="bg-slate-950 border border-slate-850 p-3.5 rounded-xl flex items-center justify-between mt-4">
+                            <button id="story-play-btn" onclick="togglePlayStory()" class="px-4 py-2 rounded-xl bg-indigo-600 text-white font-semibold text-xs hover:bg-indigo-500 transition shadow-lg shadow-indigo-500/10 flex items-center gap-1.5">
+                                <i class="fa-solid fa-play"></i> Phát Audio
+                            </button>
+                            <span id="playing-status" class="text-xs text-slate-400">Đang dừng</span>
+                            <button onclick="toggleVietnameseTranslation()" class="px-3 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold transition">
+                                <i class="fa-solid fa-language"></i> Xem Dịch nghĩa
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Translation, Word Detail & Comprehension Quiz -->
+                    <div class="space-y-6">
+                        <!-- Bilingual Dictionary Panel -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                            <h4 class="font-bold text-slate-200 text-xs uppercase tracking-wider mb-3"><i class="fa-solid fa-language text-indigo-400"></i> Từ điển trực tiếp</h4>
+                            <div id="word-detail-panel" class="bg-slate-950 p-4 rounded-xl border border-slate-850 text-center space-y-2">
+                                <p class="text-slate-500 text-xs">Hãy bấm chọn một từ trong đoạn truyện để tra cứu từ điển nhanh.</p>
+                            </div>
+                        </div>
+
+                        <!-- Mini Comprehension Check Quiz -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                            <h4 class="font-bold text-slate-200 text-xs uppercase tracking-wider mb-3"><i class="fa-solid fa-spell-check text-indigo-400"></i> Trắc Nghiệm Hiểu Bài</h4>
+                            <div id="story-quiz-container" class="space-y-3">
+                                <!-- Quiz dynamically loaded via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SELFTALK TAB (NÓI PHẢN XẠ AI) -->
+            <section id="tab-selftalk" class="hidden space-y-6">
+                <div>
+                    <span class="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold border border-indigo-500/20">MỤC TIÊU 30 PHÚT NÓI CHỦ ĐỘNG MỖI NGÀY</span>
+                    <h2 class="text-xl font-extrabold text-white mt-2">💬 Tự Luyện Nói & Sửa Sai Toàn Diện Cùng AI</h2>
+                    <p class="text-slate-400 text-xs">Đóng giả cuộc đối thoại, gửi câu nói của bạn cho AI để tối ưu cách giao tiếp tự nhiên nhất.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left: Suggestion & Speech to Text Helper (5 cols) -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <!-- Talk Prompt Generator -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                            <div class="flex items-center justify-between">
+                                <h3 class="font-bold text-slate-200 text-sm">💡 Chủ đề phản xạ hôm nay</h3>
+                                <button onclick="generateTalkPrompt()" class="text-xs text-indigo-400 hover:underline"><i class="fa-solid fa-arrows-rotate"></i> Chủ đề khác</button>
+                            </div>
+                            
+                            <div class="p-4 bg-slate-950 rounded-xl border border-slate-850">
+                                <h4 id="prompt-english" class="font-bold text-indigo-400 text-base">"Describe your favorite food or drink"</h4>
+                                <p id="prompt-vietnamese" class="text-slate-400 text-xs mt-1.5">Mô tả món ăn hoặc thức uống yêu thích của bạn</p>
+                            </div>
+
+                            <!-- Helpful Hints for A1 -->
+                            <div class="space-y-2">
+                                <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Mẫu câu gợi ý bắt đầu:</span>
+                                <ul id="prompt-hints" class="space-y-1.5 text-xs text-slate-400">
+                                    <li>• "My favorite food/drink is..."</li>
+                                    <li>• "I really like eating/drinking..."</li>
+                                    <li>• "Because it smells/tastes..."</li>
+                                    <li>• "I often have it for breakfast/lunch/dinner..."</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Micro to input speech to AI -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-center space-y-3">
+                            <h3 class="font-bold text-slate-200 text-xs uppercase tracking-wider text-left">🎙️ Máy Chép Giọng Nói (Speech to Text)</h3>
+                            <p class="text-slate-400 text-xs text-left">Bật tính năng thu âm để chuyển giọng nói trực tiếp của bạn thành văn bản trước khi gửi cho Giáo viên AI sửa.</p>
+                            
+                            <div class="bg-slate-950 py-5 px-3 rounded-xl border border-slate-850 space-y-3">
+                                <div class="flex justify-center">
+                                    <button id="aitutor-record-btn" onclick="toggleTutorRecognition()" class="w-14 h-14 rounded-full bg-slate-800 border-4 border-slate-950 flex items-center justify-center text-red-500 transition-all hover:scale-105">
+                                        <i class="fa-solid fa-microphone text-lg"></i>
+                                    </button>
+                                </div>
+                                <span id="aitutor-mic-status" class="text-slate-400 text-[11px] block font-medium">Bấm Micro và bắt đầu nói...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: AI Tutor Chat Workspace (7 cols) -->
+                    <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col justify-between h-[520px]">
+                        <!-- Chat Header -->
+                        <div class="bg-slate-900 px-5 py-3 border-b border-slate-800 rounded-t-2xl flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-full bg-indigo-600/20 text-indigo-400 flex items-center justify-center font-bold text-sm">
+                                    AI
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-sm text-slate-100">Giáo Viên Tiếng Anh AI</h3>
+                                    <span class="text-[10px] text-emerald-400 font-semibold flex items-center"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse"></span> Sẵn sàng sửa sai phản xạ</span>
+                                </div>
+                            </div>
+                            <button onclick="resetTutorChat()" class="text-slate-400 hover:text-white text-xs transition" title="Xóa lịch sử chat"><i class="fa-solid fa-trash-can"></i> Clear</button>
+                        </div>
+
+                        <!-- Chat Messages Container -->
+                        <div id="tutor-chat-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                            <!-- AI Init message -->
+                            <div class="flex items-start space-x-2.5">
+                                <div class="w-7 h-7 rounded-full bg-indigo-600/20 text-indigo-400 flex items-center justify-center shrink-0 text-xs font-bold">
+                                    AI
+                                </div>
+                                <div class="bg-slate-950 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-xs leading-relaxed text-slate-200">
+                                    Chào bạn! Tôi là Giáo viên Tiếng Anh Giao Tiếp của bạn. Hãy gửi những câu tiếng Anh bạn tự viết hoặc tự nói phía bên trái qua đây, tôi sẽ kiểm tra lỗi sai và dịch chi tiết sang tiếng Việt cho bạn nhé! 😊
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Templates -->
+                        <div class="px-4 py-2 border-t border-slate-850 flex items-center gap-2 overflow-x-auto text-[10px]">
+                            <button onclick="setQuickInput('Sửa lỗi câu này của tôi: ')" class="shrink-0 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 rounded-lg px-2.5 py-1.5 transition">🔧 Sửa lỗi câu</button>
+                            <button onclick="setQuickInput('Dịch câu này sang tiếng Anh tự nhiên nhất: ')" class="shrink-0 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 rounded-lg px-2.5 py-1.5 transition">🇻🇳 Dịch sang Anh</button>
+                            <button onclick="setQuickInput('Hãy giải thích từ vựng này cho tôi: ')" class="shrink-0 bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 rounded-lg px-2.5 py-1.5 transition">💡 Giải thích từ</button>
+                        </div>
+
+                        <!-- Chat Input Bar -->
+                        <div class="p-3 border-t border-slate-850 bg-slate-900 rounded-b-2xl flex items-center gap-2">
+                            <textarea id="chat-input-text" rows="1" placeholder="Nhập câu tiếng Anh hoặc bấm micro thu âm..." class="flex-1 bg-slate-950 border border-slate-800 text-slate-100 rounded-xl px-4 py-2 text-xs focus:outline-none focus:border-indigo-500 resize-none min-h-[40px] max-h-[100px]"></textarea>
+                            <button id="send-ai-btn" onclick="sendMessageToTutor()" class="p-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition shrink-0">
+                                <i class="fa-solid fa-paper-plane text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- NOTEBOOK TAB -->
+            <section id="tab-notebook" class="hidden space-y-6">
+                <div>
+                    <span class="bg-indigo-500/10 text-indigo-400 px-3 py-1 rounded-full text-xs font-bold border border-indigo-500/20">SỔ TAY TÍCH LŨY</span>
+                    <h2 class="text-xl font-extrabold text-white mt-2">📖 Sổ Ghi Chú Từ Vựng Cá Nhân</h2>
+                    <p class="text-slate-400 text-xs">Nơi lưu giữ những từ vựng, cụm từ đắt giá bạn học được trong lúc Nghe, Viết hoặc Chat với AI. Luyện ôn để kích hoạt trí nhớ dài hạn.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Left Column: Add / Flashcard (5 cols) -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <!-- Add Custom Note Form -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                            <h3 class="font-bold text-slate-200 text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-plus text-indigo-400"></i> Thêm từ mới thủ công
+                            </h3>
+                            <div class="space-y-3 text-xs">
+                                <div>
+                                    <label class="block text-slate-400 mb-1">Từ mới / Cụm từ *</label>
+                                    <input type="text" id="note-word" placeholder="Ví dụ: gorgeous, take action..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-100 outline-none focus:border-indigo-500">
+                                </div>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label class="block text-slate-400 mb-1">Phiên âm IPA</label>
+                                        <input type="text" id="note-ipa" placeholder="Ví dụ: /ˈɡɔːdʒəs/" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-100 outline-none focus:border-indigo-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-slate-400 mb-1">Nghĩa tiếng Việt *</label>
+                                        <input type="text" id="note-vn" placeholder="Ví dụ: Tuyệt đẹp, lộng lẫy" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-100 outline-none focus:border-indigo-500">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-slate-400 mb-1">Câu ví dụ thực tế</label>
+                                    <textarea id="note-example" rows="2" placeholder="Ví dụ: She looks gorgeous tonight." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-slate-100 outline-none focus:border-indigo-500 resize-none"></textarea>
+                                </div>
+                                <button onclick="addNewNoteFromForm()" class="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-lg shadow-indigo-500/20">
+                                    Thêm vào sổ tay
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Mini Flashcard System -->
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                            <h3 class="font-bold text-slate-200 text-sm flex items-center justify-between">
+                                <span>🃏 Thử thách Flashcard nhanh</span>
+                                <button onclick="startFlashcardReview()" class="text-xs text-indigo-400 hover:underline"><i class="fa-solid fa-arrows-rotate"></i> Đổi từ</button>
+                            </h3>
+                            <div id="flashcard-box" class="bg-slate-950 border border-slate-850 rounded-xl p-6 text-center cursor-pointer min-h-[140px] flex flex-col justify-center items-center transition-all duration-300 transform active:scale-95" onclick="flipFlashcard()">
+                                <p class="text-slate-550 text-[10px] uppercase tracking-wider mb-2 font-bold" id="flashcard-side">Mặt Trước</p>
+                                <h4 id="flashcard-title" class="text-xl font-black text-indigo-400">Chưa có từ vựng</h4>
+                                <p id="flashcard-subtitle" class="text-xs text-slate-400 mt-2">Lưu ít nhất 1 từ vào sổ tay để khởi chạy ôn tập!</p>
+                            </div>
+                            <p class="text-[10px] text-slate-500 text-center italic">Nhấp vào thẻ màu đen ở trên để lật mặt xem nghĩa và câu ví dụ.</p>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Notes List & Search (7 cols) -->
+                    <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between h-[520px]">
+                        <div>
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-800 pb-3 mb-4">
+                                <h3 class="font-bold text-slate-200 text-sm flex items-center gap-1.5">
+                                    🎯 Từ vựng đã lưu (<span id="notebook-count" class="text-indigo-450">0</span> từ)
+                                </h3>
+                                <input type="text" id="search-note" oninput="filterNotes()" placeholder="Tìm từ vựng hoặc nghĩa..." class="bg-slate-950 border border-slate-800 text-xs rounded-xl px-3 py-1.5 text-slate-200 outline-none focus:border-indigo-500 w-full sm:w-48">
+                            </div>
+                            <!-- Scrollable list of cards -->
+                            <div id="notes-list-container" class="space-y-3 overflow-y-auto max-h-[380px] pr-1">
+                                <!-- Filled dynamically by JS -->
+                            </div>
+                        </div>
+                        <div class="border-t border-slate-800 pt-3 text-right">
+                            <button onclick="exportNotes()" class="px-3 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 text-[11px] transition">
+                                <i class="fa-solid fa-file-export"></i> Sao chép Sổ tay (Clipboard)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- API CONFIG MODAL -->
+    <div id="apikey-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 hidden p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-md shadow-2xl relative">
+            <button onclick="toggleApiKeyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark"></i></button>
+            <div class="flex items-center space-x-3 mb-4">
+                <div class="bg-amber-500/10 text-amber-500 p-2 rounded-xl border border-amber-500/20">
+                    <i class="fa-solid fa-key text-lg"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white">Cấu hình API Key Gemini</h3>
+                    <p class="text-slate-400 text-[11px]">Dành cho việc liên lạc với Giáo viên AI tốt nhất</p>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    Trợ lý ảo sử dụng mô hình **gemini-3-flash-preview** để hướng dẫn và chỉnh sửa bài cho bạn. Vui lòng dán khóa Gemini cá nhân của bạn dưới đây. Khóa này chỉ được lưu an toàn trực tiếp trên trình duyệt của riêng bạn (LocalStorage).
+                </p>
+                
+                <div>
+                    <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1.5">Mã API Key cá nhân của bạn:</label>
+                    <input type="password" id="api-key-input" placeholder="Dán API Key (AIzaSy...) tại đây" class="w-full bg-slate-950 border border-slate-800 text-xs rounded-xl p-3 text-slate-100 outline-none focus:border-indigo-500">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-850 text-[10px] text-slate-400 flex items-start gap-2">
+                    <i class="fa-solid fa-shield-halved text-indigo-400 mt-0.5"></i>
+                    <span>Không sợ rò rỉ khóa. Ứng dụng này giao tiếp trực tiếp với máy chủ Google, không thông qua bất kỳ máy chủ trung gian nào khác.</span>
+                </div>
+
+                <div class="flex items-center justify-end space-x-2 pt-2">
+                    <button onclick="toggleApiKeyModal()" class="px-4 py-2 rounded-xl text-slate-300 hover:text-white text-xs hover:bg-slate-800 transition">Hủy bỏ</button>
+                    <button onclick="saveApiKey()" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs transition shadow-lg shadow-indigo-500/10">Lưu API Key</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Engine Logic -->
+    <script>
+        // Global State Manager
+        let currentTab = 'dashboard';
+        let dailyMinutes = 0;
+        let inputMinutes = 0;
+        let outputMinutes = 0;
+        let currentWritingLevel = 1;
+        let apiKey = localStorage.getItem('gemini_api_key') || "";
+        let myNotes = JSON.parse(localStorage.getItem('booster_notes')) || [];
+        let currentFlashcardIndex = -1;
+        let isFlashcardFlipped = false;
+
+        // Timers structure
+        let timers = {
+            1: { timeRemaining: 3600, interval: null, isRunning: false, type: 'input' },
+            2: { timeRemaining: 3600, interval: null, isRunning: false, type: 'output' }
+        };
+
+        // Static Data
+        const ipaData = [
+            { id: 'ipa1', sound: '/i:/', group: 'vowels', word: 'sheep', vietnamese: 'con cừu', description: 'Nguyên âm i dài. Mở miệng cười dẹt hai bên cơ má kéo dãn ra.' },
+            { id: 'ipa2', sound: '/ɪ/', group: 'vowels', word: 'ship', vietnamese: 'tàu thủy', description: 'Nguyên âm i ngắn. Hàm hơi trễ, phát âm dứt khoát nhanh gọn.' },
+            { id: 'ipa3', sound: '/æ/', group: 'vowels', word: 'cat', vietnamese: 'con mèo', description: 'Nguyên âm e bẹt. Mở rộng miệng hết cỡ về cả chiều dọc và ngang.' },
+            { id: 'ipa4', sound: '/e/', group: 'vowels', word: 'bed', vietnamese: 'cái giường', description: 'Nguyên âm e ngắn. Mở miệng tự nhiên thoải mái phát ra âm "e" dứt khoát.' },
+            { id: 'ipa5', sound: '/s/', group: 'consonants', word: 'see', vietnamese: 'nhìn thấy', description: 'Phụ âm vô thanh. Răng khép hờ, hơi đẩy từ kẽ răng ra như tiếng huýt.' },
+            { id: 'ipa6', sound: '/z/', group: 'consonants', word: 'zoo', vietnamese: 'vườn thú', description: 'Phụ âm hữu thanh. Khẩu hình giống /s/ nhưng rung dây thanh quản cực mạnh.' }
+        ];
+
+        // 4 Levels Writing Config Data directly mapped from POC English methodology
+        const writingLevelsConfig = {
+            1: {
+                title: "Level 1: Share Your Thoughts (Bình luận ngắn)",
+                desc: "Hãy khởi động cơ miệng và thói quen bằng cách viết một đoạn nhận xét/chia sẻ vô cùng ngắn từ 1-2 câu. Đây là phương pháp Warm-up nhẹ nhàng nhất mà không sợ bị quá tải.",
+                topic: "What is your opinion about today's lesson? Write 1 or 2 simple sentences.",
+                hints: ["• 'Today I practiced speaking and listening.'", "• 'I think this lesson is highly useful.'", "• 'I will continue writing tomorrow.'"],
+                target: 10
+            },
+            2: {
+                title: "Level 2: Daily Journal (Viết nhật ký hàng ngày)",
+                desc: "Cấp độ trung bình. Hãy viết từ 5-10 câu về một ngày của bạn: Hôm nay bạn làm gì? Bạn cảm thấy thế nào? Bạn sẽ làm gì ngày mai? KHÔNG CẦN quan tâm đến ngữ pháp, chỉ cần nỗ lực cho ra 'Output' trôi chảy.",
+                topic: "Write 5 to 10 sentences about your day. How was it?",
+                hints: ["• 'Today I got up early at...' ", "• 'I worked very hard but I felt happy.'", "• 'Tomorrow I am going to buy some groceries.'"],
+                target: 30
+            },
+            3: {
+                title: "Level 3: Simple Paragraph (Đoạn văn ngắn ~100 từ)",
+                desc: "Cấp độ nâng cao. Bạn sẽ tập trung viết một đoạn văn ngắn khoảng 100 từ về một chủ đề đơn giản. Lần này, Ngữ pháp & Từ vựng BẮT ĐẦU quan trọng, hãy tập trung vào tính mạch lạc.",
+                topic: "Write a short paragraph about: 'What makes me happy?' (~100 words)",
+                hints: ["• 'Many simple things can make me happy...' ", "• 'For example, enjoying a cup of coffee in the morning.'", "• 'Spending quality time with my lovely family.'"],
+                target: 80
+            },
+            4: {
+                title: "Level 4: Critical Short Essay (Bài luận ngắn phản biện)",
+                desc: "Cấp độ thử thách nhất. Viết 2-3 đoạn văn phản biện về một chủ đề mang tính chất tư duy (ví dụ: Công nghệ có cải thiện giáo dục?). AI sẽ chấm điểm cực kỳ chuyên sâu.",
+                topic: "Do you think technology is improving education? Write 2-3 paragraphs.",
+                hints: ["• 'In my opinion, technology has positive effects on studying.'", "• 'Firstly, students can access online lessons easily.'", "• 'However, social media can cause distractions during study hours.'"],
+                target: 150
+            }
+        };
+
+        const listeningStories = {
+            'story-busy-day': {
+                title: 'A Busy Day (Một Ngày Bận Rộn)',
+                english: 'Hello! My name is Nam. Every day, I get up early at six o clock. I eat some bread and drink a hot cup of black coffee. At seven, I go to my office by motorbike. The traffic is very crowded. I work hard from eight in the morning to five in the afternoon. In the evening, I cook a simple dinner with chicken and rice. I read a book for thirty minutes, then I go to bed.',
+                vietnamese: 'Xin chào! Tên tôi là Nam. Mỗi ngày, tôi thức dậy sớm lúc 6 giờ. Tôi ăn một ít bánh mì và uống một ly cà phê đen nóng. Lúc 7 giờ, tôi đi xe máy đến văn phòng. Giao thông rất đông đúc. Tôi làm việc chăm chỉ từ 8 giờ sáng đến 5 giờ chiều. Vào buổi tối, tôi nấu một bữa tối đơn giản với thịt gà và cơm. Tôi đọc sách khoảng 30 phút, sau đó đi ngủ.',
+                quiz: {
+                    question: 'What does Nam eat for breakfast?',
+                    answers: ['Rice and chicken', 'Bread', 'Fish and vegetables', 'He does not eat breakfast'],
+                    correctIndex: 1
+                }
+            },
+            'story-my-hobby': {
+                title: 'Talking About Hobbies (Nói Về Sở Thích)',
+                english: 'Hi everyone! I am Hoa and I want to share my hobbies. I have two main hobbies. On weekdays, I love reading novels in my room. It makes me relax after a long day of study. On weekends, I like going out with my best friends. We usually go to a cozy cafe near the park. We chat, laugh, and take nice photos. What about you? Do you have any interesting hobbies?',
+                vietnamese: 'Chào mọi người! Tôi là Hoa và tôi muốn chia sẻ về sở thích của mình. Tôi có hai sở thích chính. Vào các ngày trong tuần, tôi thích đọc tiểu thuyết trong phòng của mình. Nó giúp tôi thư giãn sau một ngày dài học tập. Vào cuối tuần, tôi thích đi chơi với những người bạn thân nhất của mình. Chúng tôi thường đến một quán cà phê ấm cúng gần công viên. Chúng tôi trò chuyện, cười đùa và chụp những bức ảnh đẹp. Còn bạn thì sao? Bạn có sở thích thú vị nào không?',
+                quiz: {
+                    question: 'Where does Hoa usually go on weekends with her friends?',
+                    answers: ['To the cinema', 'To a swimming pool', 'To a cozy cafe near the park', 'To a library'],
+                    correctIndex: 2
+                }
+            }
+        };
+
+        const talkPrompts = [
+            { english: 'Describe your favorite food or drink.', vietnamese: 'Mô tả món ăn hoặc đồ uống yêu thích của bạn.', hints: ['• My favorite food/drink is...', '• I really like eating/drinking...', '• Because it smells/tastes...', '• I often have it for breakfast/lunch/dinner...'] },
+            { english: 'Introduce yourself and your job.', vietnamese: 'Tự giới thiệu bản thân và nghề nghiệp hiện tại của bạn.', hints: ['• My name is...', '• I am... years old.', '• Currently, I work as a...', '• I love my job because...'] },
+            { english: 'Talk about your family members.', vietnamese: 'Kể về các thành viên trong gia đình của bạn.', hints: ['• There are... people in my family.', '• My father is a... and my mother is a...', '• In our free time, we like to...', '• I love my family very much.'] }
+        ];
+
+        const dictionary = {
+            hello: { ipa: '/həˈləʊ/', vn: 'Xin chào' },
+            early: { ipa: '/ˈɜːli/', vn: 'Sớm (thời gian)' },
+            office: { ipa: '/ˈɒfɪs/', vn: 'Văn phòng' },
+            motorbike: { ipa: '/ˈməʊtəbaɪk/', vn: 'Xe máy' },
+            traffic: { ipa: '/ˈtræfɪk/', vn: 'Giao thông' },
+            crowded: { ipa: '/ˈkraʊdɪd/', vn: 'Đông đúc' },
+            favorite: { ipa: '/ˈfeɪvərɪt/', vn: 'Yêu thích' },
+            relax: { ipa: '/rɪˈlæks/', vn: 'Thư giãn' }
+        };
+
+        window.onload = function() {
+            renderIPACards('vowels');
+            changeWritingLevel(1);
+            loadStory('story-busy-day');
+            setTalkPrompt(0);
+            loadSavedStats();
+            renderNotesList();
+            startFlashcardReview();
+        };
+
+        function switchTab(tabId) {
+            const tabs = ['dashboard', 'pronunciation', 'writing', 'listening', 'selftalk', 'notebook'];
+            tabs.forEach(tab => {
+                document.getElementById('tab-' + tab).classList.add('hidden');
+                const nav = document.getElementById('nav-' + tab);
+                if (nav) {
+                    nav.className = "w-full flex flex-col md:flex-row items-center md:space-x-3 p-3 rounded-xl transition font-semibold text-xs md:text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-100 border-l-4 border-transparent";
+                }
+            });
+
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeNav) {
+                activeNav.className = "w-full flex flex-col md:flex-row items-center md:space-x-3 p-3 rounded-xl transition font-semibold text-xs md:text-sm text-indigo-400 bg-indigo-600/10 border-l-4 border-indigo-500";
+            }
+            currentTab = tabId;
+        }
+
+        function showToast(message, isSuccess = true) {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toast-icon');
+            const msg = document.getElementById('toast-message');
+            
+            msg.innerText = message;
+            if (isSuccess) {
+                toast.className = "fixed top-4 right-4 bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2 transition-transform duration-300 transform translate-x-0 z-50 text-sm font-medium border border-emerald-500/20";
+                icon.className = "fa-solid fa-circle-check";
+            } else {
+                toast.className = "fixed top-4 right-4 bg-amber-600 text-white px-4 py-2.5 rounded-xl shadow-2xl flex items-center space-x-2 transition-transform duration-300 transform translate-x-0 z-50 text-sm font-medium border border-amber-500/20";
+                icon.className = "fa-solid fa-triangle-exclamation";
+            }
+
+            setTimeout(() => {
+                toast.classList.add('translate-x-[150%]');
+            }, 3000);
+        }
+
+        // Stats & Progress Engine
+        function recordTimeSpent(minutes, type) {
+            if (type === 'input') {
+                inputMinutes += minutes;
+            } else if (type === 'output') {
+                outputMinutes += minutes;
+            }
+            dailyMinutes = inputMinutes + outputMinutes;
+            updateStatsUI();
+            saveStats();
+        }
+
+        function updateStatsUI() {
+            document.getElementById('header-progress').innerText = `${dailyMinutes} / 120 phút`;
+            document.getElementById('stats-input').innerText = `${inputMinutes} phút`;
+            document.getElementById('stats-output').innerText = `${outputMinutes} phút`;
+            
+            const total = (inputMinutes + outputMinutes) || 1;
+            const inputPct = Math.round((inputMinutes / total) * 100);
+            const outputPct = Math.round((outputMinutes / total) * 100);
+
+            document.getElementById('io-ratio-text').innerText = `${inputPct}% Input / ${outputPct}% Output`;
+            document.getElementById('bar-input').style.width = `${inputPct}%`;
+            document.getElementById('bar-output').style.width = `${outputPct}%`;
+
+            const goalPercent = Math.min(100, Math.round((dailyMinutes / 120) * 100));
+            document.getElementById('sidebar-progress-bar').style.width = `${goalPercent}%`;
+        }
+
+        function saveStats() {
+            localStorage.setItem('booster_input_m', inputMinutes);
+            localStorage.setItem('booster_output_m', outputMinutes);
+        }
+
+        function loadSavedStats() {
+            const savedInput = localStorage.getItem('booster_input_m');
+            const savedOutput = localStorage.getItem('booster_output_m');
+            if (savedInput) inputMinutes = parseInt(savedInput, 10);
+            if (savedOutput) outputMinutes = parseInt(savedOutput, 10);
+            dailyMinutes = inputMinutes + outputMinutes;
+            updateStatsUI();
+        }
+
+        // Timer controller
+        function toggleTimer(id, defaultSeconds, type) {
+            const timer = timers[id];
+            const btn = document.getElementById(`timer-btn-${id}`);
+            const icon = document.getElementById(`timer-icon-${id}`);
+
+            if (timer.isRunning) {
+                clearInterval(timer.interval);
+                timer.isRunning = false;
+                btn.innerText = "Tiếp tục";
+                icon.className = "fa-solid fa-hourglass-start text-xl";
+            } else {
+                timer.isRunning = true;
+                btn.innerText = "Tạm dừng";
+                icon.className = "fa-solid fa-hourglass-half text-xl animate-spin";
+                
+                timer.interval = setInterval(() => {
+                    timer.timeRemaining--;
+                    updateTimerDisplay(id);
+
+                    // Add progress every 60 seconds
+                    if ((defaultSeconds - timer.timeRemaining) % 60 === 0) {
+                        recordTimeSpent(1, type);
+                    }
+
+                    if (timer.timeRemaining <= 0) {
+                        clearInterval(timer.interval);
+                        timer.isRunning = false;
+                        showToast(`Hoàn thành ca học ${id}! Bạn học xuất sắc.`);
+                        resetTimer(id, defaultSeconds);
+                    }
+                }, 1000);
+            }
+        }
+
+        function resetTimer(id, defaultSeconds) {
+            const timer = timers[id];
+            clearInterval(timer.interval);
+            timer.timeRemaining = defaultSeconds;
+            timer.isRunning = false;
+            updateTimerDisplay(id);
+            const btn = document.getElementById(`timer-btn-${id}`);
+            btn.innerText = "Bắt đầu";
+            document.getElementById(`timer-icon-${id}`).className = "fa-solid fa-hourglass-start text-xl";
+        }
+
+        function updateTimerDisplay(id) {
+            const timer = timers[id];
+            const display = document.getElementById(`timer-display-${id}`);
+            const mins = Math.floor(timer.timeRemaining / 60);
+            const secs = timer.timeRemaining % 60;
+            display.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function speakText(text, speed = 1.0) {
+            if (!('speechSynthesis' in window)) {
+                showToast("Trình duyệt không hỗ trợ tổng hợp giọng nói.", false);
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = speed;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Pronunciation section logic
+        function filterIPAGroup(group) {
+            const btnVowels = document.getElementById('btn-vowels');
+            const btnConsonants = document.getElementById('btn-consonants');
+            if (group === 'vowels') {
+                btnVowels.className = "px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-medium";
+                btnConsonants.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white";
+            } else {
+                btnVowels.className = "px-2.5 py-1 rounded-lg text-slate-400 hover:text-white";
+                btnConsonants.className = "px-2.5 py-1 rounded-lg bg-indigo-600 text-white font-medium";
+            }
+            renderIPACards(group);
+        }
+
+        function renderIPACards(group) {
+            const grid = document.getElementById('ipa-grid');
+            grid.innerHTML = '';
+            const items = ipaData.filter(x => x.group === group);
+            items.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800/80 rounded-xl p-3.5 hover:border-indigo-500/50 transition cursor-pointer flex justify-between items-center group";
+                card.onclick = () => setChallengeWord(item.word);
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-indigo-400 font-mono font-bold">${item.sound}</span>
+                            <span class="text-xs text-white font-bold group-hover:text-indigo-300 transition">${item.word}</span>
+                        </div>
+                        <p class="text-[10px] text-slate-500 mt-0.5">${item.description}</p>
+                    </div>
+                    <button onclick="event.stopPropagation(); speakText('${item.word}')" class="p-1.5 rounded bg-slate-950 text-slate-400 hover:text-white"><i class="fa-solid fa-volume-high text-[10px]"></i></button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function setChallengeWord(word) {
+            document.getElementById('target-word-display').innerText = word;
+            document.getElementById('recognized-text').innerText = '-';
+            document.getElementById('pronunciation-evaluation').innerText = '-';
+            speakText(word);
+        }
+
+        // Speech recognition
+        let recognition = null;
+        let isRecording = false;
+
+        function toggleSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                showToast("Trình duyệt của bạn không hỗ trợ Nhận dạng Giọng nói.", false);
+                return;
+            }
+            if (!recognition) {
+                recognition = new SpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+            }
+
+            const micBtn = document.getElementById('mic-record-btn');
+            const status = document.getElementById('mic-status');
+
+            if (isRecording) {
+                recognition.stop();
+                isRecording = false;
+                micBtn.className = "w-14 h-14 rounded-full bg-slate-800 border-4 border-slate-950 flex items-center justify-center text-slate-300";
+                status.innerText = "Dừng thu.";
+            } else {
+                isRecording = true;
+                micBtn.className = "w-14 h-14 rounded-full bg-red-600 border-4 border-slate-950 flex items-center justify-center text-white animate-pulse";
+                status.innerText = "Đang lắng nghe... Hãy phát âm ngay!";
+                recognition.start();
+
+                recognition.onresult = function(e) {
+                    const result = e.results[0][0].transcript.toLowerCase().trim();
+                    document.getElementById('recognized-text').innerText = result;
+                    evaluatePronun(result);
+                };
+
+                recognition.onend = function() {
+                    isRecording = false;
+                    micBtn.className = "w-14 h-14 rounded-full bg-slate-800 border-4 border-slate-950 flex items-center justify-center text-slate-300";
+                };
+            }
+        }
+
+        function evaluatePronun(saidText) {
+            const target = document.getElementById('target-word-display').innerText.toLowerCase().trim();
+            const evalBox = document.getElementById('pronunciation-evaluation');
+            if (saidText === target) {
+                evalBox.innerText = "🎉 Khớp tuyệt đối! Bạn phát âm hoàn hảo.";
+                evalBox.className = "text-xs font-semibold text-emerald-400";
+                recordTimeSpent(2, 'output'); // Award output points
+            } else if (saidText.includes(target) || target.includes(saidText)) {
+                evalBox.innerText = "👍 Khá tốt. Hãy phát âm dứt khoát hơn.";
+                evalBox.className = "text-xs font-semibold text-amber-400";
+            } else {
+                evalBox.innerText = "❌ Chưa chính xác. Hãy nghe loa mẫu và thử lại.";
+                evalBox.className = "text-xs font-semibold text-red-400";
+            }
+        }
+
+        // Writing Tab logic
+        function changeWritingLevel(level) {
+            currentWritingLevel = level;
+            const levels = [1, 2, 3, 4];
+            levels.forEach(l => {
+                const btn = document.getElementById('btn-wl-' + l);
+                if (l === level) {
+                    btn.className = "px-2.5 py-1.5 rounded-lg font-bold bg-indigo-600 text-white";
+                } else {
+                    btn.className = "px-2.5 py-1.5 rounded-lg font-bold text-slate-400 hover:text-white";
+                }
+            });
+
+            const config = writingLevelsConfig[level];
+            document.getElementById('writing-level-title').innerText = config.title;
+            document.getElementById('writing-level-desc').innerText = config.desc;
+            document.getElementById('writing-suggested-topic').innerText = `"${config.topic}"`;
+            document.getElementById('writing-target-words').innerText = config.target;
+
+            // Render hints
+            const list = document.getElementById('writing-hints-list');
+            list.innerHTML = '';
+            config.hints.forEach(hint => {
+                const li = document.createElement('li');
+                li.innerText = hint;
+                list.appendChild(li);
+            });
+
+            // Clear textarea
+            document.getElementById('writing-textarea').value = '';
+            updateWordCount();
+        }
+
+        function updateWordCount() {
+            const text = document.getElementById('writing-textarea').value.trim();
+            const count = text ? text.split(/\s+/).length : 0;
+            document.getElementById('writing-word-count').innerText = `${count} từ`;
+        }
+
+        async function sendWritingToAI() {
+            const text = document.getElementById('writing-textarea').value.trim();
+            if (!text) {
+                showToast("Hãy viết gì đó trước khi gửi chấm bài nhé!", false);
+                return;
+            }
+
+            const panel = document.getElementById('ai-evaluation-panel');
+            panel.classList.remove('hidden');
+            
+            // Render loading inside panel
+            document.getElementById('score-grammar').innerText = "...";
+            document.getElementById('score-vocab').innerText = "...";
+            document.getElementById('score-cohesion').innerText = "...";
+            document.getElementById('score-overall').innerText = "...";
+            document.getElementById('eval-corrected').innerText = "Đang phân tích và gửi bài lên AI...";
+            document.getElementById('eval-errors').innerHTML = "Vui lòng chờ giây lát...";
+
+            // Built-in API key safeguard or user key
+            const finalKey = apiKey || "";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${finalKey}`;
+
+            const systemPrompt = `
+                Bạn là một Giáo Viên AI dạy giao tiếp tiếng Anh theo trường phái POC English.
+                Nhiệm vụ của bạn là kiểm tra bài viết của học sinh ở mức độ A1 và chấm điểm cực kỳ khách quan.
+                Dựa trên bài viết mà học sinh cung cấp, hãy chấm điểm (Thang điểm 10) và trả về thông tin định dạng JSON thuần để lập trình dễ bóc tách:
+                {
+                  "score_grammar": integer,
+                  "score_vocab": integer,
+                  "score_cohesion": integer,
+                  "score_overall": integer,
+                  "corrected_version": "Văn bản bài viết chuẩn hoàn hảo sau khi sửa lại",
+                  "errors_feedback": "Nhận xét lỗi sai chi tiết bằng tiếng Việt trong tối đa 3-4 dòng ngắn gọn, chỉ ra tại sao lại sai và cách dùng từ tự nhiên tương đương."
+                }
+                Chú ý: Chỉ trả về JSON duy nhất, không dùng thêm markdown bọc bên ngoài.
+            `;
+
+            const payload = {
+                contents: [{ parts: [{ text: `Bài viết của tôi ở Level ${currentWritingLevel}: \n"${text}"` }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                let resultText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                
+                // Clean json markdown wrapper if present
+                resultText = resultText.replace(/```json/g, "").replace(/```/g, "").trim();
+                const evalObj = JSON.parse(resultText);
+
+                // Update UI scores
+                document.getElementById('score-grammar').innerText = `${evalObj.score_grammar}/10`;
+                document.getElementById('score-vocab').innerText = `${evalObj.score_vocab}/10`;
+                document.getElementById('score-cohesion').innerText = `${evalObj.score_cohesion}/10`;
+                document.getElementById('score-overall').innerText = `${evalObj.score_overall}/10`;
+                document.getElementById('eval-corrected').innerText = evalObj.corrected_version;
+                document.getElementById('eval-errors').innerText = evalObj.errors_feedback;
+
+                // Award study progress output
+                recordTimeSpent(10, 'output');
+                showToast("Đã chấm điểm! Bạn nhận được thêm +10p Output.");
+                saveWritingToHistory(currentWritingLevel, evalObj.score_overall);
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('eval-corrected').innerText = "⚠️ Lỗi kết nối AI.";
+                document.getElementById('eval-errors').innerHTML = "Hãy chắc chắn rằng bạn đã điền API Key cá nhân trong cài đặt góc trên bên phải để sửa lỗi học tập tốt nhất!";
+            }
+        }
+
+        function closeEvaluation() {
+            document.getElementById('ai-evaluation-panel').classList.add('hidden');
+        }
+
+        function saveWritingToHistory(level, score) {
+            const list = document.getElementById('writing-history-list');
+            if (list.querySelector('p')) list.innerHTML = ''; // Clear fallback text
+
+            const row = document.createElement('div');
+            row.className = "flex justify-between items-center bg-slate-950 p-2 rounded border border-slate-850 mt-1.5";
+            row.innerHTML = `
+                <span class="text-slate-300">Level ${level} Practice</span>
+                <strong class="text-emerald-400">Score: ${score}/10</strong>
+            `;
+            list.appendChild(row);
+        }
+
+        // Active listening section
+        let currentStoryId = 'story-busy-day';
+        let isStoryPlaying = false;
+        let storySpeed = 1.0;
+
+        function loadStory(storyId) {
+            currentStoryId = storyId;
+            const story = listeningStories[storyId];
+            document.getElementById('listening-title').innerText = story.title;
+
+            const scriptDiv = document.getElementById('interactive-script');
+            scriptDiv.innerHTML = '';
+            
+            story.english.split(' ').forEach(word => {
+                const cleanWord = word.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase();
+                const span = document.createElement('span');
+                span.innerText = word + ' ';
+                span.className = "cursor-pointer hover:text-indigo-400 hover:underline mr-1 inline-block transition";
+                span.onclick = (e) => {
+                    e.stopPropagation();
+                    lookUpWord(cleanWord);
+                };
+                scriptDiv.appendChild(span);
+            });
+
+            // Load Quiz
+            loadComprehensionQuiz(story.quiz);
+        }
+
+        function changeStory() {
+            const select = document.getElementById('listening-story-select');
+            loadStory(select.value);
+            if (isStoryPlaying) togglePlayStory();
+        }
+
+        function togglePlayStory() {
+            const playBtn = document.getElementById('story-play-btn');
+            const status = document.getElementById('playing-status');
+            const story = listeningStories[currentStoryId];
+
+            if (isStoryPlaying) {
+                window.speechSynthesis.cancel();
+                isStoryPlaying = false;
+                playBtn.innerHTML = `<i class="fa-solid fa-play"></i> Phát Audio`;
+                status.innerText = "Đang dừng";
+            } else {
+                isStoryPlaying = true;
+                playBtn.innerHTML = `<i class="fa-solid fa-stop"></i> Dừng Audio`;
+                status.innerText = "Đang đọc...";
+                
+                const utterance = new SpeechSynthesisUtterance(story.english);
+                utterance.lang = 'en-US';
+                utterance.rate = storySpeed;
+                
+                utterance.onend = () => {
+                    isStoryPlaying = false;
+                    playBtn.innerHTML = `<i class="fa-solid fa-play"></i> Phát Audio`;
+                    status.innerText = "Hoàn thành nghe";
+                    recordTimeSpent(5, 'input');
+                };
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function setListeningSpeed(speed) {
+            storySpeed = speed;
+            document.getElementById('speed-0-8').className = speed === 0.8 ? "px-2 py-1 rounded bg-indigo-600 text-white transition text-[10px]" : "px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:text-white transition text-[10px]";
+            document.getElementById('speed-1-0').className = speed === 1.0 ? "px-2 py-1 rounded bg-indigo-600 text-white transition text-[10px]" : "px-2 py-1 rounded bg-slate-950 border border-slate-800 hover:text-white transition text-[10px]";
+            if (isStoryPlaying) {
+                togglePlayStory();
+                togglePlayStory();
+            }
+        }
+
+        function lookUpWord(word) {
+            const panel = document.getElementById('word-detail-panel');
+            speakText(word);
+            if (dictionary[word]) {
+                panel.innerHTML = `
+                    <div class="text-left space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-indigo-400 capitalize">${word}</span>
+                            <span class="text-[10px] text-slate-500 font-mono">${dictionary[word].ipa}</span>
+                        </div>
+                        <p class="text-xs font-semibold text-slate-200">Nghĩa: ${dictionary[word].vn}</p>
+                        <button onclick="saveToNotebookDirect('${word}', '${dictionary[word].ipa}', '${dictionary[word].vn}')" class="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] rounded-lg transition flex items-center justify-center gap-1.5 shadow">
+                            <i class="fa-solid fa-bookmark text-[10px]"></i> Lưu vào sổ ghi chú
+                        </button>
+                    </div>
+                `;
+            } else {
+                panel.innerHTML = `
+                    <div class="text-left space-y-3">
+                        <span class="font-bold text-indigo-400 capitalize">${word}</span>
+                        <p class="text-[10px] text-slate-500">Đang truyền giọng phát âm mẫu cho từ này.</p>
+                        <button onclick="saveToNotebookDirect('${word}', '', 'Nhập nghĩa tại đây')" class="w-full py-2 bg-slate-800 hover:bg-slate-750 text-slate-200 font-bold text-[11px] rounded-lg transition flex items-center justify-center gap-1.5">
+                            <i class="fa-solid fa-bookmark text-[10px]"></i> Lưu nhanh từ vựng
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        // Vocabulary Notebook Module
+        function saveToNotebookDirect(word, ipa, vn) {
+            // Check duplicates
+            const cleanWord = word.toLowerCase().trim();
+            const exists = myNotes.some(item => item.word.toLowerCase() === cleanWord);
+            if (exists) {
+                showToast("Từ này đã tồn tại trong Sổ tay của bạn rồi nhé!", false);
+                return;
+            }
+
+            const newNote = {
+                id: 'note_' + Date.now(),
+                word: word,
+                ipa: ipa,
+                vn: vn,
+                example: '',
+                dateAdded: new Date().toLocaleDateString('vi-VN')
+            };
+
+            myNotes.unshift(newNote);
+            localStorage.setItem('booster_notes', JSON.stringify(myNotes));
+            renderNotesList();
+            startFlashcardReview();
+            showToast(`Đã lưu "${word}" vào Sổ ghi chú cá nhân!`);
+            recordTimeSpent(1, 'input'); // Reward minor point
+        }
+
+        function addNewNoteFromForm() {
+            const wordInput = document.getElementById('note-word');
+            const ipaInput = document.getElementById('note-ipa');
+            const vnInput = document.getElementById('note-vn');
+            const exampleInput = document.getElementById('note-example');
+
+            const word = wordInput.value.trim();
+            const ipa = ipaInput.value.trim();
+            const vn = vnInput.value.trim();
+            const example = exampleInput.value.trim();
+
+            if (!word || !vn) {
+                showToast("Vui lòng điền đầy đủ Từ vựng và Nghĩa tiếng Việt!", false);
+                return;
+            }
+
+            const cleanWord = word.toLowerCase();
+            if (myNotes.some(item => item.word.toLowerCase() === cleanWord)) {
+                showToast("Từ này đã tồn tại trong Sổ tay!", false);
+                return;
+            }
+
+            const newNote = {
+                id: 'note_' + Date.now(),
+                word: word,
+                ipa: ipa,
+                vn: vn,
+                example: example,
+                dateAdded: new Date().toLocaleDateString('vi-VN')
+            };
+
+            myNotes.unshift(newNote);
+            localStorage.setItem('booster_notes', JSON.stringify(myNotes));
+            renderNotesList();
+            startFlashcardReview();
+            showToast(`Thêm thành công: "${word}"`);
+
+            // Clear fields
+            wordInput.value = '';
+            ipaInput.value = '';
+            vnInput.value = '';
+            exampleInput.value = '';
+            recordTimeSpent(2, 'output'); // Manual writing rewards output
+        }
+
+        function deleteNote(id) {
+            myNotes = myNotes.filter(item => item.id !== id);
+            localStorage.setItem('booster_notes', JSON.stringify(myNotes));
+            renderNotesList();
+            startFlashcardReview();
+            showToast("Đã xóa từ vựng khỏi sổ tay.");
+        }
+
+        function renderNotesList(filteredList = null) {
+            const container = document.getElementById('notes-list-container');
+            container.innerHTML = '';
+            const listToRender = filteredList || myNotes;
+            
+            document.getElementById('notebook-count').innerText = myNotes.length;
+
+            if (listToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 text-slate-500 text-xs italic">
+                        <i class="fa-solid fa-folder-open text-3xl mb-2 block text-slate-700"></i>
+                        Không tìm thấy từ vựng nào phù hợp.
+                    </div>
+                `;
+                return;
+            }
+
+            listToRender.forEach(note => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-950 p-3 rounded-xl border border-slate-850 hover:border-indigo-500/30 transition flex items-start justify-between gap-3 group";
+                card.innerHTML = `
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <strong class="text-indigo-400 text-sm font-bold capitalize">${note.word}</strong>
+                            ${note.ipa ? `<span class="text-[10px] text-slate-500 font-mono">${note.ipa}</span>` : ''}
+                            <button onclick="speakText('${note.word}')" class="text-slate-550 hover:text-white transition text-[10px]"><i class="fa-solid fa-volume-high"></i></button>
+                        </div>
+                        <p class="text-xs text-slate-200 font-semibold">Nghĩa: ${note.vn}</p>
+                        ${note.example ? `<p class="text-[11px] text-slate-450 italic">Ví dụ: "${note.example}"</p>` : ''}
+                        <span class="text-[9px] text-slate-650 block">Ngày lưu: ${note.dateAdded}</span>
+                    </div>
+                    <button onclick="deleteNote('${note.id}')" class="text-slate-600 hover:text-red-400 p-1 rounded hover:bg-slate-900 transition shrink-0 opacity-0 group-hover:opacity-100 focus:opacity-100">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function filterNotes() {
+            const query = document.getElementById('search-note').value.toLowerCase().trim();
+            if (!query) {
+                renderNotesList();
+                return;
+            }
+            const filtered = myNotes.filter(note => 
+                note.word.toLowerCase().includes(query) || 
+                note.vn.toLowerCase().includes(query)
+            );
+            renderNotesList(filtered);
+        }
+
+        // Mini Flashcard Controller
+        function startFlashcardReview() {
+            if (myNotes.length === 0) {
+                document.getElementById('flashcard-title').innerText = "Chưa có từ vựng";
+                document.getElementById('flashcard-subtitle').innerText = "Lưu ít nhất 1 từ vào sổ tay để ôn tập!";
+                currentFlashcardIndex = -1;
+                return;
+            }
+            
+            // Randomly select one word
+            currentFlashcardIndex = Math.floor(Math.random() * myNotes.length);
+            isFlashcardFlipped = false;
+            
+            const card = myNotes[currentFlashcardIndex];
+            document.getElementById('flashcard-side').innerText = "Mặt Trước";
+            document.getElementById('flashcard-title').innerText = card.word;
+            document.getElementById('flashcard-subtitle').innerText = card.ipa ? `Phát âm: ${card.ipa}` : "Bấm để lật xem nghĩa";
+        }
+
+        function flipFlashcard() {
+            if (currentFlashcardIndex === -1 || myNotes.length === 0) return;
+
+            const card = myNotes[currentFlashcardIndex];
+            const sideLabel = document.getElementById('flashcard-side');
+            const title = document.getElementById('flashcard-title');
+            const subtitle = document.getElementById('flashcard-subtitle');
+
+            if (isFlashcardFlipped) {
+                // Flip back to Front
+                sideLabel.innerText = "Mặt Trước";
+                title.innerText = card.word;
+                subtitle.innerText = card.ipa ? `Phát âm: ${card.ipa}` : "Bấm để lật xem nghĩa";
+                isFlashcardFlipped = false;
+                speakText(card.word);
+            } else {
+                // Flip to Back
+                sideLabel.innerText = "Mặt Sau (Nghĩa)";
+                title.innerText = card.vn;
+                subtitle.innerText = card.example ? `Ví dụ: "${card.example}"` : "Nhấp một lần nữa để về mặt trước";
+                isFlashcardFlipped = true;
+            }
+        }
+
+        function exportNotes() {
+            if (myNotes.length === 0) {
+                showToast("Sổ tay rỗng, không có gì để xuất!", false);
+                return;
+            }
+            let textOutput = "--- SỔ TAY TIẾNG ANH GIAO TIẾP GHI CHÚ ---\n\n";
+            myNotes.forEach((n, idx) => {
+                textOutput += `${idx + 1}. ${n.word.toUpperCase()} [${n.ipa || 'Chưa rõ IPA'}]: ${n.vn}\n`;
+                if (n.example) textOutput += `   Ví dụ: ${n.example}\n`;
+                textOutput += "\n";
+            });
+
+            // Standard Clipboard compliance
+            const textarea = document.createElement('textarea');
+            textarea.value = textOutput;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            showToast("Đã xuất và sao chép Sổ ghi chú vào Clipboard!");
+        }
+
+        function toggleVietnameseTranslation() {
+            const story = listeningStories[currentStoryId];
+            document.getElementById('word-detail-panel').innerHTML = `
+                <div class="text-left space-y-1">
+                    <span class="text-xs font-bold text-indigo-400">Bản Dịch Nghĩa Bài Đọc:</span>
+                    <p class="text-[11px] text-slate-300 leading-relaxed">${story.vietnamese}</p>
+                </div>
+            `;
+        }
+
+        function loadComprehensionQuiz(quiz) {
+            const container = document.getElementById('story-quiz-container');
+            container.innerHTML = '';
+            const p = document.createElement('p');
+            p.className = "text-xs font-bold text-slate-200 mb-2";
+            p.innerText = quiz.question;
+            container.appendChild(p);
+
+            quiz.answers.forEach((ans, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-2.5 rounded-lg bg-slate-950 border border-slate-850 text-xs text-slate-400 hover:bg-slate-800 hover:text-white transition mt-1";
+                btn.innerText = ans;
+                btn.onclick = () => {
+                    if (idx === quiz.correctIndex) {
+                        btn.className = "w-full text-left p-2.5 rounded-lg bg-emerald-950/45 border border-emerald-500/40 text-xs text-emerald-400 font-bold";
+                        showToast("Chính xác! Trả lời trắc nghiệm chuẩn.");
+                        recordTimeSpent(3, 'input');
+                    } else {
+                        btn.className = "w-full text-left p-2.5 rounded-lg bg-red-950/45 border border-red-500/40 text-xs text-red-400 font-bold";
+                        showToast("Sai rồi! Hãy xem lại câu chuyện nhé.", false);
+                    }
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        // Speaking Reactivity Chat & Tutor
+        let currentPromptIndex = 0;
+        let isTutorRecording = false;
+        let speechTutorRec = null;
+
+        function setTalkPrompt(idx) {
+            currentPromptIndex = idx;
+            const item = talkPrompts[idx];
+            document.getElementById('prompt-english').innerText = `"${item.english}"`;
+            document.getElementById('prompt-vietnamese').innerText = item.vietnamese;
+            
+            const ul = document.getElementById('prompt-hints');
+            ul.innerHTML = '';
+            item.hints.forEach(hint => {
+                const li = document.createElement('li');
+                li.innerText = hint;
+                ul.appendChild(li);
+            });
+        }
+
+        function generateTalkPrompt() {
+            setTalkPrompt((currentPromptIndex + 1) % talkPrompts.length);
+        }
+
+        function toggleTutorRecognition() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) {
+                showToast("Trình duyệt không hỗ trợ dịch giọng nói sang văn bản.", false);
+                return;
+            }
+            if (!speechTutorRec) {
+                speechTutorRec = new SpeechRec();
+                speechTutorRec.lang = 'en-US';
+            }
+
+            const micBtn = document.getElementById('aitutor-record-btn');
+            const status = document.getElementById('aitutor-mic-status');
+            const input = document.getElementById('chat-input-text');
+
+            if (isTutorRecording) {
+                speechTutorRec.stop();
+                isTutorRecording = false;
+                micBtn.className = "w-14 h-14 rounded-full bg-slate-800 border-4 border-slate-950 flex items-center justify-center text-red-500";
+                status.innerText = "Dừng thu âm nói.";
+            } else {
+                isTutorRecording = true;
+                micBtn.className = "w-14 h-14 rounded-full bg-red-600 border-4 border-slate-950 flex items-center justify-center text-white animate-pulse";
+                status.innerText = "Máy đang thu âm giọng nói của bạn...";
+                speechTutorRec.start();
+
+                speechTutorRec.onresult = function(e) {
+                    input.value = e.results[0][0].transcript;
+                };
+
+                speechTutorRec.onend = function() {
+                    isTutorRecording = false;
+                    micBtn.className = "w-14 h-14 rounded-full bg-slate-800 border-4 border-slate-950 flex items-center justify-center text-red-500";
+                    status.innerText = "Đã thu âm xong! Gửi tin nhắn qua AI.";
+                };
+            }
+        }
+
+        function setQuickInput(text) {
+            const input = document.getElementById('chat-input-text');
+            input.value = text;
+            input.focus();
+        }
+
+        async function sendMessageToTutor() {
+            const input = document.getElementById('chat-input-text');
+            const text = input.value.trim();
+            if (!text) return;
+
+            appendMsg('user', text);
+            input.value = '';
+
+            const loadId = 'ai-load-' + Date.now();
+            appendMsg('ai-loading', 'Giáo viên AI đang lắng nghe và suy nghĩ cách sửa đổi tốt nhất...', loadId);
+
+            const finalKey = apiKey || "";
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${finalKey}`;
+
+            const systemPrompt = `
+                Bạn là một Giáo Viên Tiếng Anh thân thiện, luôn khích lệ tinh thần người học và có chuyên môn sửa lỗi giao tiếp tiếng Anh cho người Việt ở trình độ A1.
+                Nhiệm vụ của bạn:
+                1. Đọc tin nhắn tiếng Anh của người học gửi sang (dù còn thô sơ hoặc sai lỗi).
+                2. Chỉnh sửa, viết lại phiên bản chuẩn tự nhiên theo phong cách giao tiếp tự tin (như khuyên bảo trong video POC English).
+                3. Trình bày ngắn bằng tiếng Việt:
+                   - 🔍 Nhận xét & Sửa lỗi (Chỉ ra lỗi sai nếu có)
+                   - 💡 Các cách nói tự nhiên tương đương (Mở rộng 1-2 mẫu câu đơn giản)
+                   - 🇻🇳 Dịch chi tiết nghĩa sang Tiếng Việt.
+                Giọng điệu cực kì khích lệ, dùng icon sinh động.
+            `;
+
+            const payload = {
+                contents: [{ parts: [{ text: text }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Không nhận được phản hồi.";
+                
+                document.getElementById(loadId).outerHTML = '';
+                appendMsg('ai', aiText);
+                recordTimeSpent(5, 'output');
+            } catch (err) {
+                console.error(err);
+                document.getElementById(loadId).outerHTML = '';
+                appendMsg('ai', "⚠️ Lỗi kết nối AI. Vui lòng cấu hình API Key ở góc trên bên phải để sửa lỗi nói thoải mái.");
+            }
+        }
+
+        function appendMsg(sender, text, customId = null) {
+            const container = document.getElementById('tutor-chat-messages');
+            const block = document.createElement('div');
+            block.className = "flex items-start space-x-2.5";
+            if (customId) block.id = customId;
+
+            if (sender === 'user') {
+                block.className += " justify-end";
+                block.innerHTML = `
+                    <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-none max-w-[85%] text-xs font-semibold">
+                        ${text}
+                    </div>
+                `;
+            } else if (sender === 'ai-loading') {
+                block.innerHTML = `
+                    <div class="w-7 h-7 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center shrink-0 text-[10px] animate-spin"><i class="fa-solid fa-spinner"></i></div>
+                    <div class="bg-slate-900 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-xs text-slate-400 italic">
+                        ${text}
+                    </div>
+                `;
+            } else {
+                const formatted = text.replace(/\n/g, '<br/>').replace(/\*\*(.*?)\*\//g, '<strong>$1</strong>');
+                block.innerHTML = `
+                    <div class="w-7 h-7 rounded-full bg-indigo-600/20 text-indigo-400 flex items-center justify-center shrink-0 text-xs font-bold">AI</div>
+                    <div class="bg-slate-900 p-3.5 rounded-2xl rounded-tl-none max-w-[85%] text-xs leading-relaxed text-slate-300">
+                        ${formatted}
+                    </div>
+                `;
+            }
+            container.appendChild(block);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function resetTutorChat() {
+            document.getElementById('tutor-chat-messages').innerHTML = `
+                <div class="flex items-start space-x-2.5">
+                    <div class="w-7 h-7 rounded-full bg-indigo-600/20 text-indigo-400 flex items-center justify-center shrink-0 text-xs font-bold">AI</div>
+                    <div class="bg-slate-950 p-3 rounded-2xl rounded-tl-none max-w-[85%] text-xs leading-relaxed text-slate-200">
+                        Lịch sử chat đã được xóa sạch. Hãy viết hoặc nói từ phía bên trái để luyện phản xạ nhé! 😊
+                    </div>
+                </div>
+            `;
+        }
+
+        function toggleApiKeyModal() {
+            const modal = document.getElementById('apikey-modal');
+            modal.classList.toggle('hidden');
+            const saved = localStorage.getItem('gemini_api_key') || "";
+            document.getElementById('api-key-input').value = saved;
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('api-key-input').value.trim();
+            apiKey = key;
+            localStorage.setItem('gemini_api_key', key);
+            showToast("Đã lưu cấu hình API Key!");
+            toggleApiKeyModal();
+        }
+    </script>
+</body>
+</html>

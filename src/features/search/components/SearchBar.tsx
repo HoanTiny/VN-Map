@@ -8,6 +8,7 @@ import { cn } from "@/lib/cn";
 import { spring, transition } from "@/lib/motion";
 import { categories } from "@/config/categories";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useRecentSearches } from "@/hooks/use-recent-searches";
 
 interface Suggestion {
   type: "place" | "region" | "category";
@@ -100,6 +101,7 @@ export function SearchBar({
     return () => document.removeEventListener("keydown", onSlash);
   }, []);
 
+  const { searches: recentSearches, add: addRecent, remove: removeRecent } = useRecentSearches();
   const [results, setResults] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -233,7 +235,7 @@ export function SearchBar({
             role="listbox"
           >
             {!debounced ? (
-              <EmptyState />
+              <EmptyState recent={recentSearches} onRemoveRecent={removeRecent} />
             ) : loading && results.length === 0 ? (
               <div className="p-8 text-center text-body-sm text-zinc-500 dark:text-white/50">
                 {t("searching")}
@@ -261,7 +263,7 @@ export function SearchBar({
                           <m.li key={s.id} variants={itemVariants}>
                             <Link
                               href={s.href}
-                              onClick={() => setOpen(false)}
+                              onClick={() => { addRecent(s.label); setOpen(false); }}
                               className="group flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-zinc-100/80 dark:hover:bg-white/5 transition-colors duration-200"
                             >
                               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-white/50 transition-colors duration-300 group-hover:bg-brand-50 dark:group-hover:bg-brand-500/20 group-hover:text-brand-600 dark:group-hover:text-brand-400">
@@ -287,7 +289,7 @@ export function SearchBar({
                 <m.div variants={itemVariants} className="mt-1 border-t border-zinc-200 dark:border-white/5 px-1 pt-2">
                   <Link
                     href={`/search?q=${encodeURIComponent(debounced)}`}
-                    onClick={() => setOpen(false)}
+                    onClick={() => { addRecent(debounced); setOpen(false); }}
                     className="flex items-center justify-between rounded-lg px-3 py-2.5 text-body text-brand-600 dark:text-brand-400 hover:bg-zinc-100/80 dark:hover:bg-white/5 transition-colors duration-200 font-medium"
                   >
                     <span>{t("viewAllResults", { q: debounced })}</span>
@@ -306,7 +308,7 @@ export function SearchBar({
   void isExpanded;
 }
 
-function EmptyState() {
+function EmptyState({ recent, onRemoveRecent }: { recent: string[]; onRemoveRecent: (q: string) => void }) {
   const t = useTranslations("Search");
   return (
     <m.div
@@ -315,6 +317,35 @@ function EmptyState() {
       animate="show"
       className="p-4"
     >
+      {recent.length > 0 && (
+        <>
+          <m.div variants={itemVariants} className="mb-2 flex items-center gap-2 px-2 text-overline text-[12px] font-bold text-zinc-400 dark:text-white/40">
+            <Clock size={12} /> {t("recentSearches")}
+          </m.div>
+          <m.ul variants={itemVariants} className="mb-4">
+            {recent.map((q) => (
+              <li key={q} className="group flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-zinc-100/80 dark:hover:bg-white/5">
+                <Clock size={14} className="shrink-0 text-zinc-400 dark:text-white/30" />
+                <Link
+                  href={`/search?q=${encodeURIComponent(q)}`}
+                  className="min-w-0 flex-1 truncate text-body text-zinc-800 dark:text-white/90 hover:text-brand-600 dark:hover:text-brand-400"
+                >
+                  {q}
+                </Link>
+                <button
+                  type="button"
+                  aria-label={t("removeSearch")}
+                  onClick={() => onRemoveRecent(q)}
+                  className="shrink-0 rounded p-1 text-zinc-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-white/10 dark:hover:text-white"
+                >
+                  <X size={12} />
+                </button>
+              </li>
+            ))}
+          </m.ul>
+        </>
+      )}
+
       <m.div variants={itemVariants} className="mb-3 flex items-center gap-2 px-2 text-overline text-[var(--brand-500)] text-[12px] font-bold dark:text-white/40">
         <TrendingUp size={12} className="text-brand-500 animate-pulse" /> {t("trending")}
       </m.div>
