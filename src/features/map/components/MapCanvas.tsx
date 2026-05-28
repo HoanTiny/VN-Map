@@ -761,7 +761,8 @@ function installProvinceLayers(map: MapLibreMap, locale: string) {
       const angle = (i * Math.PI) / 5 - Math.PI / 2;
       const x = cx + r * Math.cos(angle);
       const y = cy + r * Math.sin(angle);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
     }
     ctx.closePath();
     ctx.fillStyle = color;

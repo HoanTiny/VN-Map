@@ -30,29 +30,3 @@ export const featuredCities: CityCardData[] = [
   },
 ];
 
-export const collections = [
-  {
-    slug: "7d-mien-trung",
-    title: "Cung đường miền Trung 7 ngày",
-    description: "Huế → Đà Nẵng → Hội An → Quy Nhơn",
-    cover: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=1200&q=80",
-    days: 7,
-    placeCount: 18,
-  },
-  {
-    slug: "biecn-mien-nam",
-    title: "Biển đảo miền Nam",
-    description: "Phú Quốc · Côn Đảo · Nam Du",
-    cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=1200&q=80",
-    days: 10,
-    placeCount: 24,
-  },
-  {
-    slug: "tay-bac-mua-lua",
-    title: "Tây Bắc mùa lúa chín",
-    description: "Mù Cang Chải · Sa Pa · Hà Giang",
-    cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=1200&q=80",
-    days: 6,
-    placeCount: 15,
-  },
-];

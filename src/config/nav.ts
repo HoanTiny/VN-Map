@@ -10,7 +10,7 @@ export interface NavItem {
 export const topNav: NavItem[] = [
   { key: "explore", href: "/explore" },
   { key: "regions", href: "/region" },
-  { key: "collections", href: "/collection" },
+  { key: "collections", href: "/#bo-suu-tap" },
   { key: "trips", href: "/trip" },
 ];
 

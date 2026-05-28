@@ -7,75 +7,10 @@ import { useLocale, useTranslations } from "next-intl";
 import { Reveal } from "@/components/Reveal";
 import { categoriesByGroup, type Category } from "@/config/categories";
 
-const categoryMetadata: Record<
-  string,
-  { count: string; tagline: string; isHot?: boolean; highlights?: string[] }
-> = {
-  cafe: { 
-    count: "85+ quán", 
-    tagline: "Không gian kết nối & khơi nguồn cảm hứng",
-    highlights: ["Cà phê muối", "Cà phê trứng", "Third-wave"]
-  },
-  nightlife: { 
-    count: "42+ pub", 
-    tagline: "Giai điệu lôi cuốn & năng lượng đêm muộn", 
-    isHot: true,
-    highlights: ["Acoustic Bar", "Cocktail Speakeasy"]
-  },
-  rooftop: { 
-    count: "30+ view", 
-    tagline: "Thu trọn hoàng hôn & toàn cảnh thành phố", 
-    isHot: true,
-    highlights: ["Ngắm hoàng hôn", "Chill đêm"]
-  },
-  checkin: { 
-    count: "110+ điểm", 
-    tagline: "Lưu giữ khoảnh khắc & góc máy nghệ thuật",
-    highlights: ["Tường vàng phố cổ", "Đèn neon", "Hẻm nghệ thuật"]
-  },
-  hidden: { 
-    count: "25+ góc", 
-    tagline: "Tìm về chốn bình yên sâu trong ngõ hẻm", 
-    isHot: true,
-    highlights: ["Quán sách cũ", "Trà chiều ẩn mình"]
-  },
-  experience: { 
-    count: "50+ tour", 
-    tagline: "Trải nghiệm bản địa chân thực cùng chuyên gia",
-    highlights: ["Làng nghề truyền thống", "Workshop gốm"]
-  },
-  beach: { 
-    count: "95+ bãi", 
-    tagline: "Sóng vỗ cát vàng & ánh nắng vàng rực rỡ",
-    highlights: ["Vịnh Hạ Long", "Bãi Sao Phú Quốc", "Lặn san hô"]
-  },
-  mountain: { 
-    count: "60+ đỉnh", 
-    tagline: "Chạm đỉnh sương mờ & săn mây đại ngàn",
-    highlights: ["Đèo Mã Pí Lèng", "Mây luồn Sapa", "Trekking"]
-  },
-  heritage: { 
-    count: "40+ di tích", 
-    tagline: "Dấu ấn thời gian & câu chuyện di sản xưa", 
-    isHot: true,
-    highlights: ["Đại nội Huế", "Tháp Chàm", "Phố cổ Hội An"]
-  },
-  food: { 
-    count: "150+ quán", 
-    tagline: "Hương vị đậm đà tinh hoa ẩm thực ba miền",
-    highlights: ["Phở Hà Nội", "Bún chả", "Cơm tấm Sài Gòn"]
-  },
-  city: { 
-    count: "85+ điểm", 
-    tagline: "Khám phá góc phố nhộn nhịp & kiến trúc hiện đại",
-    highlights: ["Landmark 81", "Hồ Gươm đi bộ"]
-  },
-  nature: { 
-    count: "35+ điểm", 
-    tagline: "Trốn phố về rừng & lắng nghe âm thanh tự nhiên",
-    highlights: ["Vườn quốc gia", "Hang Sơn Đoòng"]
-  },
-};
+// Display copy (count/tagline/highlights) for each category lives in messages
+// under `CategoriesBento.meta.<key>`. Only the locale-independent `isHot` badge
+// flag stays here in code.
+const HOT_CATEGORIES = new Set(["nightlife", "rooftop", "hidden", "heritage"]);
 
 // Return static string literals to prevent Tailwind from purging dynamically constructed classes
 function getBentoClasses(index: number): string {
@@ -106,8 +41,16 @@ function BentoCatCard({
 }) {
   const Icon = c.icon;
   const locale = useLocale();
+  const t = useTranslations("CategoriesBento");
   const catLabel = locale === "en" ? c.label : c.labelVi;
-  const meta = categoryMetadata[c.key] ?? { count: "50+ điểm", tagline: "Khám phá ngay" };
+
+  // Per-category copy lives in messages under `CategoriesBento.meta.<key>`.
+  const metaKey = `meta.${c.key}`;
+  const count = t(`${metaKey}.count`);
+  const tagline = t(`${metaKey}.tagline`);
+  const highlights = (t.raw(`${metaKey}.highlights`) ?? []) as string[];
+  const isHot = HOT_CATEGORIES.has(c.key);
+
   const bentoClass = getBentoClasses(index);
 
   // Layout states - index 0, 3, 5 are WIDE (col-span-2)
@@ -162,13 +105,13 @@ function BentoCatCard({
           <Icon size={20} className="stroke-[2]" />
         </span>
         <div className="flex flex-col items-end gap-1.5">
-          {meta.isHot && (
+          {isHot && (
             <span className="flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wider text-red-500 ring-1 ring-red-500/20">
               🔥 HOT
             </span>
           )}
           <span className="rounded-full bg-text/5 px-2.5 py-0.5 text-[10px] font-bold text-text-muted border border-border/10 backdrop-blur-sm shadow-sm">
-            {meta.count}
+            {count}
           </span>
         </div>
       </div>
@@ -181,16 +124,16 @@ function BentoCatCard({
           {catLabel}
         </span>
         
-        <p 
+        <p
           className="mt-2 text-text-muted leading-relaxed font-semibold text-[11px] md:text-[12px] line-clamp-2"
         >
-          {meta.tagline}
+          {tagline}
         </p>
 
         {/* Highlights: add highly premium mini-tags in Wide cards to fill space with gorgeous structure */}
-        {isWide && meta.highlights && (
+        {isWide && highlights.length > 0 && (
           <div className="mt-3.5 flex flex-wrap gap-2">
-            {meta.highlights.slice(0, 3).map((h, i) => (
+            {highlights.slice(0, 3).map((h, i) => (
               <span 
                 key={i} 
                 className="text-[9px] font-bold px-2 py-0.5 rounded-lg border border-border/40 backdrop-blur-md text-text-muted shadow-sm transition-all duration-300 group-hover:border-[var(--cat-color)]/30 group-hover:text-text"

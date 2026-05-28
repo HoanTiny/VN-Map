@@ -1,8 +1,13 @@
+import { getTranslations } from "next-intl/server";
 import { createServiceClient } from "@/lib/supabase/server";
 
-export const metadata = { title: "Admin · Map-VN" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("metaDashboard") };
+}
 
 export default async function AdminDashboard() {
+  const t = await getTranslations("Admin");
   const supabase = createServiceClient();
 
   const [{ count: pendingPlaces }, { count: pendingReviews }] = await Promise.all([
@@ -17,14 +22,14 @@ export default async function AdminDashboard() {
   ]);
 
   const stats = [
-    { label: "Địa điểm chờ duyệt", value: pendingPlaces ?? 0, href: "/admin/places", color: "text-amber-600" },
-    { label: "Reviews chờ duyệt", value: pendingReviews ?? 0, href: "/admin/reviews", color: "text-blue-600" },
+    { label: t("dashboardPendingPlaces"), value: pendingPlaces ?? 0, href: "/admin/places", color: "text-amber-600" },
+    { label: t("dashboardPendingReviews"), value: pendingReviews ?? 0, href: "/admin/reviews", color: "text-blue-600" },
   ];
 
   return (
     <div>
-      <h1 className="font-display text-display-sm text-text">Dashboard</h1>
-      <p className="mt-1 text-body text-text-muted">Tổng quan hệ thống moderation.</p>
+      <h1 className="font-display text-display-sm text-text">{t("dashboardTitle")}</h1>
+      <p className="mt-1 text-body text-text-muted">{t("dashboardSubtitle")}</p>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {stats.map((s) => (

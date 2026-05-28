@@ -10,7 +10,6 @@ import { CategoriesBento } from "@/components/CategoriesBento";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
 import { Glass } from "@/ui/glass";
-import { Card, CardBody } from "@/ui/card";
 import { SearchBar } from "@/features/search/components/SearchBar";
 import { PlaceCard } from "@/features/place/components/PlaceCard";
 import { CityCard } from "@/features/region/components/CityCard";
@@ -24,7 +23,7 @@ import { detectServerGeo } from "@/lib/server-geo";
 import { listCuratedTrips } from "@/features/trip-template/lib/queries";
 import { CuratedTripCard } from "@/features/trip-template/components/CuratedTripCard";
 import type { PlaceCardData } from "@/features/place/components/PlaceCard";
-import { featuredCities, collections } from "@/features/region/data";
+import { featuredCities } from "@/features/region/data";
 
 function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
@@ -70,7 +69,6 @@ export default async function LandingPage() {
       <PlacesSection places={featuredPlaces} t={t} tc={tc} />
       {activity.length > 0 && <ActivitySection initial={activity} t={t} tc={tc} />}
       {curatedTrips.length > 0 && <CuratedTripsSection trips={curatedTrips} t={t} />}
-      <CollectionsSection t={t} tc={tc} />
       <MapCtaSection stats={stats} t={t} />
       <StatsSection t={t} />
     </>
@@ -315,17 +313,17 @@ function CuratedTripsSection({
   t: T;
 }) {
   return (
-    <section className="border-t border-border bg-surface-2/40">
+    <section id="bo-suu-tap" className="border-t border-border bg-surface-2/40 scroll-mt-24">
       <div className="container py-20 md:py-28">
         <div className="mb-10 flex items-end justify-between gap-6">
           <Reveal>
             <div>
-              <p className="text-overline text-brand-600">{t("curatedOverline")}</p>
+              <p className="text-overline text-brand-600">{t("collectionsOverline")}</p>
               <h2 className="mt-2 font-display text-h1 md:text-display-lg text-text">
-                {t("curatedTitle")}
+                {t("collectionsTitle")}
               </h2>
               <p className="mt-3 max-w-xl text-body-lg text-text-muted">
-                {t("curatedSubtitle")}
+                {t("collectionsSubtitle")}
               </p>
             </div>
           </Reveal>
@@ -343,60 +341,6 @@ function CuratedTripsSection({
   );
 }
 
-/* ------------------------------ Collections ------------------------------ */
-
-function CollectionsSection({ t, tc }: { t: T; tc: TC }) {
-  return (
-    <section className="container py-20 md:py-28">
-      <div className="mb-10">
-        <Reveal>
-          <p className="text-overline text-brand-600">{t("collectionsOverline")}</p>
-          <h2 className="mt-2 font-display text-h1 md:text-display-lg text-text">
-            {t("collectionsTitle")}
-          </h2>
-          <p className="mt-3 max-w-xl text-body-lg text-text-muted">
-            {t("collectionsSubtitle")}
-          </p>
-        </Reveal>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-        {collections.map((c, i) => (
-          <Reveal key={c.slug} delay={i * 0.08}>
-            <Link href={`/collection/${c.slug}`} className="group block">
-              <Card tier="place" className="overflow-hidden">
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
-                    src={c.cover}
-                    alt={c.title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-slow group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                  <div className="absolute left-4 top-4 inline-flex items-center gap-1 rounded-full glass-subtle px-2.5 py-1 text-caption text-white">
-                    {t("collectionMeta", { days: c.days, placeCount: c.placeCount })}
-                  </div>
-                </div>
-                <CardBody>
-                  <h3 className="font-display text-h3 text-text">{c.title}</h3>
-                  <p className="mt-1 text-body-sm text-text-muted">{c.description}</p>
-                  <div className="mt-4 inline-flex items-center gap-1 text-body-sm text-brand-600">
-                    {tc("viewDetails")}
-                    <ArrowRight
-                      size={14}
-                      className="transition-transform group-hover:translate-x-0.5"
-                    />
-                  </div>
-                </CardBody>
-              </Card>
-            </Link>
-          </Reveal>
-        ))}
-      </div>
-    </section>
-  );
-}
 
 /* -------------------------------- Map CTA -------------------------------- */
 

@@ -402,7 +402,7 @@ Sau khi i18n core đã ship (Phase A + B + C), 3 hướng nâng cấp theo thứ
 | **OG metadata** locale-aware (hiện tại description tiếng VI cho cả /en) | Nhỏ | Trung — social share đúng ngôn ngữ | ✅ |
 | Move `app/error.tsx` + `not-found.tsx` vào `[locale]/` để dùng `useTranslations` | Nhỏ | Thấp | ✅ (thêm bản `[locale]/`, root giữ làm fallback) |
 | `companionLabels` constants ([src/features/review/lib/types.ts](src/features/review/lib/types.ts)) migrate sang messages | Nhỏ | Thấp | ✅ (namespace `Companion`) |
-| Admin pages (`/admin/*`) translate UI | Trung | Thấp (internal) | ⏳ |
+| Admin pages (`/admin/*`) translate UI | Trung | Thấp (internal) | 🔄 phần chrome + 3 page lite DONE (2026-05-27); 3 editor lớn (Places/Hero/TripTemplates) skip vì internal low ROI |
 
 **File cần đụng:**
 - [app/layout.tsx](app/layout.tsx) — root metadata: thêm `alternates.languages`
@@ -414,11 +414,11 @@ Sau khi i18n core đã ship (Phase A + B + C), 3 hướng nâng cấp theo thứ
 
 | Mục | Effort | Impact | Status |
 |---|---|---|---|
-| **Backfill places EN** (name_en/highlight_en) | Lớn (content) | Cao — EN users thấy ngay | 🔄 script sẵn sàng, chưa chạy production |
+| **Backfill places EN** (name_en/highlight_en) | Lớn (content) | Cao — EN users thấy ngay | ✅ (2026-05-27, đã chạy production — 17 row backfill) |
 | → Gemini batch script translate VI → EN | Trung (1 script) | | ✅ [scripts/translate-places.ts](scripts/translate-places.ts) (`pnpm translate:places`) |
-| Body copy EN cho About/Help/Privacy/Terms (hiện chỉ metadata) | Trung | Trung | ⏳ |
-| CategoriesBento per-category EN metadata (12 taglines + highlights + counts) | Nhỏ | Thấp | ⏳ |
-| Mock data 40 → 80 places (HN/HCM/ĐN) — giảm gaps `/category/checkin`, `/category/experience` | Lớn | Trung | ✅ (2026-05-27) |
+| Body copy EN cho About/Help/Privacy/Terms (hiện chỉ metadata) | Trung | Trung | ✅ (2026-05-27, About + Help + Privacy + Terms) |
+| CategoriesBento per-category EN metadata (12 taglines + highlights + counts) | Nhỏ | Thấp | ✅ (2026-05-27) |
+| Mock data 40 → 80 places (HN/HCM/ĐN) — giảm gaps `/category/checkin`, `/category/experience` | Lớn | Trung | ✅ (2026-05-27, hiện **87 places** — vượt target) |
 | Admin per-place bilingual editor (hiện chỉ có approve/reject) | Trung | Trung | ✅ [PlacesEditor.tsx](src/features/admin/components/PlacesEditor.tsx) |
 
 **Backfill EN content — cách chạy:**
@@ -461,6 +461,9 @@ Sau khi i18n core đã ship (Phase A + B + C), 3 hướng nâng cấp theo thứ
    - **Fix (2026-05-27):** `readCache`/`writeCache` ở server-geo đã re-enable, debug logs dọn sạch.
    - **Đã verify (2026-05-27):** exhaustive-deps `user` ở 4 hook (useReviews/Saved/Submissions/Trips) **KHÔNG phải bug** — deps dùng `user?.id` nên re-run đúng khi đăng nhập/xuất; chỉ là false positive của lint rule.
 3. ✅ **Editorial EN body copy** — DONE (2026-05-27): About + Help + Privacy + Terms, toàn bộ body chuyển từ hardcode VI sang messages, render `t.rich` (b/link/code/email chunks). Ngày "Cập nhật" ở Privacy/Terms giờ locale-aware (`en-US`/`vi-VN`). typecheck pass.
+4. ✅ **Rebrand "Bộ sưu tập"** — DONE (2026-05-27): section Collections cũ trùng concept với Curated trips (route `/collection/[slug]` không tồn tại, link gãy). Đã xoá `CollectionsSection` + data hardcode (`src/features/region/data.ts`), repoint `CuratedTripsSection` dùng namespace `collections*` để section curated trips giờ mang nhãn "BỘ SƯU TẬP" theo Vietnamese branding. Nav `/collection` → `/#bo-suu-tap` anchor (section có `id="bo-suu-tap" scroll-mt-24`). Cleanup: keys `curatedOverline/Title/Subtitle` + `collectionMeta` xoá khỏi messages, import `Card`/`CardBody` thừa bỏ. typecheck + lint sạch (12 warning còn lại đều là intentional).
+5. ✅ **CategoriesBento per-category EN** — DONE (2026-05-27): 12 categories × (count + tagline + highlights[]) chuyển từ hardcode VI sang messages namespace `CategoriesBento.meta.<key>`. Component đọc qua `t()` cho count/tagline + `t.raw()` cho highlights array. `isHot` boolean giữ trong code (`HOT_CATEGORIES` Set, không phải text). Người EN giờ thấy "Salt coffee", "Egg coffee", "Captivating sounds and late-night energy" thay vì hardcode VI. typecheck pass.
+6. 🔄 **Admin UI i18n (phần chrome)** — DONE (2026-05-27): namespace `Admin` mới (vi+en); migrate **AdminShell** (sidebar nav + mobile strip + "Về trang chủ"), **Dashboard page** (heading + 2 stat labels + metadata), **/admin/places approval** (heading/count/empty/status/submittedBy rich text/approve+reject), **/admin/reviews** (tương tự). Ngày dùng locale-aware (`en-US`/`vi-VN`). typecheck pass. **Skip:** 3 editor lớn (PlacesEditor 383, HeroPresetsEditor 685, TripTemplatesEditor 577 = 1645 dòng) + 3 page wrapper editor — internal low ROI, để khi cần.
    - ⚠️ **Privacy + Terms là legal copy** — bản EN do mình dịch máy, **org nên review/sở hữu wording chính thức** (đặc biệt phần trách nhiệm/liability + GDPR).
    - Namespaces mở rộng: `About` (intro/philosophy×4/roadmap×3), `Help` (badge/title/subtitle/q1–q6/a1–a6), `Privacy` (badge/title/updated/s1–s4/contact), `Terms` (badge/title/updated/intro/s1/s2+ban1–4/note/s3/contact).
 4. ✅ **Mở rộng data 70 → 80 places** (2026-05-27) — thêm 10 places: checkin (Hồ Hoàn Kiếm, Bưu điện SG, Nguyễn Huệ, Cầu Vàng Ba Nà), experience (Bát Tràng, Food Tour HN, Cooking SG, Trà Quế), nightlife (Bùi Viện), hidden (The Bookworm). Seed production xong.

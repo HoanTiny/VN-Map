@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -103,9 +104,11 @@ export function AccountPanel() {
                     
                     {/* Round Avatar Container */}
                     <div className="relative h-28 w-28 rounded-full overflow-hidden border border-white/20 bg-surface-2 shadow-md">
-                      <img
+                      <Image
                         src="/images/me_hero.png"
                         alt="Cyber Explorer avatar"
+                        width={112}
+                        height={112}
                         className="h-full w-full object-cover object-top scale-[1.3] transition-transform duration-500 group-hover:scale-[1.38]"
                       />
                     </div>

@@ -1,17 +1,24 @@
+import { getLocale, getTranslations } from "next-intl/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { approveSubmission, rejectSubmission } from "@/features/admin/actions";
 import { Badge } from "@/ui/badge";
 import { categoryByKey } from "@/config/categories";
 
-export const metadata = { title: "Duyệt địa điểm · Admin" };
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: "Chờ duyệt",
-  approved: "Đã duyệt",
-  rejected: "Từ chối",
-};
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("metaPlacesApprove") };
+}
 
 export default async function AdminPlacesPage() {
+  const [t, locale] = await Promise.all([getTranslations("Admin"), getLocale()]);
+  const dateLocale = locale === "en" ? "en-US" : "vi-VN";
+  const statusLabel = (s: string) =>
+    s === "pending" ? t("statusPending")
+      : s === "approved" ? t("statusApproved")
+      : s === "rejected" ? t("statusRejected")
+      : s;
+  const catLocale = locale === "en";
+
   const supabase = createServiceClient();
   const { data: submissions } = await supabase
     .from("place_submissions")
@@ -35,13 +42,13 @@ export default async function AdminPlacesPage() {
 
   return (
     <div>
-      <h1 className="font-display text-display-sm text-text">Địa điểm đề xuất</h1>
-      <p className="mt-1 text-body text-text-muted">{rows.length} submission gần nhất</p>
+      <h1 className="font-display text-display-sm text-text">{t("placesApproveTitle")}</h1>
+      <p className="mt-1 text-body text-text-muted">{t("placesApproveCount", { count: rows.length })}</p>
 
       <div className="mt-6 space-y-3">
         {rows.length === 0 && (
           <p className="rounded-2xl border border-dashed border-border p-8 text-center text-body-sm text-text-muted">
-            Chưa có đề xuất nào.
+            {t("placesApproveEmpty")}
           </p>
         )}
         {rows.map((s) => {
@@ -57,13 +64,13 @@ export default async function AdminPlacesPage() {
                     <span className="font-display text-h3 text-text">{s.name}</span>
                     {cat && (
                       <span className="rounded-full bg-brand-50 px-2 py-0.5 text-caption text-brand-700">
-                        {cat.label}
+                        {catLocale ? cat.label : cat.labelVi}
                       </span>
                     )}
                     <Badge
                       variant={s.status === "pending" ? "outline" : s.status === "approved" ? "brand" : "outline"}
                     >
-                      {STATUS_LABEL[s.status] ?? s.status}
+                      {statusLabel(s.status)}
                     </Badge>
                   </div>
                   <p className="mt-1 text-body-sm text-text-muted">
@@ -71,7 +78,11 @@ export default async function AdminPlacesPage() {
                   </p>
                   <p className="mt-2 line-clamp-2 text-body text-text">{s.description}</p>
                   <p className="mt-1 text-caption text-text-subtle">
-                    Gửi bởi <strong>{s.submitted_by}</strong> · {new Date(s.created_at).toLocaleDateString("vi-VN")}
+                    {t.rich("submittedBy", {
+                      user: s.submitted_by,
+                      date: new Date(s.created_at).toLocaleDateString(dateLocale),
+                      b: (chunks) => <strong>{chunks}</strong>,
+                    })}
                   </p>
                 </div>
 
@@ -82,7 +93,7 @@ export default async function AdminPlacesPage() {
                         type="submit"
                         className="rounded-lg bg-success/10 px-3 py-1.5 text-body-sm font-medium text-success hover:bg-success/20"
                       >
-                        Duyệt
+                        {t("actionApprove")}
                       </button>
                     </form>
                     <form action={rejectSubmission.bind(null, s.id)}>
@@ -90,7 +101,7 @@ export default async function AdminPlacesPage() {
                         type="submit"
                         className="rounded-lg bg-danger/10 px-3 py-1.5 text-body-sm font-medium text-danger hover:bg-danger/20"
                       >
-                        Từ chối
+                        {t("actionReject")}
                       </button>
                     </form>
                   </div>

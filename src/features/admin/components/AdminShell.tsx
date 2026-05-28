@@ -1,20 +1,22 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { LayoutDashboard, MapPin, Star, ChevronRight, Pencil, Image as ImageIcon, Compass } from "lucide-react";
 import { cn } from "@/lib/cn";
 
 const NAV = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { href: "/admin/places", label: "Duyệt", icon: MapPin, exact: true },
-  { href: "/admin/places/list", label: "Sửa địa điểm", icon: Pencil, exact: false },
-  { href: "/admin/reviews", label: "Reviews", icon: Star, exact: false },
-  { href: "/admin/hero-presets", label: "Hero", icon: ImageIcon, exact: false },
-  { href: "/admin/trip-templates", label: "Lịch trình", icon: Compass, exact: false },
-];
+  { href: "/admin", labelKey: "navDashboard", icon: LayoutDashboard, exact: true },
+  { href: "/admin/places", labelKey: "navPlaces", icon: MapPin, exact: true },
+  { href: "/admin/places/list", labelKey: "navPlacesEdit", icon: Pencil, exact: false },
+  { href: "/admin/reviews", labelKey: "navReviews", icon: Star, exact: false },
+  { href: "/admin/hero-presets", labelKey: "navHero", icon: ImageIcon, exact: false },
+  { href: "/admin/trip-templates", labelKey: "navTripTemplates", icon: Compass, exact: false },
+] as const;
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const t = useTranslations("Admin");
 
   return (
     <div className="flex min-h-screen bg-bg">
@@ -23,12 +25,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <div className="border-b border-border px-5 py-4">
           <Link href="/" className="flex items-center gap-2 text-body-sm font-medium text-text-muted hover:text-text">
             <ChevronRight size={14} className="rotate-180" />
-            Về trang chủ
+            {t("backToHome")}
           </Link>
-          <p className="mt-2 font-display text-h3 text-text">Admin</p>
+          <p className="mt-2 font-display text-h3 text-text">{t("shellTitle")}</p>
         </div>
         <nav className="flex-1 space-y-0.5 p-2 pt-3">
-          {NAV.map(({ href, label, icon: Icon, exact }) => {
+          {NAV.map(({ href, labelKey, icon: Icon, exact }) => {
             const active = exact ? pathname === href : pathname.startsWith(href);
             return (
               <Link
@@ -42,7 +44,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 )}
               >
                 <Icon size={16} />
-                {label}
+                {t(labelKey)}
               </Link>
             );
           })}
@@ -54,9 +56,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <Link href="/" className="p-2 text-text-muted hover:text-text">
           <ChevronRight size={16} className="rotate-180" />
         </Link>
-        <span className="font-display text-h3 text-text">Admin</span>
+        <span className="font-display text-h3 text-text">{t("shellTitle")}</span>
         <div className="ml-auto flex gap-1">
-          {NAV.map(({ href, label, exact }) => {
+          {NAV.map(({ href, labelKey, exact }) => {
             const active = exact ? pathname === href : pathname.startsWith(href);
             return (
               <Link
@@ -67,7 +69,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                   active ? "bg-brand-50 text-brand-700" : "text-text-muted hover:bg-surface-2"
                 )}
               >
-                {label}
+                {t(labelKey)}
               </Link>
             );
           })}

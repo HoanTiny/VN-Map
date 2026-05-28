@@ -1,9 +1,13 @@
+import { getLocale, getTranslations } from "next-intl/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { rejectReview, approveReview } from "@/features/admin/actions";
 import { Badge } from "@/ui/badge";
 import { RatingStars } from "@/features/review/components/RatingStars";
 
-export const metadata = { title: "Duyệt reviews · Admin" };
+export async function generateMetadata() {
+  const t = await getTranslations("Admin");
+  return { title: t("metaReviews") };
+}
 
 const STATUS_VARIANT: Record<string, "brand" | "outline"> = {
   approved: "brand",
@@ -12,6 +16,9 @@ const STATUS_VARIANT: Record<string, "brand" | "outline"> = {
 };
 
 export default async function AdminReviewsPage() {
+  const [t, locale] = await Promise.all([getTranslations("Admin"), getLocale()]);
+  const dateLocale = locale === "en" ? "en-US" : "vi-VN";
+
   const supabase = createServiceClient();
   const { data: reviews } = await supabase
     .from("reviews")
@@ -32,13 +39,13 @@ export default async function AdminReviewsPage() {
 
   return (
     <div>
-      <h1 className="font-display text-display-sm text-text">Reviews</h1>
-      <p className="mt-1 text-body text-text-muted">{rows.length} review gần nhất</p>
+      <h1 className="font-display text-display-sm text-text">{t("reviewsTitle")}</h1>
+      <p className="mt-1 text-body text-text-muted">{t("reviewsCount", { count: rows.length })}</p>
 
       <div className="mt-6 space-y-3">
         {rows.length === 0 && (
           <p className="rounded-2xl border border-dashed border-border p-8 text-center text-body-sm text-text-muted">
-            Chưa có review nào.
+            {t("reviewsEmpty")}
           </p>
         )}
         {rows.map((r) => (
@@ -49,11 +56,11 @@ export default async function AdminReviewsPage() {
                   <span className="font-medium text-text">{r.author_name}</span>
                   <RatingStars value={r.rating as 1|2|3|4|5} readOnly size={14} />
                   <Badge variant={STATUS_VARIANT[r.status] ?? "outline"}>
-                    {r.status}
+                    {r.status === "pending" ? t("statusPending") : r.status === "approved" ? t("statusApproved") : r.status === "rejected" ? t("statusRejected") : r.status}
                   </Badge>
                 </div>
                 <p className="mt-0.5 text-caption text-text-muted">
-                  {r.place_slug} · {new Date(r.created_at).toLocaleDateString("vi-VN")}
+                  {r.place_slug} · {new Date(r.created_at).toLocaleDateString(dateLocale)}
                 </p>
                 {r.title && <p className="mt-2 font-medium text-text">{r.title}</p>}
                 <p className="mt-1 line-clamp-3 text-body text-text">{r.body}</p>
@@ -66,7 +73,7 @@ export default async function AdminReviewsPage() {
                       type="submit"
                       className="rounded-lg bg-success/10 px-3 py-1.5 text-body-sm font-medium text-success hover:bg-success/20"
                     >
-                      Duyệt
+                      {t("actionApprove")}
                     </button>
                   </form>
                 )}
@@ -76,7 +83,7 @@ export default async function AdminReviewsPage() {
                       type="submit"
                       className="rounded-lg bg-danger/10 px-3 py-1.5 text-body-sm font-medium text-danger hover:bg-danger/20"
                     >
-                      Từ chối
+                      {t("actionReject")}
                     </button>
                   </form>
                 )}
