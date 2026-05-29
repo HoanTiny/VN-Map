@@ -82,6 +82,8 @@
     "feature3Desc": "Drag places into days, share a link with friends to travel together."
   },
   "Place": {
+    "gridEmptyTitle": "No places yet",
+    "gridEmptyHint": "Try removing filters or suggest the first place.",
     "unsave": "Unsave",
     "save": "Save place",
     "perPerson": "/ person",

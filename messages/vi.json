@@ -82,6 +82,8 @@
     "feature3Desc": "Kéo thả địa điểm vào ngày, chia sẻ link cho bạn bè cùng đi."
   },
   "Place": {
+    "gridEmptyTitle": "Chưa có địa điểm",
+    "gridEmptyHint": "Thử bỏ bớt filter hoặc đóng góp địa điểm đầu tiên.",
     "unsave": "Bỏ lưu",
     "save": "Lưu địa điểm",
     "perPerson": "/ người",

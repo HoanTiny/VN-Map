@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Heart, Search, User } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@/ui/button";
@@ -15,7 +16,7 @@ export async function TopBar() {
     <header className="sticky top-0 z-40 border-b border-border bg-bg/80 backdrop-blur supports-[backdrop-filter]:bg-bg/60">
       <div className="container flex h-16 items-center gap-6">
         <Link href="/" className="flex items-center gap-2 font-display text-h3 text-text">
-          <img src="/images/mapVN.png" alt="logo" width={32} height={32} />
+          <Image src="/images/mapVN.png" alt="logo" width={32} height={32} priority />
           {siteConfig.name}
         </Link>
 

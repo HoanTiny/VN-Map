@@ -2,6 +2,7 @@
 
 import { Suspense } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Sparkles } from "lucide-react";
 import { m } from "framer-motion";
 import { useTranslations } from "next-intl";
@@ -27,7 +28,7 @@ export default function SignInPage() {
             {/* <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-brand-500 shadow-[0_0_12px_rgba(218,37,29,0.35)] transition-transform duration-500 group-hover:rotate-12">
               <Compass size={14} className="text-white animate-spin-slow" />
             </span> */}
-            <img src="/images/mapVN.png" alt="logo" width={32} height={32} />
+            <Image src="/images/mapVN.png" alt="logo" width={32} height={32} priority />
             <span className="font-bold tracking-tight text-text transition-colors group-hover:text-brand-500">
               {siteConfig.name}
             </span>
@@ -95,12 +96,13 @@ export default function SignInPage() {
         className="hidden lg:block lg:w-[54%] xl:w-[58%] relative overflow-hidden bg-zinc-950"
       >
         {/* Background Image: Premium road trip/scenery (Yellow camper van at sunset) */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=85"
           alt="Camper van road trip sunset"
-          className="absolute inset-0 w-full h-full object-cover select-none pointer-events-none transition-transform duration-[10000ms] hover:scale-105"
-          loading="eager"
+          fill
+          sizes="(min-width: 1280px) 58vw, (min-width: 1024px) 54vw, 0px"
+          priority
+          className="absolute inset-0 object-cover select-none pointer-events-none transition-transform duration-[10000ms] hover:scale-105"
         />
 
         {/* Dynamic ambient overlays for visual depth and contrast */}

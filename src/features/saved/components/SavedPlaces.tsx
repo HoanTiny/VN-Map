@@ -4,7 +4,7 @@ import { Heart, Map } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Reveal } from "@/components/motion";
 import { Button } from "@/ui/button";
-import { PlaceGrid } from "@/features/place/components/PlaceGrid";
+import { PlaceGrid, PlaceGridSkeleton } from "@/features/place/components/PlaceGrid";
 import { useSaved } from "../hooks/useSaved";
 import { allPlaces } from "@/features/map/lib/places-data";
 
@@ -33,7 +33,9 @@ export function SavedPlaces() {
         </Reveal>
 
         <div className="mt-8">
-          {hydrated && savedPlaces.length === 0 ? (
+          {!hydrated ? (
+            <PlaceGridSkeleton count={6} />
+          ) : savedPlaces.length === 0 ? (
             <EmptyState />
           ) : (
             <PlaceGrid places={savedPlaces} />
