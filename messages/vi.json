@@ -40,6 +40,7 @@
   "Home": {
     "betaBadge": "Bản beta · 2026",
     "heroTitlePrefix": "Ăn chơi Việt Nam,",
+    "heroDynamicPhrases": ["theo cách của bạn.", "chuẩn gu bản địa.", "chill không lối thoát.", "không lo bị chặt chém."],
     "heroSubtitle": "Bản đồ cộng đồng cho quán ăn, cafe, bar, rooftop, hidden gem và trải nghiệm local. Lưu địa điểm, dựng chuyến đi, đóng góp nơi bạn yêu thích.",
     "heroSearchPlaceholder": "Bạn muốn đi đâu?",
     "ctaOpenMap": "Mở bản đồ",
@@ -263,7 +264,15 @@
     ]
   },
   "SavedPage": {
-    "metaTitle": "Đã lưu · Map-VN"
+    "metaTitle": "Đã lưu · Map-VN",
+    "overline": "CỦA BẠN",
+    "title": "Đã lưu",
+    "loading": "Đang tải…",
+    "empty": "Chưa có địa điểm nào được lưu.",
+    "count": "{count} địa điểm đã lưu.",
+    "emptyHeadline": "Trống trải quá",
+    "emptyHint": "Lưu địa điểm yêu thích bằng cách bấm trái tim ♡ trên bất kỳ thẻ nào.",
+    "emptyCta": "Khám phá bản đồ"
   },
   "MePage": {
     "metaTitle": "Tài khoản · Map-VN",
@@ -470,6 +479,11 @@
     "s4Body": "Khi launch backend chính thức, chúng tôi sẽ cập nhật chính sách rõ ràng về lưu trữ user account, OAuth provider, moderation queue, và tuân thủ GDPR tương đương cho user Châu Âu.",
     "contactTitle": "Liên hệ",
     "contactBody": "Có thắc mắc? Email <email>hello@map-vn.vn</email>."
+  },
+  "PWA": {
+    "bannerTitle": "Cài Map-VN về máy",
+    "bannerHint": "Truy cập nhanh, dùng offline",
+    "install": "Cài"
   },
   "Admin": {
     "backToHome": "Về trang chủ",

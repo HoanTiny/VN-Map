@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { Download, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { spring } from "@/lib/motion";
 
 interface BeforeInstallPromptEvent extends Event {
@@ -12,6 +13,8 @@ interface BeforeInstallPromptEvent extends Event {
 export function PWAProvider() {
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState(false);
+  const t = useTranslations("PWA");
+  const tc = useTranslations("Common");
 
   // Register service worker.
   useEffect(() => {
@@ -63,18 +66,18 @@ export function PWAProvider() {
             <Download size={18} className="text-brand-700" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-body-sm font-medium text-text">Cài Map-VN về máy</p>
-            <p className="text-caption text-text-muted">Truy cập nhanh, dùng offline</p>
+            <p className="text-body-sm font-medium text-text">{t("bannerTitle")}</p>
+            <p className="text-caption text-text-muted">{t("bannerHint")}</p>
           </div>
           <button
             onClick={install}
             className="shrink-0 rounded-full bg-brand-600 px-3 py-1.5 text-caption font-medium text-white hover:bg-brand-700"
           >
-            Cài
+            {t("install")}
           </button>
           <button
             onClick={dismiss}
-            aria-label="Đóng"
+            aria-label={tc("close")}
             className="shrink-0 text-text-muted hover:text-text"
           >
             <X size={16} />

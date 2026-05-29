@@ -2,23 +2,20 @@
 
 import { useEffect, useState } from "react";
 import { m, AnimatePresence } from "framer-motion";
-
-const phrases = [
-  "theo cách của bạn.",
-  "chuẩn gu bản địa.",
-  "chill không lối thoát.",
-  "không lo bị chặt chém.",
-];
+import { useTranslations } from "next-intl";
 
 export function DynamicHeroText() {
+  const t = useTranslations("Home");
+  const phrases = (t.raw("heroDynamicPhrases") ?? []) as string[];
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    if (phrases.length === 0) return;
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % phrases.length);
     }, 3000);
     return () => clearInterval(interval);
-  }, []);
+  }, [phrases.length]);
 
   return (
     <span className="relative inline-block text-brand-500 font-bold whitespace-nowrap min-w-[200px] sm:min-w-[280px] md:min-w-[360px] text-left">

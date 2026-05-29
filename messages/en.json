@@ -40,6 +40,7 @@
   "Home": {
     "betaBadge": "Beta · 2026",
     "heroTitlePrefix": "Explore Vietnam,",
+    "heroDynamicPhrases": ["your way.", "with local taste.", "endlessly chill.", "no rip-offs."],
     "heroSubtitle": "A community map of restaurants, cafés, bars, rooftops, hidden gems and local experiences. Save places, build trips, contribute the ones you love.",
     "heroSearchPlaceholder": "Where to?",
     "ctaOpenMap": "Open the map",
@@ -263,7 +264,15 @@
     ]
   },
   "SavedPage": {
-    "metaTitle": "Saved · Map-VN"
+    "metaTitle": "Saved · Map-VN",
+    "overline": "YOURS",
+    "title": "Saved",
+    "loading": "Loading…",
+    "empty": "No places saved yet.",
+    "count": "{count} saved places.",
+    "emptyHeadline": "A little empty here",
+    "emptyHint": "Save your favourites by tapping the heart ♡ on any card.",
+    "emptyCta": "Explore the map"
   },
   "MePage": {
     "metaTitle": "Account · Map-VN",
@@ -470,6 +479,11 @@
     "s4Body": "When the official backend launches, we will update this policy with clear terms on user account storage, OAuth providers, the moderation queue, and GDPR-equivalent compliance for European users.",
     "contactTitle": "Contact",
     "contactBody": "Questions? Email <email>hello@map-vn.vn</email>."
+  },
+  "PWA": {
+    "bannerTitle": "Install Map-VN",
+    "bannerHint": "Fast access, works offline",
+    "install": "Install"
   },
   "Admin": {
     "backToHome": "Back home",
