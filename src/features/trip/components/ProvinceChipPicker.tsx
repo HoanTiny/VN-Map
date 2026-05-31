@@ -1,6 +1,7 @@
 "use client";
 import { useRef, useState } from "react";
 import { X, MapPin, Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { provinces, provinceBySlug } from "@/config/regions";
 
@@ -29,9 +30,11 @@ function normalize(s: string): string {
 export function ProvinceChipPicker({
   value,
   onChange,
-  placeholder = "Thêm điểm đến…",
+  placeholder,
   className,
 }: ProvinceChipPickerProps) {
+  const t = useTranslations("ProvincePicker");
+  const resolvedPlaceholder = placeholder ?? t("addPlaceholder");
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -74,7 +77,7 @@ export function ProvinceChipPicker({
                   e.stopPropagation();
                   remove(slug);
                 }}
-                aria-label={`Bỏ ${prov.name}`}
+                aria-label={t("removeAria", { province: prov.name })}
                 className="ml-1 inline-flex h-4 w-4 items-center justify-center rounded-full text-brand-700 hover:bg-brand-100"
               >
                 <X size={10} />
@@ -92,7 +95,7 @@ export function ProvinceChipPicker({
           }}
           onFocus={() => setOpen(true)}
           onBlur={() => setTimeout(() => setOpen(false), 150)}
-          placeholder={value.length === 0 ? placeholder : "+"}
+          placeholder={value.length === 0 ? resolvedPlaceholder : "+"}
           className="min-w-[8ch] flex-1 bg-transparent px-1 text-body outline-none placeholder:text-text-muted"
         />
       </div>
@@ -111,7 +114,7 @@ export function ProvinceChipPicker({
               >
                 <Plus size={14} className="text-text-muted" />
                 <span className="flex-1 text-body text-text">{p.name}</span>
-                <span className="text-caption text-text-muted">{regionLabel(p.region)}</span>
+                <span className="text-caption text-text-muted">{regionLabel(p.region, t)}</span>
               </button>
             </li>
           ))}
@@ -121,6 +124,9 @@ export function ProvinceChipPicker({
   );
 }
 
-function regionLabel(key: string): string {
-  return key === "bac" ? "Bắc" : key === "trung" ? "Trung" : "Nam";
+function regionLabel(
+  key: string,
+  t: (k: "regionNorth" | "regionCenter" | "regionSouth") => string,
+): string {
+  return key === "bac" ? t("regionNorth") : key === "trung" ? t("regionCenter") : t("regionSouth");
 }

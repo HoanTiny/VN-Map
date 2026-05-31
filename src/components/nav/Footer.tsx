@@ -1,45 +1,49 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Github, Instagram, Mail } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { siteConfig } from "@/config/site";
 import { categories } from "@/config/categories";
 
-const sections = [
-  {
-    title: "Khám phá",
-    links: [
-      { label: "Bản đồ", href: "/explore" },
-      { label: "Tìm kiếm", href: "/search" },
-      { label: "Vùng miền", href: "/region" },
-      { label: "Đóng góp địa điểm", href: "/submit" },
-    ],
-  },
-  {
-    title: "Vùng miền",
-    links: [
-      { label: "Miền Bắc", href: "/region/bac" },
-      { label: "Miền Trung", href: "/region/trung" },
-      { label: "Miền Nam", href: "/region/nam" },
-    ],
-  },
-  {
-    title: "Công ty",
-    links: [
-      { label: "Giới thiệu", href: "/about" },
-      { label: "Trợ giúp", href: "/help" },
-      { label: "Điều khoản", href: "/terms" },
-      { label: "Bảo mật", href: "/privacy" },
-    ],
-  },
-];
+export async function Footer() {
+  const t = await getTranslations("Footer");
 
-export function Footer() {
+  const sections = [
+    {
+      title: t("sectionExplore"),
+      links: [
+        { label: t("linkMap"), href: "/explore" },
+        { label: t("linkSearch"), href: "/search" },
+        { label: t("linkRegions"), href: "/region" },
+        { label: t("linkSubmit"), href: "/submit" },
+      ],
+    },
+    {
+      title: t("sectionRegions"),
+      links: [
+        { label: t("linkNorth"), href: "/region/bac" },
+        { label: t("linkCenter"), href: "/region/trung" },
+        { label: t("linkSouth"), href: "/region/nam" },
+      ],
+    },
+    {
+      title: t("sectionCompany"),
+      links: [
+        { label: t("linkAbout"), href: "/about" },
+        { label: t("linkHelp"), href: "/help" },
+        { label: t("linkTerms"), href: "/terms" },
+        { label: t("linkPrivacy"), href: "/privacy" },
+      ],
+    },
+  ];
+
   return (
     <footer className="border-t border-border bg-bg">
       <div className="container py-16">
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-4">
             <Link href="/" className="flex items-center gap-2 font-display text-h3 text-text">
-              <img src="/images/mapVN.png" alt="logo" width={32} height={32} />
+              <Image src="/images/mapVN.png" alt="logo" width={32} height={32} />
               {siteConfig.name}
             </Link>
             <p className="mt-3 max-w-sm text-body-sm text-text-muted">
@@ -77,7 +81,7 @@ export function Footer() {
           ))}
 
           <div className="md:col-span-2">
-            <h4 className="text-overline text-text-subtle">Danh mục</h4>
+            <h4 className="text-overline text-text-subtle">{t("sectionCategories")}</h4>
             <ul className="mt-3 space-y-2">
               {categories.map((c) => (
                 <li key={c.key}>
@@ -94,8 +98,8 @@ export function Footer() {
         </div>
 
         <div className="mt-12 flex flex-col items-start gap-2 border-t border-border pt-6 text-body-sm text-text-subtle md:flex-row md:items-center md:justify-between">
-          <p>© {new Date().getFullYear()} {siteConfig.name}. Được tạo nên tại Việt Nam.</p>
-          <p>v0.1 · beta</p>
+          <p>{t("copyright", { year: new Date().getFullYear(), name: siteConfig.name })}</p>
+          <p>{t("version")}</p>
         </div>
       </div>
     </footer>

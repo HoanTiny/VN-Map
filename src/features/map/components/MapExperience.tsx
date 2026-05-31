@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { m, AnimatePresence } from "framer-motion";
 import { Plus, X, Briefcase, Check } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { MapCanvas } from "./MapCanvas";
 import { MapSearchBar } from "./MapSearchBar";
 import type { CategoryKey } from "@/config/categories";
@@ -39,6 +40,7 @@ export interface MapExperienceProps {
 }
 
 export function MapExperience({ data }: MapExperienceProps = {}) {
+  const t = useTranslations("Explore");
   // Resolve dataset once at top — used by URL state effects + map source +
   // passed to MapDataProvider for chrome consumers.
   const effectiveData = data ?? mockPlacesData;
@@ -250,7 +252,7 @@ export function MapExperience({ data }: MapExperienceProps = {}) {
                 onClick={() => setPickMode(true)}
                 className="shadow-lg"
               >
-                <Plus size={14} /> Đóng góp ở đây
+                <Plus size={14} /> {t("contributeHere")}
               </Button>
             </m.div>
           )}
@@ -271,12 +273,12 @@ export function MapExperience({ data }: MapExperienceProps = {}) {
             >
               <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-white" />
               <span className="text-body-sm font-medium">
-                Nhấp vào bản đồ để chọn vị trí
+                {t("pickPrompt")}
               </span>
               <button
                 type="button"
                 onClick={() => setPickMode(false)}
-                aria-label="Huỷ chọn vị trí"
+                aria-label={t("pickCancelAria")}
                 className="ml-1 flex h-6 w-6 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30"
               >
                 <X size={12} />
@@ -315,6 +317,7 @@ interface TripPickBannerProps {
 }
 
 function TripPickBanner({ context, onExit }: TripPickBannerProps) {
+  const t = useTranslations("Explore");
   const trip = getTrip(context.tripId);
   const [activeKey, setActiveKey] = useState<string | "all">("all");
 
@@ -366,22 +369,22 @@ function TripPickBanner({ context, onExit }: TripPickBannerProps) {
         <Briefcase size={16} className="shrink-0" />
         <div className="min-w-0 flex-1">
           <p className="line-clamp-1 text-body-sm font-medium">
-            {trip?.name ?? "Đang chọn"} · Ngày {context.dayIndex + 1}
+            {t("tripPickDay", { name: trip?.name ?? t("tripPickDefault"), day: context.dayIndex + 1 })}
           </p>
-          <p className="text-caption text-white/80">Click marker để thêm</p>
+          <p className="text-caption text-white/80">{t("tripPickHint")}</p>
         </div>
         <button
           type="button"
           onClick={onExit}
           className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full bg-white/20 px-3 text-body-sm font-medium hover:bg-white/30"
         >
-          <Check size={14} /> Xong
+          <Check size={14} /> {t("tripPickDone")}
         </button>
       </div>
 
       {multi && (
         <div className="mt-2.5 flex flex-wrap items-center gap-1.5 border-t border-white/15 pt-2.5">
-          <span className="text-caption text-white/75">Tập trung:</span>
+          <span className="text-caption text-white/75">{t("tripFocusLabel")}</span>
           <button
             type="button"
             onClick={focusAll}
@@ -393,7 +396,7 @@ function TripPickBanner({ context, onExit }: TripPickBannerProps) {
                 : "bg-white/15 text-white hover:bg-white/25"
             )}
           >
-            Toàn bộ
+            {t("tripFocusAll")}
           </button>
           {provs.map(({ slug, prov }) => (
             <button

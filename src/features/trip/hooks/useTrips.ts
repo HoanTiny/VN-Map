@@ -169,6 +169,9 @@ export interface UseTripResult {
   hydrated: boolean;
   addPlace: (dayIndex: number, slug: string) => void;
   removePlace: (dayIndex: number, slug: string) => void;
+  reorderPlace: (dayIndex: number, fromIndex: number, toIndex: number) => void;
+  reorderDay: (fromIndex: number, toIndex: number) => void;
+  updatePlaceNote: (dayIndex: number, slug: string, note: string) => void;
   addDay: () => void;
   removeDay: (dayIndex: number) => void;
   update: (patch: Partial<Trip>) => void;
@@ -248,6 +251,85 @@ export function useTrip(id: string): UseTripResult {
     [id, mutateDays, user, disabled]
   );
 
+  const reorderPlace = useCallback(
+    (dayIndex: number, fromIndex: number, toIndex: number) => {
+      if (disabled || !user) {
+        const current = getTripFromStore(id);
+        if (!current) return;
+        const days = current.days.map((d, i) => {
+          if (i !== dayIndex) return d;
+          const slugs = [...d.placeSlugs];
+          const moved = slugs.splice(fromIndex, 1)[0];
+          if (!moved) return d;
+          slugs.splice(toIndex, 0, moved);
+          return { ...d, placeSlugs: slugs };
+        });
+        updateTripInStore(id, { days });
+        return;
+      }
+      mutateDays((days) =>
+        days.map((d, i) => {
+          if (i !== dayIndex) return d;
+          const slugs = [...d.placeSlugs];
+          const moved = slugs.splice(fromIndex, 1)[0];
+          if (!moved) return d;
+          slugs.splice(toIndex, 0, moved);
+          return { ...d, placeSlugs: slugs };
+        })
+      );
+    },
+    [id, mutateDays, user, disabled]
+  );
+
+  const reorderDay = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      if (disabled || !user) {
+        const current = getTripFromStore(id);
+        if (!current) return;
+        const days = [...current.days];
+        const moved = days.splice(fromIndex, 1)[0];
+        if (!moved) return;
+        days.splice(toIndex, 0, moved);
+        updateTripInStore(id, { days: days.map((d, i) => ({ ...d, label: `Ngày ${i + 1}` })) });
+        return;
+      }
+      mutateDays((days) => {
+        const next = [...days];
+        const moved = next.splice(fromIndex, 1)[0];
+        if (!moved) return next;
+        next.splice(toIndex, 0, moved);
+        return next.map((d, i) => ({ ...d, label: `Ngày ${i + 1}` }));
+      });
+    },
+    [id, mutateDays, user, disabled]
+  );
+
+  const updatePlaceNote = useCallback(
+    (dayIndex: number, slug: string, note: string) => {
+      if (disabled || !user) {
+        const current = getTripFromStore(id);
+        if (!current) return;
+        const days = current.days.map((d, i) => {
+          if (i !== dayIndex) return d;
+          const placeNotes = { ...(d.placeNotes ?? {}), [slug]: note };
+          if (!note) delete placeNotes[slug];
+          return { ...d, placeNotes };
+        });
+        updateTripInStore(id, { days });
+        return;
+      }
+      mutateDays((days) =>
+        days.map((d, i) => {
+          if (i !== dayIndex) return d;
+          const placeNotes = { ...(d.placeNotes ?? {}), [slug]: note };
+          if (!note) delete placeNotes[slug];
+          return { ...d, placeNotes };
+        })
+      );
+    },
+    [id, mutateDays, user, disabled]
+  );
+
   const addDay = useCallback(() => {
     if (disabled || !user) { addDayInStore(id); return; }
     mutateDays((days) => [
@@ -299,5 +381,5 @@ export function useTrip(id: string): UseTripResult {
     setTrip(undefined);
   }, [id, user, disabled]);
 
-  return { trip, hydrated, addPlace, removePlace, addDay, removeDay, update, remove };
+  return { trip, hydrated, addPlace, removePlace, reorderPlace, reorderDay, updatePlaceNote, addDay, removeDay, update, remove };
 }

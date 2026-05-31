@@ -1,4 +1,6 @@
+"use client";
 import { Star } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { Review } from "../lib/types";
 
 export interface RatingHistogramProps {
@@ -8,6 +10,7 @@ export interface RatingHistogramProps {
 }
 
 export function RatingHistogram({ reviews, baseline }: RatingHistogramProps) {
+  const t = useTranslations("Review");
   const total = reviews.length;
   const avg =
     total > 0
@@ -37,7 +40,7 @@ export function RatingHistogram({ reviews, baseline }: RatingHistogramProps) {
           ))}
         </div>
         <div className="mt-1 text-body-sm text-text-muted">
-          {displayCount.toLocaleString("vi-VN")} đánh giá
+          {t("ratingCount", { count: displayCount })}
         </div>
       </div>
 

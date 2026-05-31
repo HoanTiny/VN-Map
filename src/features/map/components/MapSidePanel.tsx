@@ -3,6 +3,7 @@ import { useMemo } from "react";
 import Image from "next/image";
 import { m } from "framer-motion";
 import { Star, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { spring } from "@/lib/motion";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
@@ -11,6 +12,8 @@ import { useMapStore } from "@/stores/map-store";
 import { useMapData } from "../context/MapDataContext";
 
 export function MapSidePanel() {
+  const t = useTranslations("Map");
+  const locale = useLocale();
   const bounds = useMapStore((s) => s.bounds);
   const filter = useMapStore((s) => s.filter);
   const selectedId = useMapStore((s) => s.selectedPlaceId);
@@ -39,7 +42,7 @@ export function MapSidePanel() {
     return (
       <button
         onClick={() => setCollapsed(false)}
-        aria-label="Mở danh sách"
+        aria-label={t("openList")}
         className="pointer-events-auto flex h-12 w-10 items-center justify-center rounded-r-2xl glass shadow-md text-text"
       >
         <ChevronRight size={18} />
@@ -53,18 +56,18 @@ export function MapSidePanel() {
       animate={{ x: 0, opacity: 1 }}
       transition={spring.default}
       className="pointer-events-auto flex w-[380px] flex-col overflow-hidden rounded-2xl glass shadow-lg"
-      aria-label="Danh sách địa điểm trong khu vực"
+      aria-label={t("panelLabel")}
     >
       <header className="flex items-center justify-between border-b border-border/40 px-4 py-3">
         <div>
-          <div className="text-overline text-text-subtle">Trong khung nhìn</div>
+          <div className="text-overline text-text-subtle">{t("viewportOverline")}</div>
           <div className="font-display text-h3 text-text">
-            {visible.length} địa điểm
+            {t("viewportCount", { count: visible.length })}
           </div>
         </div>
         <button
           onClick={() => setCollapsed(true)}
-          aria-label="Thu gọn"
+          aria-label={t("collapse")}
           className="flex h-9 w-9 items-center justify-center rounded-full text-text-muted hover:bg-surface-2"
         >
           <ChevronLeft size={18} />
@@ -108,7 +111,7 @@ export function MapSidePanel() {
                     <div className="min-w-0 flex-1 py-0.5">
                       <div className="flex items-center gap-1.5 text-caption" style={{ color: cat.color }}>
                         <CatIcon size={11} />
-                        {cat.labelVi}
+                        {locale === "en" ? cat.label : cat.labelVi}
                       </div>
                       <div className="line-clamp-1 text-body font-medium text-text">{p.name}</div>
                       <div className="mt-0.5 flex items-center gap-2 text-body-sm text-text-muted">
@@ -134,12 +137,13 @@ export function MapSidePanel() {
 }
 
 function EmptyState() {
+  const t = useTranslations("Map");
   return (
     <div className="flex h-full items-center justify-center p-6 text-center">
       <div>
-        <div className="text-h3 font-display text-text">Không có địa điểm</div>
+        <div className="text-h3 font-display text-text">{t("emptyTitle")}</div>
         <p className="mt-1 text-body-sm text-text-muted">
-          Thử zoom out hoặc bỏ bớt bộ lọc danh mục.
+          {t("emptyHint")}
         </p>
       </div>
     </div>

@@ -1,10 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Calendar, MapPin, ArrowRight } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { Badge } from "@/ui/badge";
-import { SEASON_LABEL, type TripTemplate } from "../lib/queries";
+import { type TripTemplate } from "../lib/queries";
 
-export function CuratedTripCard({ trip }: { trip: TripTemplate }) {
+export async function CuratedTripCard({ trip }: { trip: TripTemplate }) {
+  const [t, tSeason] = await Promise.all([
+    getTranslations("CuratedTrip"),
+    getTranslations("Season"),
+  ]);
   return (
     <Link
       href={`/trips/${trip.slug}`}
@@ -21,10 +26,10 @@ export function CuratedTripCard({ trip }: { trip: TripTemplate }) {
         <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
         <div className="absolute left-3 top-3 flex gap-1.5">
           <Badge variant="brand" className="text-[10px] shadow-sm">
-            {SEASON_LABEL[trip.season]}
+            {tSeason(trip.season)}
           </Badge>
           <Badge variant="neutral" className="bg-black/40 text-white text-[10px] shadow-sm">
-            <Calendar size={10} /> {trip.duration_days} ngày
+            <Calendar size={10} /> {t("duration", { count: trip.duration_days })}
           </Badge>
         </div>
         <h3 className="absolute inset-x-4 bottom-3 line-clamp-2 font-display text-h3 font-semibold text-white drop-shadow">
@@ -38,10 +43,10 @@ export function CuratedTripCard({ trip }: { trip: TripTemplate }) {
         <div className="mt-auto flex items-center justify-between gap-2">
           <div className="flex flex-wrap items-center gap-1 text-caption text-text-subtle">
             <MapPin size={11} />
-            <span className="truncate">{trip.destinations.slice(0, 3).join(" · ") || "Đa điểm"}</span>
+            <span className="truncate">{trip.destinations.slice(0, 3).join(" · ") || t("multiDestination")}</span>
           </div>
           <span className="inline-flex items-center gap-1 text-body-sm font-medium text-brand-600 group-hover:gap-1.5 group-hover:underline">
-            Xem lịch trình <ArrowRight size={13} />
+            {t("viewItinerary")} <ArrowRight size={13} />
           </span>
         </div>
       </div>

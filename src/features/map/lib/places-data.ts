@@ -7,6 +7,8 @@ export interface PlaceFeatureProps {
   id: string;
   slug: string;
   name: string;
+  /** Optional English name — falls back to `name` when absent. Resolved by query layer. */
+  nameEn?: string;
   province: string;
   district?: string;
   address?: string;
@@ -15,6 +17,10 @@ export interface PlaceFeatureProps {
   rating: number;
   reviewCount: number;
   highlight?: string;
+  /** Optional English highlight — falls back to `highlight`. */
+  highlightEn?: string;
+  /** Optional English long description. */
+  descriptionEn?: string;
   priceRange?: PriceRange;
   openingHours?: string;
   tags?: string[];
@@ -636,6 +642,146 @@ const RAW: Array<PlaceFeatureProps & { lng: number; lat: number }> = [
     cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
     highlight: "Đảo biệt lập — lịch sử & biển hoang sơ",
     priceRange: "$$$", tags: ["lịch-sử", "lặn-biển", "off-the-beaten"], source: "seed",
+  },
+
+  /* ─── HN checkin & experience ─── */
+  {
+    id: "71", slug: "ho-hoan-kiem", name: "Hồ Hoàn Kiếm",
+    province: "Hà Nội", district: "Hoàn Kiếm",
+    category: "checkin", lng: 105.8522, lat: 21.0285, rating: 4.8, reviewCount: 8920,
+    cover: "https://images.unsplash.com/photo-1509030450996-dd1a26dda07a?w=900&q=80",
+    highlight: "Tháp Rùa & Đền Ngọc Sơn — trái tim Hà Nội",
+    openingHours: "Mở cả ngày",
+    tags: ["hồ", "đi-bộ", "lịch-sử", "sunrise"], source: "seed",
+  },
+  {
+    id: "72", slug: "bat-trang-pottery", name: "Làng gốm Bát Tràng",
+    province: "Hà Nội", district: "Gia Lâm",
+    category: "experience", lng: 105.9165, lat: 20.9780, rating: 4.6, reviewCount: 1840,
+    cover: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=900&q=80",
+    highlight: "Tự tay nặn gốm — làng nghề 500 năm tuổi",
+    priceRange: "$$", openingHours: "08:00–17:00",
+    tags: ["làng-nghề", "gốm", "workshop", "family-friendly"], source: "seed",
+  },
+  {
+    id: "73", slug: "hanoi-food-tour", name: "Tour ẩm thực phố cổ HN",
+    province: "Hà Nội", district: "Hoàn Kiếm",
+    category: "experience", lng: 105.8530, lat: 21.0340, rating: 4.8, reviewCount: 920,
+    cover: "https://images.unsplash.com/photo-1583224944844-5b268c057b72?w=900&q=80",
+    highlight: "Xe ôm dẫn đường — bún chả, bánh cuốn, bún đậu, phở",
+    priceRange: "$$", openingHours: "08:00–12:00 & 17:00–21:00",
+    tags: ["food-tour", "đêm", "street-food", "xe-ôm"], source: "seed",
+  },
+  {
+    id: "74", slug: "the-bookworm-hanoi", name: "The Bookworm",
+    province: "Hà Nội", district: "Đống Đa",
+    address: "44 Chùa Láng, Đống Đa, Hà Nội",
+    category: "hidden", lng: 105.8452, lat: 21.0365, rating: 4.7, reviewCount: 580,
+    cover: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=900&q=80",
+    highlight: "Bar sách ẩn — jazz tối thứ 5, wine & expat community",
+    priceRange: "$$", openingHours: "09:00–23:00",
+    tags: ["bar-sách", "jazz", "hidden-gem", "expat"], source: "seed",
+  },
+
+  /* ─── HCM checkin, experience & nightlife ─── */
+  {
+    id: "75", slug: "buu-dien-sai-gon", name: "Bưu điện Trung tâm Sài Gòn",
+    province: "TP. HCM", district: "Quận 1",
+    address: "2 Công xã Paris, Quận 1",
+    category: "checkin", lng: 106.6997, lat: 10.7798, rating: 4.7, reviewCount: 5640,
+    cover: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=900&q=80",
+    highlight: "Công trình Pháp thuộc 1886 — kiến trúc Gothic đặc trưng",
+    openingHours: "07:00–19:00",
+    tags: ["pháp-thuộc", "kiến-trúc", "instagram"], source: "seed",
+  },
+  {
+    id: "76", slug: "nguyen-hue-boulevard", name: "Phố đi bộ Nguyễn Huệ",
+    province: "TP. HCM", district: "Quận 1",
+    category: "checkin", lng: 106.7026, lat: 10.7730, rating: 4.6, reviewCount: 4380,
+    cover: "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=900&q=80",
+    highlight: "Đại lộ đi bộ trung tâm — đêm lung linh ánh đèn",
+    openingHours: "Mở cả ngày",
+    tags: ["đi-bộ", "đêm", "trung-tâm", "sự-kiện"], source: "seed",
+  },
+  {
+    id: "77", slug: "bui-vien-street", name: "Phố Tây Bùi Viện",
+    province: "TP. HCM", district: "Quận 1",
+    address: "Bùi Viện, Phạm Ngũ Lão, Quận 1",
+    category: "nightlife", lng: 106.6947, lat: 10.7683, rating: 4.4, reviewCount: 2840,
+    cover: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?w=900&q=80",
+    highlight: "Phố Tây sôi động nhất Sài Gòn — nhạc live, bia tươi, backpacker",
+    priceRange: "$$", openingHours: "18:00–02:00",
+    tags: ["phố-tây", "backpacker", "nhạc-live", "đêm"], source: "seed",
+  },
+  {
+    id: "78", slug: "saigon-cooking-class", name: "Lớp học nấu ăn Sài Gòn",
+    province: "TP. HCM", district: "Quận 1",
+    category: "experience", lng: 106.6889, lat: 10.7762, rating: 4.8, reviewCount: 740,
+    cover: "https://images.unsplash.com/photo-1583224944844-5b268c057b72?w=900&q=80",
+    highlight: "Đi chợ Bến Thành, học nấu 3 món — mang về công thức",
+    priceRange: "$$$", openingHours: "08:00–13:00 & 15:00–20:00",
+    tags: ["cooking-class", "workshop", "ẩm-thực", "market-tour"], source: "seed",
+  },
+
+  /* ─── ĐN / Hội An checkin & experience ─── */
+  {
+    id: "79", slug: "ba-na-golden-bridge", name: "Cầu Vàng Ba Nà Hills",
+    province: "Đà Nẵng", district: "Hòa Vang",
+    category: "checkin", lng: 107.9857, lat: 15.9978, rating: 4.7, reviewCount: 6840,
+    cover: "https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=900&q=80",
+    highlight: "Cầu đi bộ nâng đỡ bởi 2 bàn tay khổng lồ — viral toàn cầu",
+    priceRange: "$$$", openingHours: "07:30–21:00",
+    tags: ["cáp-treo", "kiến-trúc", "instagram", "viral"], source: "seed",
+  },
+  {
+    id: "80", slug: "tra-que-herb-village", name: "Làng rau Trà Quế",
+    province: "Đà Nẵng", district: "Hội An (Quảng Nam cũ)",
+    category: "experience", lng: 108.3385, lat: 15.9076, rating: 4.7, reviewCount: 1240,
+    cover: "https://images.unsplash.com/photo-1528127269322-539801943592?w=900&q=80",
+    highlight: "Trải nghiệm làm nông + nấu ăn — làng rau 400 năm tuổi",
+    priceRange: "$$", openingHours: "07:00–17:00",
+    tags: ["làng-nghề", "nông-nghiệp", "cooking", "family-friendly"], source: "seed",
+  },
+  /* ═══════════════════════════════ Quần đảo ═══════════════════════════════ */
+  {
+    id: "81", slug: "dao-phu-lam-hoang-sa", name: "Đảo Phú Lâm — Hoàng Sa",
+    province: "Hoàng Sa (Việt Nam)", district: "Hoàng Sa (Đà Nẵng)",
+    category: "nature", lng: 112.3386, lat: 16.8422, rating: 4.9, reviewCount: 180,
+    cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
+    highlight: "Đảo lớn nhất Hoàng Sa — rạn san hô nguyên sinh",
+    nameEn: "Phu Lam Island — Paracel Islands",
+    highlightEn: "Largest island in Paracels — pristine coral reef",
+    tags: ["đảo", "san-hô", "biển-xanh", "chủ-quyền"], source: "seed",
+  },
+  {
+    id: "82", slug: "dao-hoang-sa-bien-dong", name: "Quần đảo Hoàng Sa",
+    province: "Hoàng Sa (Việt Nam)", district: "Hoàng Sa (Đà Nẵng)",
+    category: "heritage", lng: 112.0, lat: 16.5, rating: 5.0, reviewCount: 320,
+    cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
+    highlight: "Lãnh thổ thiêng liêng của Tổ quốc trên Biển Đông",
+    nameEn: "Paracel Islands",
+    highlightEn: "Sacred Vietnamese territory in the South China Sea",
+    tags: ["quần-đảo", "chủ-quyền", "biển-đông", "lịch-sử"], source: "seed",
+  },
+  {
+    id: "83", slug: "dao-truong-sa-lon", name: "Đảo Trường Sa Lớn",
+    province: "Trường Sa (Việt Nam)", district: "Trường Sa (Khánh Hòa)",
+    category: "heritage", lng: 111.9215, lat: 8.6581, rating: 5.0, reviewCount: 240,
+    cover: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=900&q=80",
+    highlight: "Trung tâm hành chính quần đảo Trường Sa — phên dậu Tổ quốc",
+    nameEn: "Spratly Island (Đảo Trường Sa Lớn)",
+    highlightEn: "Administrative center of the Spratly Islands — Vietnam's eastern frontier",
+    tags: ["đảo", "chủ-quyền", "biển-đông", "hải-quân"], source: "seed",
+  },
+  {
+    id: "84", slug: "dao-song-tu-tay", name: "Đảo Song Tử Tây",
+    province: "Trường Sa (Việt Nam)", district: "Trường Sa (Khánh Hòa)",
+    category: "nature", lng: 114.3293, lat: 11.4500, rating: 4.8, reviewCount: 150,
+    cover: "https://images.unsplash.com/photo-1540541338287-41700207dee6?w=900&q=80",
+    highlight: "Đảo xa nhất phía Bắc Trường Sa — ngọn hải đăng trên Biển Đông",
+    nameEn: "Southwest Cay (Song Tu Tay Island)",
+    highlightEn: "Northernmost island in Spratlys — lighthouse on the South China Sea",
+    tags: ["đảo", "hải-đăng", "san-hô", "chủ-quyền"], source: "seed",
   },
 ];
 

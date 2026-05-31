@@ -12,9 +12,13 @@
     "seed:places": "tsx --env-file=.env.local scripts/seed-places.ts",
     "seed:hero": "tsx --env-file=.env.local scripts/seed-hero-presets.ts",
     "seed:trips": "tsx --env-file=.env.local scripts/seed-trip-templates.ts",
+    "translate:places": "tsx --env-file=.env.local scripts/translate-places.ts",
     "build:vn34": "tsx scripts/build-vn34-geojson.ts"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@google/generative-ai": "^0.24.1",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-dialog": "^1.1.2",
@@ -31,6 +35,7 @@
     "lucide-react": "^0.454.0",
     "maplibre-gl": "^4.7.1",
     "next": "^15.0.3",
+    "next-intl": "^4.12.0",
     "react": "^19.0.0-rc-66855b96-20241106",
     "react-dom": "^19.0.0-rc-66855b96-20241106",
     "react-hook-form": "^7.53.0",

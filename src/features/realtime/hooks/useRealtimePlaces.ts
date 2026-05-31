@@ -7,6 +7,7 @@ export interface NewPlacePayload {
   id: string;
   slug: string;
   name: string;
+  name_en: string | null;
   lng: number;
   lat: number;
   province: string;
@@ -31,6 +32,5 @@ export function useRealtimePlaces(onNew: (place: NewPlacePayload) => void) {
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }

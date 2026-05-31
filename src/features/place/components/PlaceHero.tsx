@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { m, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ChevronRight, Heart, Share2 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { IconButton } from "@/ui/icon-button";
 import { Badge } from "@/ui/badge";
 import { categoryByKey } from "@/config/categories";
@@ -15,10 +16,13 @@ export interface PlaceHeroProps {
 }
 
 export function PlaceHero({ place }: PlaceHeroProps) {
+  const t = useTranslations("Place");
+  const locale = useLocale();
   const photos = place.photos && place.photos.length > 0 ? place.photos : [place.cover];
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const cat = categoryByKey[place.category];
   const CatIcon = cat.icon;
+  const catLabel = locale === "en" ? cat.label : cat.labelVi;
   const { saved, toggle: toggleSaved } = useIsSaved(place.slug);
 
   const main = photos[0]!;
@@ -50,7 +54,7 @@ export function PlaceHero({ place }: PlaceHeroProps) {
               type="button"
               onClick={() => setLightboxIndex(0)}
               className="relative hidden overflow-hidden rounded-xl md:block"
-              aria-label="Phóng to ảnh"
+              aria-label={t("zoomPhoto")}
             >
               <Image
                 src={main}
@@ -99,7 +103,7 @@ export function PlaceHero({ place }: PlaceHeroProps) {
               }}
             >
               <CatIcon size={12} />
-              {cat.labelVi}
+              {catLabel}
             </Badge>
             <h1 className="font-display text-h1 text-text md:text-display-lg">{place.name}</h1>
             <p className="mt-1 text-body-sm text-text-muted">
@@ -108,14 +112,14 @@ export function PlaceHero({ place }: PlaceHeroProps) {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <IconButton
-              label={saved ? "Bỏ lưu" : "Lưu địa điểm"}
+              label={saved ? t("unsave") : t("save")}
               variant="solid"
               size="md"
               onClick={() => toggleSaved()}
             >
               <Heart size={18} className={saved ? "fill-brand-500 text-brand-500" : ""} />
             </IconButton>
-            <IconButton label="Chia sẻ" variant="solid" size="md">
+            <IconButton label={t("share")} variant="solid" size="md">
               <Share2 size={18} />
             </IconButton>
           </div>
@@ -140,6 +144,7 @@ interface LightboxProps {
 }
 
 function Lightbox({ photos, index, onClose, onIndex }: LightboxProps) {
+  const t = useTranslations("Place");
   useEffect(() => {
     if (index == null) return;
     const onKey = (e: KeyboardEvent) => {
@@ -166,7 +171,7 @@ function Lightbox({ photos, index, onClose, onIndex }: LightboxProps) {
         >
           <button
             type="button"
-            aria-label="Đóng"
+            aria-label={t("close")}
             onClick={onClose}
             className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20"
           >
@@ -176,7 +181,7 @@ function Lightbox({ photos, index, onClose, onIndex }: LightboxProps) {
             <>
               <button
                 type="button"
-                aria-label="Ảnh trước"
+                aria-label={t("prevPhoto")}
                 onClick={(e) => {
                   e.stopPropagation();
                   onIndex(Math.max(0, index - 1));
@@ -187,7 +192,7 @@ function Lightbox({ photos, index, onClose, onIndex }: LightboxProps) {
               </button>
               <button
                 type="button"
-                aria-label="Ảnh sau"
+                aria-label={t("nextPhoto")}
                 onClick={(e) => {
                   e.stopPropagation();
                   onIndex(Math.min(photos.length - 1, index + 1));

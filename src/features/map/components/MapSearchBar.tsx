@@ -14,6 +14,7 @@ import {
   Compass,
   Sparkles,
 } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/cn";
 import { transition } from "@/lib/motion";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -38,6 +39,8 @@ const TRENDING_SLUGS = [
 ];
 
 export function MapSearchBar() {
+  const t = useTranslations("Map");
+  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const debounced = useDebouncedValue(query, 150);
@@ -203,15 +206,15 @@ export function MapSearchBar() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
-          placeholder="Tìm địa điểm, tỉnh, danh mục…"
+          placeholder={t("searchOnMapPlaceholder")}
           className="flex-1 bg-transparent text-body outline-none placeholder:text-text-muted"
           enterKeyHint="search"
-          aria-label="Tìm kiếm trên bản đồ"
+          aria-label={t("searchOnMap")}
         />
         {query && (
           <button
             type="button"
-            aria-label="Xoá"
+            aria-label={t("clear")}
             onClick={() => {
               setQuery("");
               inputRef.current?.focus();
@@ -252,7 +255,7 @@ export function MapSearchBar() {
               <div className="max-h-[68vh] overflow-y-auto p-2">
                 {/* Places */}
                 {places.length > 0 && (
-                  <Group title="Địa điểm" icon={<MapPin size={12} />}>
+                  <Group title={t("groupPlaces")} icon={<MapPin size={12} />}>
                     {places.map((p) => (
                       <PlaceRow
                         key={p.id}
@@ -266,7 +269,7 @@ export function MapSearchBar() {
 
                 {/* Provinces */}
                 {provs.length > 0 && (
-                  <Group title="Tỉnh thành" icon={<Compass size={12} />}>
+                  <Group title={t("groupProvinces")} icon={<Compass size={12} />}>
                     {provs.map(({ prov, legacyName }) => (
                       <ActionRow
                         key={`${prov.slug}-${legacyName ?? ""}`}
@@ -275,7 +278,7 @@ export function MapSearchBar() {
                         }
                         subtitle={
                           legacyName
-                            ? `Đã sáp nhập vào ${prov.name} (01/07/2025)`
+                            ? t("mergedInto", { province: prov.name })
                             : prov.tagline
                         }
                         icon={<MapPin size={16} className="text-text-muted" />}
@@ -287,14 +290,14 @@ export function MapSearchBar() {
 
                 {/* Categories */}
                 {cats.length > 0 && (
-                  <Group title="Danh mục" icon={<Tag size={12} />}>
+                  <Group title={t("groupCategories")} icon={<Tag size={12} />}>
                     {cats.map((c) => {
                       const Icon = c.icon;
                       return (
                         <ActionRow
                           key={c.key}
-                          title={c.labelVi}
-                          subtitle={`Lọc ${c.description.toLowerCase()}`}
+                          title={locale === "en" ? c.label : c.labelVi}
+                          subtitle={t("filterCategoryHint", { description: c.description.toLowerCase() })}
                           icon={
                             <span
                               className="flex h-8 w-8 items-center justify-center rounded-full"
@@ -321,7 +324,7 @@ export function MapSearchBar() {
                     className="flex items-center justify-between rounded-lg px-3 py-2.5 text-body-sm text-brand-600 hover:bg-surface-2"
                   >
                     <span>
-                      Xem tất cả kết quả cho “<span className="font-medium">{q}</span>”
+                      {t("viewAllResultsFor")} “<span className="font-medium">{q}</span>”
                     </span>
                     <ArrowRight size={14} />
                   </Link>
@@ -354,6 +357,8 @@ function EmptyState({
   dominantProvince: string | null;
   nearMe: Array<PlaceItem & { distanceKm: number }>;
 }) {
+  const t = useTranslations("Map");
+  const locale = useLocale();
   const { placesBySlug } = useMapData();
   const trending = TRENDING_SLUGS.map((s) => placesBySlug[s]).filter(Boolean) as PlaceItem[];
 
@@ -370,7 +375,7 @@ function EmptyState({
       {/* Quick category filters */}
       <div className="mb-4">
         <div className="mb-2 flex items-center gap-2 px-1 text-overline text-text-subtle">
-          <Sparkles size={12} /> Lọc nhanh
+          <Sparkles size={12} /> {t("quickFilters")}
         </div>
         <div className="flex flex-wrap gap-2">
           {categories.map((c) => {
@@ -395,7 +400,7 @@ function EmptyState({
                   className={active ? "text-white" : ""}
                   style={!active ? { color: c.color } : undefined}
                 />
-                {c.labelVi}
+                {locale === "en" ? c.label : c.labelVi}
               </button>
             );
           })}
@@ -406,7 +411,7 @@ function EmptyState({
       {nearMe.length > 0 && (
         <div className="mb-4">
           <div className="mb-2 flex items-center gap-2 px-1 text-overline text-text-subtle">
-            <MapPin size={12} className="text-info" /> Gần vị trí của bạn
+            <MapPin size={12} className="text-info" /> {t("nearYou")}
           </div>
           <ul>
             {nearMe.map((p) => (
@@ -427,7 +432,7 @@ function EmptyState({
           <div className="mb-2 flex items-center justify-between gap-2 px-1">
             <div className="flex items-center gap-2 text-overline text-text-subtle">
               <Compass size={12} />
-              Trong khung nhìn
+              {t("inViewport")}
               {dominantProvince && (
                 <span className="text-text-muted normal-case tracking-normal">— {dominantProvince}</span>
               )}
@@ -438,7 +443,7 @@ function EmptyState({
                 onClick={() => onSelectProvince(dominantProvinceObj)}
                 className="text-body-sm text-brand-600 hover:underline"
               >
-                Mở rộng {dominantProvinceObj.name}
+                {t("expandTo", { province: dominantProvinceObj.name })}
               </button>
             )}
           </div>
@@ -454,7 +459,7 @@ function EmptyState({
       {showTrending && (
         <div>
           <div className="mb-2 flex items-center gap-2 px-1 text-overline text-text-subtle">
-            <TrendingUp size={12} /> Đang được tìm nhiều
+            <TrendingUp size={12} /> {t("trending")}
           </div>
           <ul>
             {trending.map((p) => (
@@ -474,10 +479,11 @@ function formatDistance(km: number): string {
 }
 
 function NoResults({ q }: { q: string }) {
+  const t = useTranslations("Map");
   return (
     <div className="p-8 text-center">
-      <p className="text-body text-text">Không tìm thấy “{q}”</p>
-      <p className="mt-1 text-body-sm text-text-muted">Thử từ khoá khác hoặc lọc theo danh mục.</p>
+      <p className="text-body text-text">{t("noResultsTitle", { q })}</p>
+      <p className="mt-1 text-body-sm text-text-muted">{t("noResultsHint")}</p>
     </div>
   );
 }

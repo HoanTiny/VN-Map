@@ -3,12 +3,14 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Mail, CheckCircle2, ArrowLeft } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { Button } from "@/ui/button";
 import { spring, transition } from "@/lib/motion";
 
 export function SignInForm() {
+  const t = useTranslations("SignInForm");
   const searchParams = useSearchParams();
   const errorParam = searchParams.get("error");
   const next = searchParams.get("next") ?? "/";
@@ -28,7 +30,7 @@ export function SignInForm() {
 
   const signInWithGoogle = async () => {
     if (!isSupabaseConfigured()) {
-      setError("Supabase chưa được cấu hình — xem PHASE_2_SETUP.md.");
+      setError(t("supabaseNotConfigured"));
       return;
     }
     setError(null);
@@ -41,7 +43,7 @@ export function SignInForm() {
       });
       if (err) throw err;
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Đăng nhập Google thất bại.");
+      setError(err instanceof Error ? err.message : t("googleFailed"));
       setOauthLoading(false);
     }
   };
@@ -49,7 +51,7 @@ export function SignInForm() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isSupabaseConfigured()) {
-      setError("Supabase chưa được cấu hình — xem PHASE_2_SETUP.md.");
+      setError(t("supabaseNotConfigured"));
       return;
     }
     setError(null);
@@ -63,7 +65,7 @@ export function SignInForm() {
       if (err) throw err;
       setMethod("sent");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Có lỗi xảy ra. Vui lòng thử lại.");
+      setError(err instanceof Error ? err.message : t("genericError"));
     } finally {
       setSubmitting(false);
     }
@@ -89,32 +91,32 @@ export function SignInForm() {
               className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-border bg-surface text-body-sm font-medium text-text shadow-sm transition-all hover:bg-surface-2 hover:border-text/20 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
             >
               <GoogleIcon />
-              <span>{oauthLoading ? "Đang chuyển hướng…" : "Tiếp tục bằng Google"}</span>
+              <span>{oauthLoading ? t("redirecting") : t("continueGoogle")}</span>
             </button>
 
             {/* Facebook OAuth — Mock/Aesthetic */}
             <button
               type="button"
-              onClick={() => setError("Đăng nhập bằng Facebook hiện đang bảo trì.")}
+              onClick={() => setError(t("facebookMaint"))}
               className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-border bg-surface text-body-sm font-medium text-text shadow-sm transition-all hover:bg-surface-2 hover:border-text/20 active:scale-[0.99]"
             >
               <FacebookIcon />
-              <span>Tiếp tục bằng Facebook</span>
+              <span>{t("continueFacebook")}</span>
             </button>
 
             {/* Apple OAuth — Mock/Aesthetic */}
             <button
               type="button"
-              onClick={() => setError("Đăng nhập bằng Apple hiện đang bảo trì.")}
+              onClick={() => setError(t("appleMaint"))}
               className="flex h-12 w-full items-center justify-center gap-3 rounded-full border border-border bg-surface text-body-sm font-medium text-text shadow-sm transition-all hover:bg-surface-2 hover:border-text/20 active:scale-[0.99]"
             >
               <AppleIcon />
-              <span>Tiếp tục bằng Apple</span>
+              <span>{t("continueApple")}</span>
             </button>
 
             <div className="flex items-center gap-3 py-2">
               <span className="h-px flex-1 bg-border/60" />
-              <span className="text-caption uppercase tracking-wider text-text-muted/80 text-[10px] font-bold">Hoặc</span>
+              <span className="text-caption uppercase tracking-wider text-text-muted/80 text-[10px] font-bold">{t("orDivider")}</span>
               <span className="h-px flex-1 bg-border/60" />
             </div>
 
@@ -128,7 +130,7 @@ export function SignInForm() {
               className="flex h-12 w-full items-center justify-center gap-3 rounded-full bg-zinc-950 text-body-sm font-medium text-white shadow-md transition-all hover:bg-zinc-900 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-100 active:scale-[0.99]"
             >
               <Mail size={16} />
-              <span>Đăng ký bằng email</span>
+              <span>{t("emailSignup")}</span>
             </button>
 
             {error && (
@@ -158,12 +160,12 @@ export function SignInForm() {
               className="inline-flex items-center gap-1.5 text-body-sm text-text-muted hover:text-text mb-2 transition-colors"
             >
               <ArrowLeft size={14} />
-              <span>Quay lại các lựa chọn</span>
+              <span>{t("backToOptions")}</span>
             </button>
 
             <div>
               <label htmlFor="email" className="mb-1.5 block text-body-sm font-medium text-text">
-                Email của bạn
+                {t("yourEmail")}
               </label>
               <div className="relative">
                 <Mail
@@ -195,11 +197,11 @@ export function SignInForm() {
               loading={submitting}
               disabled={!email}
             >
-              Gửi link đăng nhập
+              {t("sendMagicLink")}
             </Button>
 
             <p className="text-center text-caption text-text-muted leading-relaxed">
-              Chúng tôi sẽ gửi link đăng nhập 1-click qua email — không cần mật khẩu.
+              {t("magicLinkHint")}
             </p>
           </m.form>
         )}
@@ -216,11 +218,12 @@ export function SignInForm() {
             <div className="mx-auto mb-4 inline-flex h-14 w-14 items-center justify-center rounded-full bg-success/10 text-success">
               <CheckCircle2 size={28} />
             </div>
-            <h2 className="font-display text-h2 text-text">Kiểm tra email</h2>
+            <h2 className="font-display text-h2 text-text">{t("checkEmail")}</h2>
             <p className="mx-auto mt-2 max-w-sm text-body-sm text-text-muted leading-relaxed">
-              Chúng tôi đã gửi link đăng nhập tới{" "}
-              <strong className="text-text">{email}</strong>. Click vào link trong email để
-              hoàn tất.
+              {t.rich("sentNotice", {
+                email,
+                b: (chunks) => <strong className="text-text">{chunks}</strong>,
+              })}
             </p>
             <Button
               variant="ghost"
@@ -230,7 +233,7 @@ export function SignInForm() {
                 setEmail("");
               }}
             >
-              Dùng phương thức khác
+              {t("useAnother")}
             </Button>
           </m.div>
         )}

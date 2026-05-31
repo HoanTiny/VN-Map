@@ -2,10 +2,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Calendar, MapPin } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { allPlaces } from "@/features/map/lib/places-data";
 import type { Trip } from "../lib/types";
 
 export function TripCard({ trip }: { trip: Trip }) {
+  const t = useTranslations("TripCard");
+  const locale = useLocale();
   const totalPlaces = trip.days.reduce((sum, d) => sum + d.placeSlugs.length, 0);
   const cover =
     trip.cover ??
@@ -35,10 +38,10 @@ export function TripCard({ trip }: { trip: Trip }) {
         )}
         <div className="absolute inset-x-3 bottom-3 flex items-center gap-2">
           <span className="inline-flex items-center gap-1 rounded-full bg-black/65 px-2.5 py-1 text-caption text-white backdrop-blur">
-            <Calendar size={11} /> {trip.days.length} ngày
+            <Calendar size={11} /> {t("days", { count: trip.days.length })}
           </span>
           <span className="inline-flex items-center gap-1 rounded-full bg-black/65 px-2.5 py-1 text-caption text-white backdrop-blur">
-            <MapPin size={11} /> {totalPlaces} địa điểm
+            <MapPin size={11} /> {t("placesCount", { count: totalPlaces })}
           </span>
         </div>
       </div>
@@ -48,18 +51,26 @@ export function TripCard({ trip }: { trip: Trip }) {
           <p className="mt-1 line-clamp-2 text-body-sm text-text-muted">{trip.description}</p>
         )}
         <p className="mt-3 text-caption text-text-subtle">
-          Cập nhật {formatDate(trip.updatedAt)}
+          {t("updatedAt", { when: formatRelative(trip.updatedAt, locale, t) })}
         </p>
       </div>
     </Link>
   );
 }
 
-function formatDate(ms: number): string {
+function formatRelative(
+  ms: number,
+  locale: string,
+  t: (k: "justNow" | "minutesAgo" | "hoursAgo" | "daysAgo", v?: Record<string, number>) => string,
+): string {
   const diff = (Date.now() - ms) / 1000;
-  if (diff < 60) return "vừa xong";
-  if (diff < 3600) return `${Math.floor(diff / 60)} phút trước`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)} giờ trước`;
-  if (diff < 86400 * 7) return `${Math.floor(diff / 86400)} ngày trước`;
-  return new Date(ms).toLocaleDateString("vi-VN", { day: "2-digit", month: "short", year: "numeric" });
+  if (diff < 60) return t("justNow");
+  if (diff < 3600) return t("minutesAgo", { n: Math.floor(diff / 60) });
+  if (diff < 86400) return t("hoursAgo", { n: Math.floor(diff / 3600) });
+  if (diff < 86400 * 7) return t("daysAgo", { n: Math.floor(diff / 86400) });
+  return new Date(ms).toLocaleDateString(locale === "en" ? "en-US" : "vi-VN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
 }

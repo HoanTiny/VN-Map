@@ -1,5 +1,6 @@
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { createClient as createServerClient } from "@/lib/supabase/server";
+import { PRESETS } from "@/config/hero-presets";
 
 export interface HeroImage {
   src: string;
@@ -77,6 +78,37 @@ export function resolveRegionKey(
     if (hit) return p.region;
   }
   return null;
+}
+
+/**
+ * Returns the proxied URL for the first day-image of the resolved region preset.
+ * Used server-side to emit a <link rel="preload"> so the browser starts fetching
+ * the hero image before JS hydrates.
+ */
+export function getInitialHeroImageUrl(
+  presets: HeroPresetRow[],
+  initialRegion: string | null
+): string | null {
+  let rawSrc: string | null = null;
+
+  if (presets.length > 0) {
+    const preset =
+      (initialRegion && presets.find((p) => p.region === initialRegion)) ||
+      presets.find((p) => p.is_default) ||
+      presets[0];
+    rawSrc = preset?.presets?.day?.images?.[0]?.src ?? null;
+  } else {
+    // No DB presets — mirror DynamicHeroBackground fallback to hardcoded PRESETS
+    const region = initialRegion && PRESETS[initialRegion] ? initialRegion : "default";
+    rawSrc = PRESETS[region]?.day?.images?.[0]?.src ?? null;
+  }
+
+  if (!rawSrc) return null;
+  if (rawSrc.includes("images.unsplash.com")) {
+    const base = rawSrc.split("?")[0] ?? rawSrc;
+    return `https://wsrv.nl/?url=${encodeURIComponent(base)}&w=1920&q=82&output=webp`;
+  }
+  return rawSrc;
 }
 
 /** All presets (enabled + disabled) — admin only. */

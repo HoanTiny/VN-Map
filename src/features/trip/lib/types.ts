@@ -4,6 +4,8 @@ export interface TripDay {
   label: string;             // "Ngày 1", "Ngày 2"…
   placeSlugs: string[];
   note?: string;
+  /** Per-place notes keyed by slug. */
+  placeNotes?: Record<string, string>;
 }
 
 export interface Trip {

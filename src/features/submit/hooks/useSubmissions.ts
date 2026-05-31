@@ -20,12 +20,14 @@ export interface UseSubmissionsResult {
 interface SubmissionRow {
   id: string;
   name: string;
+  name_en: string | null;
   category: string;
   province: string;
   province_slug: string;
   district: string | null;
   address: string | null;
   description: string;
+  description_en: string | null;
   lng: number;
   lat: number;
   price_range: string | null;
@@ -42,12 +44,14 @@ function rowToSubmission(row: SubmissionRow): PlaceSubmission {
   return {
     id: row.id,
     name: row.name,
+    nameEn: row.name_en ?? undefined,
     category: row.category as PlaceSubmission["category"],
     province: row.province,
     provinceSlug: row.province_slug,
     district: row.district ?? undefined,
     address: row.address ?? undefined,
     description: row.description,
+    descriptionEn: row.description_en ?? undefined,
     lng: Number(row.lng),
     lat: Number(row.lat),
     priceRange: (row.price_range as PlaceSubmission["priceRange"]) ?? undefined,
@@ -102,12 +106,14 @@ export function useSubmissions(): UseSubmissionsResult {
         .from("place_submissions")
         .insert({
           name: input.name,
+          name_en: input.nameEn ?? null,
           category: input.category,
           province: input.province,
           province_slug: input.provinceSlug,
           district: input.district ?? null,
           address: input.address ?? null,
           description: input.description,
+          description_en: input.descriptionEn ?? null,
           location: `POINT(${input.lng} ${input.lat})`,
           price_range: input.priceRange ?? null,
           opening_hours: input.openingHours ?? null,

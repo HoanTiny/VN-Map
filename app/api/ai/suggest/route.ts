@@ -40,6 +40,13 @@ interface RequestContext {
   userLocation?: { lat: number; lng: number };
 }
 
+interface HistoryTurn {
+  query: string;
+  response?: unknown;
+}
+
+const MAX_HISTORY_TURNS = 5;
+
 function normalizeQuery(q: string) {
   return q.trim().toLowerCase().replace(/\s+/g, " ");
 }
@@ -92,6 +99,8 @@ Quy tắc:
 - address: địa chỉ ngắn gọn (số nhà, đường, quận — không cần đầy đủ)
 - category chỉ dùng một trong: cafe, restaurant, bar, hotel, attraction, market, park, beach, museum
 - lat/lng: toạ độ GPS thực tế của địa điểm (độ chính xác đến 4 chữ số thập phân)
+- Nếu có lịch sử hội thoại, hiểu câu hỏi tiếp nối (ví dụ "rẻ hơn", "khu khác", "tương tự") dựa trên ngữ cảnh trước
+- KHÔNG lặp lại địa điểm đã gợi ý trong các lượt trước trừ khi người dùng yêu cầu rõ
 
 Trả về JSON theo định dạng:
 {
@@ -139,7 +148,11 @@ export async function POST(req: Request) {
     );
   }
 
-  const { query, context = {} } = await req.json() as { query: string; context?: RequestContext };
+  const { query, context = {}, history = [] } = await req.json() as {
+    query: string;
+    context?: RequestContext;
+    history?: HistoryTurn[];
+  };
 
   if (!query?.trim()) {
     return Response.json({ error: "Thiếu query" }, { status: 400 });
@@ -148,9 +161,16 @@ export async function POST(req: Request) {
     return Response.json({ error: "Câu hỏi quá dài, tối đa 150 ký tự." }, { status: 400 });
   }
 
-  // Return cached result if available (saves quota + latency)
-  const cached = getCached(query, context);
-  if (cached) return Response.json(cached);
+  // Keep only the last N completed turns
+  const trimmedHistory = history
+    .filter((t) => t && typeof t.query === "string" && t.response)
+    .slice(-MAX_HISTORY_TURNS);
+
+  // Cache only when there is no conversation history — follow-ups depend on context.
+  if (trimmedHistory.length === 0) {
+    const cached = getCached(query, context);
+    if (cached) return Response.json(cached);
+  }
 
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
@@ -165,12 +185,19 @@ export async function POST(req: Request) {
 
   const prompt = query.trim() + buildLocationContext(context);
 
+  // Build Gemini chat history from prior turns (user query + model JSON response).
+  const chatHistory = trimmedHistory.flatMap((t) => [
+    { role: "user" as const, parts: [{ text: t.query }] },
+    { role: "model" as const, parts: [{ text: JSON.stringify(t.response) }] },
+  ]);
+
   try {
-    const result = await model.generateContent(prompt);
+    const chat = model.startChat({ history: chatHistory });
+    const result = await chat.sendMessage(prompt);
     const raw = result.response.text();
     const text = raw.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
     const parsed = JSON.parse(text);
-    setCached(query, context, parsed);
+    if (trimmedHistory.length === 0) setCached(query, context, parsed);
     return Response.json(parsed);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

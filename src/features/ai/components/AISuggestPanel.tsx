@@ -2,6 +2,7 @@
 import { useRef, useState } from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { Sparkles, X, Send, MapPin } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { spring } from "@/lib/motion";
 import { categoryByKey } from "@/config/categories";
@@ -46,6 +47,7 @@ interface ConversationTurn {
 }
 
 export function AISuggestPanel() {
+  const t = useTranslations("AISuggest");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -59,6 +61,11 @@ export function AISuggestPanel() {
     if (!q || loading) return;
     setQuery("");
     setLoading(true);
+    // Snapshot history BEFORE appending the new pending turn, keep only completed turns.
+    const history = turns
+      .filter((t) => t.response)
+      .slice(-5)
+      .map((t) => ({ query: t.query, response: t.response }));
     setTurns((prev) => [...prev, { query: q, response: null }]);
 
     try {
@@ -71,19 +78,20 @@ export function AISuggestPanel() {
             bounds: bounds ?? undefined,
             userLocation: userLocation ? { lat: userLocation.lat, lng: userLocation.lng } : undefined,
           },
+          history,
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Lỗi không xác định");
+      if (!res.ok) throw new Error(data.error ?? t("unknownError"));
       setTurns((prev) =>
-        prev.map((t, i) => (i === prev.length - 1 ? { ...t, response: data } : t))
+        prev.map((turn, i) => (i === prev.length - 1 ? { ...turn, response: data } : turn))
       );
     } catch (e) {
       setTurns((prev) =>
-        prev.map((t, i) =>
+        prev.map((turn, i) =>
           i === prev.length - 1
-            ? { ...t, error: e instanceof Error ? e.message : "Lỗi không xác định" }
-            : t
+            ? { ...turn, error: e instanceof Error ? e.message : t("unknownError") }
+            : turn
         )
       );
     } finally {
@@ -119,7 +127,7 @@ export function AISuggestPanel() {
             <Sparkles size={15} className="relative z-10 shrink-0 text-white/95 group-hover:rotate-12 group-hover:scale-110 group-hover:text-white transition-all duration-300" />
 
             <span className="relative z-10 select-none tracking-wide text-white/95 group-hover:text-white transition-colors duration-300">
-              Gợi ý AI
+              {t("label")}
             </span>
           </m.button>
         )}
@@ -145,7 +153,7 @@ export function AISuggestPanel() {
               <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-brand-500/20 via-violet-500/20 to-transparent" />
               <div className="flex items-center gap-2 relative z-10">
                 <Sparkles size={16} className="text-brand-500 dark:text-violet-400 animate-pulse" />
-                <span className="font-display text-h3 text-text font-semibold">Gợi ý AI</span>
+                <span className="font-display text-h3 text-text font-semibold">{t("label")}</span>
               </div>
               <button
                 onClick={() => setOpen(false)}
@@ -159,8 +167,8 @@ export function AISuggestPanel() {
             <div className="min-h-0 flex-1 overflow-y-auto space-y-4 p-4">
               {turns.length === 0 && (
                 <div className="space-y-2">
-                  <p className="text-body-sm text-text-muted">Hỏi tôi về địa điểm phù hợp với bạn, ví dụ:</p>
-                  {["Quán cafe view đẹp cho buổi sáng", "Chỗ ăn tối lãng mạn ở Hà Nội", "Địa điểm checkin ít người biết"].map((ex) => (
+                  <p className="text-body-sm text-text-muted">{t("prompt")}</p>
+                  {[t("example1"), t("example2"), t("example3")].map((ex) => (
                     <button
                       key={ex}
                       onClick={() => { setQuery(ex); inputRef.current?.focus(); }}
@@ -204,7 +212,7 @@ export function AISuggestPanel() {
                           />
                         ))}
                       </span>
-                      Đang suy nghĩ…
+                      {t("thinking")}
                     </div>
                   ) : null}
                 </div>
@@ -225,7 +233,7 @@ export function AISuggestPanel() {
                   value={query}
                   onChange={(e) => setQuery(e.target.value.slice(0, 160))}
                   onKeyDown={(e) => e.key === "Enter" && submit()}
-                  placeholder="Bạn đang tìm gì?"
+                  placeholder={t("inputPlaceholder")}
                   disabled={loading}
                   className="min-w-0 flex-1 bg-transparent text-body text-text outline-none placeholder:text-text-muted disabled:opacity-50"
                 />
@@ -254,6 +262,7 @@ export function AISuggestPanel() {
 }
 
 function SuggestionCard({ suggestion }: { suggestion: Suggestion }) {
+  const t = useTranslations("AISuggest");
   const cat = categoryByKey[suggestion.category as keyof typeof categoryByKey];
   const setPickedCoords = useUIStore((s) => s.setPickedCoords);
 
@@ -300,11 +309,11 @@ function SuggestionCard({ suggestion }: { suggestion: Suggestion }) {
         {hasLocation && (
           <button
             onClick={flyToMap}
-            title="Xem trên bản đồ"
+            title={t("viewOnMap")}
             className="shrink-0 flex items-center gap-1 rounded-full border border-border/80 dark:border-white/10 bg-surface dark:bg-white/5 px-2.5 py-1 text-caption font-medium text-text-muted hover:text-brand-600 dark:hover:text-brand-300 hover:border-brand-500/20 dark:hover:border-white/20 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
           >
             <MapPin size={11} className="text-brand-500 dark:text-brand-400 shrink-0" />
-            <span>Xem</span>
+            <span>{t("viewLabel")}</span>
           </button>
         )}
       </div>

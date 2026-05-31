@@ -3,10 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { m, AnimatePresence } from "framer-motion";
 import { Search, MapPin, Tag, Layers, X, ArrowRight, Clock, TrendingUp } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { spring, transition } from "@/lib/motion";
 import { categories } from "@/config/categories";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
+import { useRecentSearches } from "@/hooks/use-recent-searches";
 
 interface Suggestion {
   type: "place" | "region" | "category";
@@ -18,10 +20,16 @@ interface Suggestion {
 
 const TRENDING = ["Hội An", "Đà Lạt", "Phú Quốc", "Sa Pa", "Ninh Bình"];
 
-const TYPE_META: Record<Suggestion["type"], { icon: typeof MapPin; label: string }> = {
-  place: { icon: MapPin, label: "Địa điểm" },
-  region: { icon: Layers, label: "Vùng miền" },
-  category: { icon: Tag, label: "Danh mục" },
+const TYPE_ICON: Record<Suggestion["type"], typeof MapPin> = {
+  place: MapPin,
+  region: Layers,
+  category: Tag,
+};
+
+const TYPE_LABEL_KEY: Record<Suggestion["type"], "typePlace" | "typeRegion" | "typeCategory"> = {
+  place: "typePlace",
+  region: "typeRegion",
+  category: "typeCategory",
 };
 
 // Staggered layout variants for dropdown items
@@ -54,8 +62,10 @@ export interface SearchBarProps {
 export function SearchBar({
   className,
   variant = "pill",
-  placeholder = "Tìm địa điểm, vùng miền, ẩm thực…",
+  placeholder,
 }: SearchBarProps) {
+  const t = useTranslations("Search");
+  const resolvedPlaceholder = placeholder ?? t("placeholder");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState<string | null>(null);
@@ -91,6 +101,7 @@ export function SearchBar({
     return () => document.removeEventListener("keydown", onSlash);
   }, []);
 
+  const { searches: recentSearches, add: addRecent, remove: removeRecent } = useRecentSearches();
   const [results, setResults] = useState<Suggestion[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -137,7 +148,7 @@ export function SearchBar({
       >
         {/* Animated Search Button */}
         <m.button
-          aria-label="Tìm kiếm"
+          aria-label={t("searchAria")}
           onClick={() => {
             setOpen(true);
             inputRef.current?.focus();
@@ -155,17 +166,17 @@ export function SearchBar({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setOpen(true)}
-          placeholder={placeholder}
+          placeholder={resolvedPlaceholder}
           className="h-12 flex-1 bg-transparent text-body text-zinc-900 dark:text-white outline-none placeholder:text-zinc-500 dark:placeholder:text-white/45"
           enterKeyHint="search"
-          aria-label="Ô tìm kiếm"
+          aria-label={t("inputAria")}
         />
 
         {/* Pop-in Animate Clear Button */}
         <AnimatePresence>
           {query && (
             <m.button
-              aria-label="Xoá"
+              aria-label={t("clearAria")}
               initial={{ scale: 0, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0, opacity: 0 }}
@@ -224,10 +235,10 @@ export function SearchBar({
             role="listbox"
           >
             {!debounced ? (
-              <EmptyState />
+              <EmptyState recent={recentSearches} onRemoveRecent={removeRecent} />
             ) : loading && results.length === 0 ? (
               <div className="p-8 text-center text-body-sm text-zinc-500 dark:text-white/50">
-                Đang tìm…
+                {t("searching")}
               </div>
             ) : results.length === 0 ? (
               <NoResults q={debounced} />
@@ -238,22 +249,21 @@ export function SearchBar({
                 animate="show"
                 className="max-h-[60vh] overflow-y-auto p-2 "
               >
-                {(["place", "region", "category"] as const).map((t) => {
-                  const items = grouped[t];
+                {(["place", "region", "category"] as const).map((kind) => {
+                  const items = grouped[kind];
                   if (!items?.length) return null;
-                  const meta = TYPE_META[t];
-                  const Icon = meta.icon;
+                  const Icon = TYPE_ICON[kind];
                   return (
-                    <section key={t} className="px-1 py-1">
+                    <section key={kind} className="px-1 py-1">
                       <m.div variants={itemVariants} className="px-3 py-2 text-overline text-zinc-400 dark:text-white/40">
-                        {meta.label}
+                        {t(TYPE_LABEL_KEY[kind])}
                       </m.div>
                       <ul>
                         {items.slice(0, 4).map((s) => (
                           <m.li key={s.id} variants={itemVariants}>
                             <Link
                               href={s.href}
-                              onClick={() => setOpen(false)}
+                              onClick={() => { addRecent(s.label); setOpen(false); }}
                               className="group flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-zinc-100/80 dark:hover:bg-white/5 transition-colors duration-200"
                             >
                               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-100 dark:bg-white/5 text-zinc-500 dark:text-white/50 transition-colors duration-300 group-hover:bg-brand-50 dark:group-hover:bg-brand-500/20 group-hover:text-brand-600 dark:group-hover:text-brand-400">
@@ -279,10 +289,10 @@ export function SearchBar({
                 <m.div variants={itemVariants} className="mt-1 border-t border-zinc-200 dark:border-white/5 px-1 pt-2">
                   <Link
                     href={`/search?q=${encodeURIComponent(debounced)}`}
-                    onClick={() => setOpen(false)}
+                    onClick={() => { addRecent(debounced); setOpen(false); }}
                     className="flex items-center justify-between rounded-lg px-3 py-2.5 text-body text-brand-600 dark:text-brand-400 hover:bg-zinc-100/80 dark:hover:bg-white/5 transition-colors duration-200 font-medium"
                   >
-                    <span>Xem tất cả kết quả cho “{debounced}”</span>
+                    <span>{t("viewAllResults", { q: debounced })}</span>
                     <ArrowRight size={16} />
                   </Link>
                 </m.div>
@@ -298,7 +308,8 @@ export function SearchBar({
   void isExpanded;
 }
 
-function EmptyState() {
+function EmptyState({ recent, onRemoveRecent }: { recent: string[]; onRemoveRecent: (q: string) => void }) {
+  const t = useTranslations("Search");
   return (
     <m.div
       variants={containerVariants}
@@ -306,8 +317,37 @@ function EmptyState() {
       animate="show"
       className="p-4"
     >
+      {recent.length > 0 && (
+        <>
+          <m.div variants={itemVariants} className="mb-2 flex items-center gap-2 px-2 text-overline text-[12px] font-bold text-zinc-400 dark:text-white/40">
+            <Clock size={12} /> {t("recentSearches")}
+          </m.div>
+          <m.ul variants={itemVariants} className="mb-4">
+            {recent.map((q) => (
+              <li key={q} className="group flex items-center gap-2 rounded-lg px-3 py-2 hover:bg-zinc-100/80 dark:hover:bg-white/5">
+                <Clock size={14} className="shrink-0 text-zinc-400 dark:text-white/30" />
+                <Link
+                  href={`/search?q=${encodeURIComponent(q)}`}
+                  className="min-w-0 flex-1 truncate text-body text-zinc-800 dark:text-white/90 hover:text-brand-600 dark:hover:text-brand-400"
+                >
+                  {q}
+                </Link>
+                <button
+                  type="button"
+                  aria-label={t("removeSearch")}
+                  onClick={() => onRemoveRecent(q)}
+                  className="shrink-0 rounded p-1 text-zinc-400 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-zinc-200 hover:text-zinc-700 dark:hover:bg-white/10 dark:hover:text-white"
+                >
+                  <X size={12} />
+                </button>
+              </li>
+            ))}
+          </m.ul>
+        </>
+      )}
+
       <m.div variants={itemVariants} className="mb-3 flex items-center gap-2 px-2 text-overline text-[var(--brand-500)] text-[12px] font-bold dark:text-white/40">
-        <TrendingUp size={12} className="text-brand-500 animate-pulse" /> Đang được tìm nhiều
+        <TrendingUp size={12} className="text-brand-500 animate-pulse" /> {t("trending")}
       </m.div>
       <m.div variants={itemVariants} className="mb-4 flex flex-wrap gap-2 px-2">
         {TRENDING.map((t) => (
@@ -322,7 +362,7 @@ function EmptyState() {
       </m.div>
 
       <m.div variants={itemVariants} className="mb-2 flex items-center gap-2 px-2 text-overline text-[var(--brand-500)] dark:text-white/40">
-        <Clock size={12} /> Gợi ý cho bạn
+        <Clock size={12} /> {t("suggestionsForYou")}
       </m.div>
 
       <div className="grid grid-cols-2 gap-2 px-2 sm:grid-cols-3">
@@ -351,17 +391,18 @@ function EmptyState() {
 }
 
 function NoResults({ q }: { q: string }) {
+  const t = useTranslations("Search");
   return (
     <div className="p-8 text-center text-zinc-800 dark:text-white">
-      <div className="text-body font-medium">Không tìm thấy “{q}”</div>
+      <div className="text-body font-medium">{t("noResults", { q })}</div>
       <div className="mt-1 text-body-sm text-zinc-500 dark:text-white/50">
-        Thử từ khoá khác hoặc duyệt theo vùng miền.
+        {t("noResultsHint")}
       </div>
       <Link
         href="/explore"
         className="mt-4 inline-flex items-center gap-2 text-body-sm text-brand-600 dark:text-brand-400 hover:underline animate-bounce"
       >
-        Mở bản đồ <ArrowRight size={14} />
+        {t("openMap")} <ArrowRight size={14} />
       </Link>
     </div>
   );

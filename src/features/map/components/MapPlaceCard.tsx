@@ -3,11 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { m, AnimatePresence } from "framer-motion";
 import { Heart, Star, MapPin, Share2, X, Navigation } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/cn";
 import { floatingCard } from "@/lib/motion";
 import { IconButton } from "@/ui/icon-button";
 import { Button } from "@/ui/button";
-import { Badge } from "@/ui/badge";
 import { categoryByKey } from "@/config/categories";
 import { useMapStore } from "@/stores/map-store";
 import { useUIStore } from "@/stores/ui-store";
@@ -17,6 +17,7 @@ import { TripPickAddButton } from "@/features/trip/components/TripPickAddButton"
 import { useMapData } from "../context/MapDataContext";
 
 export function MapPlaceCard() {
+  const t = useTranslations("Map");
   const selectedId = useMapStore((s) => s.selectedPlaceId);
   const close = useMapStore((s) => s.select);
   const { placesById } = useMapData();
@@ -57,7 +58,7 @@ export function MapPlaceCard() {
             </div>
 
             <IconButton
-              label="Đóng"
+              label={t("close")}
               variant="glass"
               size="sm"
               className="absolute right-3 top-3"
@@ -129,7 +130,7 @@ export function MapPlaceCard() {
                       saved ? "fill-brand-500 text-brand-500 dark:fill-brand-400 dark:text-brand-400" : "text-white"
                     )}
                   />
-                  {saved ? "Đã lưu" : "Lưu"}
+                  {saved ? t("saved") : t("save")}
                 </Button>
                 <AddToTripButton
                   slug={place.slug}
@@ -140,7 +141,7 @@ export function MapPlaceCard() {
               </>
             )}
             <IconButton
-              label="Chia sẻ"
+              label={t("share")}
               variant="glass"
               size="sm"
               className="rounded-full bg-surface-2 dark:bg-white/5 border border-border/80 dark:border-white/10 text-text hover:bg-surface-3 dark:hover:bg-white/10 hover:scale-105 active:scale-95 transition-all duration-300"
@@ -165,11 +166,11 @@ export function MapPlaceCard() {
                   className="text-brand-500 dark:text-brand-400 transition-transform duration-500 ease-out group-hover/footer:rotate-45 group-hover/footer:scale-110"
                 />
                 <span className="font-sans select-none tracking-wide text-text/80 dark:text-text/90 group-hover/footer:text-brand-600 dark:group-hover/footer:text-brand-300 transition-colors duration-300">
-                  Xem chi tiết & Đánh giá
+                  {t("viewDetails")}
                 </span>
               </span>
               <span className="flex items-center gap-0.5 text-brand-500 dark:text-brand-400 group-hover/footer:translate-x-1 transition-transform duration-300">
-                <span className="text-caption font-semibold">Khám phá</span>
+                <span className="text-caption font-semibold">{t("explore")}</span>
                 <span className="text-[14px]">→</span>
               </span>
             </Link>
@@ -183,13 +184,14 @@ export function MapPlaceCard() {
 function CategoryChip({ category }: { category: keyof typeof categoryByKey }) {
   const cat = categoryByKey[category];
   const Icon = cat.icon;
+  const locale = useLocale();
   return (
     <div
       className="inline-flex items-center gap-1.5 rounded-full bg-white/80 dark:bg-black/60 backdrop-blur-md border border-white/20 dark:border-white/10 px-3 py-1 text-caption font-semibold shadow-sm transition-colors duration-300"
       style={{ color: cat.color }}
     >
       <Icon size={12} className="shrink-0" />
-      <span>{cat.labelVi}</span>
+      <span>{locale === "en" ? cat.label : cat.labelVi}</span>
     </div>
   );
 }

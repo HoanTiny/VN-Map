@@ -1,12 +1,15 @@
 "use client";
 import { m } from "framer-motion";
 import { X } from "lucide-react";
+import { useTranslations, useLocale } from "next-intl";
 import { cn } from "@/lib/cn";
 import { pressScale } from "@/lib/motion";
 import { categories } from "@/config/categories";
 import { useMapStore } from "@/stores/map-store";
 
 export function MapFilterChips() {
+  const t = useTranslations("Map");
+  const locale = useLocale();
   const filter = useMapStore((s) => s.filter);
   const toggle = useMapStore((s) => s.toggleCategory);
   const clear = useMapStore((s) => s.clearFilter);
@@ -16,7 +19,7 @@ export function MapFilterChips() {
       {filter.size > 0 && (
         <button
           onClick={clear}
-          aria-label="Xoá lọc"
+          aria-label={t("clearFilter")}
           className="shrink-0 flex h-9 items-center gap-1 rounded-full bg-text px-3 text-body-sm font-medium text-bg shadow-sm hover:opacity-90"
         >
           <X size={14} />
@@ -50,7 +53,7 @@ export function MapFilterChips() {
               className={cn(active ? "text-white" : "")}
               style={!active ? { color: c.color } : undefined}
             />
-            {c.labelVi}
+            {locale === "en" ? c.label : c.labelVi}
           </m.button>
         );
       })}

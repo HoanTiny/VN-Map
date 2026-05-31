@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/cn";
 import { bottomTabs } from "@/config/nav";
 import { useUIStore } from "@/stores/ui-store";
@@ -8,12 +9,13 @@ import { useUIStore } from "@/stores/ui-store";
 export function BottomTabBar() {
   const pathname = usePathname();
   const visible = useUIStore((s) => s.mobileNavVisible);
+  const t = useTranslations("Nav");
 
   if (!visible) return null;
 
   return (
     <nav
-      aria-label="Điều hướng chính"
+      aria-label={t("map")}
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg/90 backdrop-blur md:hidden"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
@@ -31,7 +33,7 @@ export function BottomTabBar() {
                 )}
               >
                 <Icon size={20} />
-                <span>{tab.label}</span>
+                <span>{t(tab.key)}</span>
               </Link>
             </li>
           );
