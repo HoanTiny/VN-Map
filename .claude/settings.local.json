@@ -10,7 +10,8 @@
       "Bash(pnpm build *)",
       "Bash(cp /tmp/lh-landing2.json d:/Work/VN-Map/lh-landing2.json)",
       "Bash(node -e ' *)",
-      "Bash(pnpm add *)"
+      "Bash(pnpm add *)",
+      "Bash(node -e \"const p = require\\('./package.json'\\); console.log\\('next:', p.dependencies.next, 'next-intl:', p.dependencies['next-intl']\\)\")"
     ]
   }
 }
