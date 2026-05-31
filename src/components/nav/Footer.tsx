@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Github, Instagram, Mail } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { siteConfig } from "@/config/site";
@@ -42,7 +43,7 @@ export async function Footer() {
         <div className="grid gap-10 md:grid-cols-12">
           <div className="md:col-span-4">
             <Link href="/" className="flex items-center gap-2 font-display text-h3 text-text">
-              <img src="/images/mapVN.png" alt="logo" width={32} height={32} />
+              <Image src="/images/mapVN.png" alt="logo" width={32} height={32} />
               {siteConfig.name}
             </Link>
             <p className="mt-3 max-w-sm text-body-sm text-text-muted">

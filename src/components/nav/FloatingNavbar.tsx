@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { m, useScroll, useMotionValueEvent } from "framer-motion";
 import { Search, Menu } from "lucide-react";
@@ -58,7 +59,7 @@ export function FloatingNavbar() {
           href="/"
           className="flex shrink-0 items-center gap-2.5 whitespace-nowrap rounded-full px-2 py-1.5 font-display text-[18px] font-bold tracking-tight text-black dark:text-white sm:px-3 transition-transform duration-300 hover:scale-[1.02]"
         >
-          <img src="/images/mapVN.png" alt="logo" width={40} height={40} className="object-contain" />
+          <Image src="/images/mapVN.png" alt="logo" width={40} height={40} className="object-contain" priority />
 
           <span className="font-extrabold bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-800 dark:from-white dark:via-zinc-100 dark:to-zinc-200 bg-clip-text text-transparent">{siteConfig.name}</span>
         </Link>

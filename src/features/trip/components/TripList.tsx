@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Plus, Briefcase } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/ui/button";
+import { Skeleton } from "@/ui/skeleton";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { useTrips } from "../hooks/useTrips";
 import { TripCard } from "./TripCard";
@@ -33,7 +34,7 @@ export function TripList() {
 
         <div className="mt-10">
           {!hydrated ? (
-            <p className="text-body-sm text-text-muted">{t("loading")}</p>
+            <TripGridSkeleton />
           ) : trips.length === 0 ? (
             <EmptyState onCreate={() => setNewOpen(true)} />
           ) : (
@@ -50,6 +51,24 @@ export function TripList() {
 
       <NewTripDialog open={newOpen} onOpenChange={setNewOpen} />
     </article>
+  );
+}
+
+function TripGridSkeleton() {
+  return (
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="rounded-2xl border border-border bg-surface p-5">
+          <Skeleton className="h-5 w-2/3" />
+          <Skeleton className="mt-3 h-3 w-full" />
+          <Skeleton className="mt-2 h-3 w-4/5" />
+          <div className="mt-5 flex gap-3">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }
 
