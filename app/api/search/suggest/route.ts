@@ -7,6 +7,24 @@ import { categories } from "@/config/categories";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// 60 requests per minute per IP — prevents search scraping
+const SEARCH_RATE_LIMIT = 60;
+const SEARCH_RATE_WINDOW_MS = 60 * 1000;
+const searchRateStore = new Map<string, { count: number; resetAt: number }>();
+
+function checkSearchRate(ip: string): boolean {
+  const now = Date.now();
+  for (const [k, v] of searchRateStore) if (now > v.resetAt) searchRateStore.delete(k);
+  const entry = searchRateStore.get(ip);
+  if (!entry || now > entry.resetAt) {
+    searchRateStore.set(ip, { count: 1, resetAt: now + SEARCH_RATE_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= SEARCH_RATE_LIMIT) return false;
+  entry.count++;
+  return true;
+}
+
 interface Suggestion {
   type: "place" | "region" | "category";
   id: string;
@@ -16,6 +34,11 @@ interface Suggestion {
 }
 
 export async function GET(req: Request) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (!checkSearchRate(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const url = new URL(req.url);
   const q = url.searchParams.get("q")?.trim() ?? "";
 

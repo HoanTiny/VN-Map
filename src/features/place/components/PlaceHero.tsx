@@ -28,44 +28,32 @@ export function PlaceHero({ place }: PlaceHeroProps) {
   const main = photos[0]!;
   const thumbs = photos.slice(1, 5);
   const extraCount = Math.max(0, photos.length - 5);
+  const hasMultiple = thumbs.length > 0;
 
   return (
     <section className="relative">
-      <div className="grid h-[44vh] min-h-[360px] grid-cols-1 gap-2 md:h-[64vh] md:grid-cols-4 md:grid-rows-2">
+      <div
+        className={`grid h-[44vh] min-h-[360px] grid-cols-1 gap-2 md:h-[64vh] md:grid-rows-2 ${
+          hasMultiple ? "md:grid-cols-4" : ""
+        }`}
+      >
         <button
           type="button"
           onClick={() => setLightboxIndex(0)}
-          className="relative col-span-1 row-span-2 overflow-hidden rounded-2xl md:col-span-2"
+          className={`relative col-span-1 row-span-2 overflow-hidden rounded-2xl ${
+            hasMultiple ? "md:col-span-2" : "md:col-span-full"
+          }`}
         >
           <Image
             src={main}
             alt={place.name}
             fill
             priority
-            sizes="(max-width: 768px) 100vw, 60vw"
+            sizes={hasMultiple ? "(max-width: 768px) 100vw, 60vw" : "100vw"}
             className="object-cover transition-transform duration-slow hover:scale-[1.02]"
           />
         </button>
-        {thumbs.length === 0 ? (
-          // No thumbs — fill secondary tiles with the cover for visual rhythm
-          Array.from({ length: 4 }).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => setLightboxIndex(0)}
-              className="relative hidden overflow-hidden rounded-xl md:block"
-              aria-label={t("zoomPhoto")}
-            >
-              <Image
-                src={main}
-                alt=""
-                fill
-                sizes="20vw"
-                className="object-cover opacity-90 transition-transform duration-slow hover:scale-[1.04]"
-              />
-            </button>
-          ))
-        ) : (
+        {hasMultiple &&
           thumbs.map((src, i) => (
             <button
               key={src + i}
@@ -86,8 +74,7 @@ export function PlaceHero({ place }: PlaceHeroProps) {
                 </div>
               )}
             </button>
-          ))
-        )}
+          ))}
       </div>
 
       {/* Header overlay (mobile) */}

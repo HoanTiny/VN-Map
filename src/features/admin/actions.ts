@@ -1,6 +1,24 @@
 "use server";
 import { revalidatePath } from "next/cache";
-import { createServiceClient } from "@/lib/supabase/server";
+import { createClient, createServiceClient } from "@/lib/supabase/server";
+
+const ADMIN_ROLES = ["admin", "mod", "editor"] as const;
+
+async function requireAdminRole() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Unauthenticated");
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (!ADMIN_ROLES.includes(profile?.role as typeof ADMIN_ROLES[number])) {
+    throw new Error("Forbidden: insufficient role");
+  }
+}
 
 function slugify(name: string): string {
   return (
@@ -19,6 +37,7 @@ function slugify(name: string): string {
 }
 
 export async function approveSubmission(id: string) {
+  await requireAdminRole();
   const supabase = createServiceClient();
 
   const { data: sub, error: fetchErr } = await supabase
@@ -72,6 +91,7 @@ export async function approveSubmission(id: string) {
 }
 
 export async function rejectSubmission(id: string) {
+  await requireAdminRole();
   const supabase = createServiceClient();
   await supabase
     .from("place_submissions")
@@ -81,6 +101,7 @@ export async function rejectSubmission(id: string) {
 }
 
 export async function rejectReview(id: string) {
+  await requireAdminRole();
   const supabase = createServiceClient();
   await supabase
     .from("reviews")
@@ -102,6 +123,7 @@ export interface PlacePatch {
 }
 
 export async function updatePlace(id: string, patch: PlacePatch) {
+  await requireAdminRole();
   const supabase = createServiceClient();
   const cleaned = Object.fromEntries(
     Object.entries(patch).filter(([, v]) => v !== undefined)
@@ -144,6 +166,7 @@ function revalidateHero() {
 }
 
 export async function upsertHeroPreset(id: string | null, patch: Partial<HeroPresetInput>) {
+  await requireAdminRole();
   const supabase = createServiceClient();
 
   if (patch.is_default === true) {
@@ -172,6 +195,7 @@ export async function upsertHeroPreset(id: string | null, patch: Partial<HeroPre
 }
 
 export async function deleteHeroPreset(id: string) {
+  await requireAdminRole();
   const supabase = createServiceClient();
   const { error } = await supabase.from("hero_presets").delete().eq("id", id);
   if (error) throw new Error("Lỗi xoá preset: " + error.message);
@@ -179,6 +203,7 @@ export async function deleteHeroPreset(id: string) {
 }
 
 export async function toggleHeroPresetEnabled(id: string, enabled: boolean) {
+  await requireAdminRole();
   const supabase = createServiceClient();
   const { error } = await supabase
     .from("hero_presets")
@@ -213,6 +238,7 @@ export async function upsertTripTemplate(
   id: string | null,
   patch: Partial<TripTemplateInput>
 ) {
+  await requireAdminRole();
   const supabase = createServiceClient();
 
   if (id) {
@@ -236,6 +262,7 @@ export async function upsertTripTemplate(
 }
 
 export async function deleteTripTemplate(id: string) {
+  await requireAdminRole();
   const supabase = createServiceClient();
   const { error } = await supabase.from("trip_templates").delete().eq("id", id);
   if (error) throw new Error("Lỗi xoá template: " + error.message);
@@ -243,6 +270,7 @@ export async function deleteTripTemplate(id: string) {
 }
 
 export async function toggleTripTemplateEnabled(id: string, enabled: boolean) {
+  await requireAdminRole();
   const supabase = createServiceClient();
   const { error } = await supabase
     .from("trip_templates")
@@ -253,6 +281,7 @@ export async function toggleTripTemplateEnabled(id: string, enabled: boolean) {
 }
 
 export async function approveReview(id: string) {
+  await requireAdminRole();
   const supabase = createServiceClient();
   await supabase
     .from("reviews")

@@ -1,5 +1,5 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -18,6 +18,9 @@ export function useRealtimeReviews(
   placeSlug: string,
   onNew: (review: ReviewRow) => void
 ) {
+  const onNewRef = useRef(onNew);
+  onNewRef.current = onNew;
+
   useEffect(() => {
     if (!isSupabaseConfigured()) return;
 
@@ -32,10 +35,10 @@ export function useRealtimeReviews(
           table: "reviews",
           filter: `place_slug=eq.${placeSlug}`,
         },
-        (payload) => onNew(payload.new as ReviewRow)
+        (payload) => onNewRef.current(payload.new as ReviewRow)
       )
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [placeSlug, onNew]);
+  }, [placeSlug]);
 }
